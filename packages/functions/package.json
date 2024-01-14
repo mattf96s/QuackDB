@@ -1,5 +1,5 @@
 {
-  "name": "@vite-duckdb/functions",
+  "name": "@quackdb/functions",
   "version": "0.0.0",
   "type": "module",
   "scripts": {

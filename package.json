@@ -18,7 +18,7 @@
     "remove": "sst remove",
     "console": "sst console",
     "typecheck": "tsc --noEmit",
-    "sso": "aws sso login --sso-session=exifbrowser",
+    "sso": "aws sso login --sso-session=sso-exifbrowser",
     "set-node-v": "pnpm env use --global 20",
     "deploy-prod": "NODE_ENV=production sst deploy --stage prod --profile exifbrowser"
   },

@@ -165,9 +165,6 @@ importers:
       '@tailwindcss/typography':
         specifier: ^0.5.10
         version: 0.5.10(tailwindcss@3.4.1)
-      '@tanstack/react-query':
-        specifier: ^5.17.10
-        version: 5.17.10(react@18.3.0-canary-c5b937576-20231219)
       '@tanstack/react-router':
         specifier: ^1.4.3
         version: 1.4.3(react-dom@18.3.0-canary-c5b937576-20231219)(react@18.3.0-canary-c5b937576-20231219)
@@ -177,6 +174,9 @@ importers:
       '@tanstack/react-virtual':
         specifier: ^3.0.1
         version: 3.0.1(react-dom@18.3.0-canary-c5b937576-20231219)(react@18.3.0-canary-c5b937576-20231219)
+      '@tanstack/router-devtools':
+        specifier: ^1.4.3
+        version: 1.4.3(react-dom@18.3.0-canary-c5b937576-20231219)(react@18.3.0-canary-c5b937576-20231219)
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
@@ -244,9 +244,6 @@ importers:
         specifier: ^3.22.4
         version: 3.22.4
     devDependencies:
-      '@tanstack/react-query-devtools':
-        specifier: ^5.17.10
-        version: 5.17.10(@tanstack/react-query@5.17.10)(react@18.3.0-canary-c5b937576-20231219)
       '@tanstack/router-vite-plugin':
         specifier: ^1.4.3
         version: 1.4.3(react-dom@18.3.0-canary-c5b937576-20231219)(react@18.3.0-canary-c5b937576-20231219)
@@ -5827,32 +5824,6 @@ packages:
     resolution: {integrity: sha512-Aur99XDWtjhVtdMJDOj5ocA7L/HVrnHdRSKQtp5f44OiNeFrXZ3CNsDz2QPng+iQpH4ebZ6eW53OBuXVJzzpXA==}
     engines: {node: '>=12'}
 
-  /@tanstack/query-core@5.17.10:
-    resolution: {integrity: sha512-bJ2oQUDBftvHcEkLS3gyzzShSeZpJyzNNRu8oHK13iNdsofyaDXtNO/c1Zy/PZYVX+PhqOXwoT42gMiEMRSSfQ==}
-
-  /@tanstack/query-devtools@5.17.7:
-    resolution: {integrity: sha512-TfgvOqza5K7Sk6slxqkRIvXlEJoUoPSsGGwpuYSrpqgSwLSSvPPpZhq7hv7hcY5IvRoTNGoq6+MT01C/jILqoQ==}
-    dev: true
-
-  /@tanstack/react-query-devtools@5.17.10(@tanstack/react-query@5.17.10)(react@18.3.0-canary-c5b937576-20231219):
-    resolution: {integrity: sha512-bdH1eOTvXZj3nvdSTYMyAKSoKnoYtyV+YTuP6japifbtWlqEZvHWJ8KbazAt7rLVfyn/5OhtiHPelTU8DYWgrA==}
-    peerDependencies:
-      '@tanstack/react-query': ^5.17.10
-      react: ^18.0.0
-    dependencies:
-      '@tanstack/query-devtools': 5.17.7
-      '@tanstack/react-query': 5.17.10(react@18.3.0-canary-c5b937576-20231219)
-      react: 18.3.0-canary-c5b937576-20231219
-    dev: true
-
-  /@tanstack/react-query@5.17.10(react@18.3.0-canary-c5b937576-20231219):
-    resolution: {integrity: sha512-TNmJN7LkSLzmv01Jen3JbcvhXZyRhc/ETJNjssmmlyMB8IoNvicfgvDRX2gX3q1FTONq+mfsmWintwI+ejmEUw==}
-    peerDependencies:
-      react: ^18.0.0
-    dependencies:
-      '@tanstack/query-core': 5.17.10
-      react: 18.3.0-canary-c5b937576-20231219
-
   /@tanstack/react-router@1.4.3(react-dom@18.3.0-canary-c5b937576-20231219)(react@18.3.0-canary-c5b937576-20231219):
     resolution: {integrity: sha512-HRpTB5IGDfW+ZLTxRK7aTM3C8bxhvpP9Di6Y+wMqu6c2CxqPu7o31ynRdq4q7vlCUST8mQGUPNwbCOpf0iS7OA==}
     engines: {node: '>=12'}
@@ -5932,6 +5903,20 @@ packages:
       - react-dom
       - supports-color
     dev: true
+
+  /@tanstack/router-devtools@1.4.3(react-dom@18.3.0-canary-c5b937576-20231219)(react@18.3.0-canary-c5b937576-20231219):
+    resolution: {integrity: sha512-iumkNWte8M9NxyBkLuSdhxZm3LhvzHhy+3EMkpLYzgpYtiDISGQ/i/eQqMdiPPCHKL6e3tOIVT6Lcm4mPA9YWg==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+    dependencies:
+      '@babel/runtime': 7.23.8
+      '@tanstack/react-router': 1.4.3(react-dom@18.3.0-canary-c5b937576-20231219)(react@18.3.0-canary-c5b937576-20231219)
+      date-fns: 2.30.0
+      react: 18.3.0-canary-c5b937576-20231219
+      react-dom: 18.3.0-canary-c5b937576-20231219(react@18.3.0-canary-c5b937576-20231219)
+    dev: false
 
   /@tanstack/router-vite-plugin@1.4.3(react-dom@18.3.0-canary-c5b937576-20231219)(react@18.3.0-canary-c5b937576-20231219):
     resolution: {integrity: sha512-0OeS3XCEKsFSPvlYzFD1Hac6qZYLbKvUJUmRq2X85YaBkJpo8K2hp5y1/6kMNza+i3UsTRqqGEqwpKmqFxiUaQ==}
@@ -7233,6 +7218,13 @@ packages:
 
   /csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
+
+  /date-fns@2.30.0:
+    resolution: {integrity: sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==}
+    engines: {node: '>=0.11'}
+    dependencies:
+      '@babel/runtime': 7.23.8
+    dev: false
 
   /date-fns@3.2.0:
     resolution: {integrity: sha512-E4KWKavANzeuusPi0jUjpuI22SURAznGkx7eZV+4i6x2A+IZxAMcajgkvuDAU1bg40+xuhW1zRdVIIM/4khuIg==}
