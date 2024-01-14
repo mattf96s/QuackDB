@@ -1,0 +1,15 @@
+{
+  "name": "@vite-duckdb/functions",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "sst bind vitest",
+    "typecheck": "tsc -noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/aws-lambda": "^8.10.131",
+    "vitest": "^1.2.0",
+    "sst": "^2.39.5"
+  }
+}
