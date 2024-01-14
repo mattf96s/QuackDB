@@ -1,44 +1,27 @@
-import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import '@/styles/globals.css';
-import {
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-import Root from "@/routes/root";
-import ErrorPage from "@/lib/components/error-page";
+import { RouterProvider, Router } from '@tanstack/react-router'
+import { routeTree } from './routeTree.gen'
 
-const queryClient = new QueryClient()
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Root />,
-    errorElement: <ErrorPage />,
-  },
-]);
+// Set up a Router instance
+const router = new Router({
+  routeTree,
+  defaultPreload: 'intent',
+})
 
-function App() {
-  return (
-    <>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-        <ReactQueryDevtools
-          initialIsOpen={false}
-        />
-      </QueryClientProvider>
-    </>
-  )
+// Register things for typesafety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router
+  }
 }
 
+
+
 // Render our app!
-const rootElement = document.getElementById('root')!
+const rootElement = document.getElementById('app')!
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
-  root.render(<React.StrictMode><App /></React.StrictMode>)
+  root.render(<RouterProvider router={router} />)
 }

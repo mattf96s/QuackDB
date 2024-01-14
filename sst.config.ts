@@ -7,6 +7,7 @@ export default {
     return {
       name: "quackdb",
       region: "eu-west-1",
+      profile: 'exifbrowser'
     };
   },
   stacks(app) {
