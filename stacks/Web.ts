@@ -1,13 +1,8 @@
-import { StackContext, StaticSite, use } from "sst/constructs";
-import { DNS } from "./DNS";
+import { StackContext, StaticSite } from "sst/constructs";
 
-// ns-272.awsdns-34.com.
-// ns-1531.awsdns-63.org.
-// ns-797.awsdns-35.net.
-// ns-1537.awsdns-00.co.uk.
+const domainName = 'app.quackdb.com'
 
 export function Web({ stack, app }: StackContext) {
-  const dns = use(DNS);
 
   const web = new StaticSite(stack, "web", {
     path: "packages/web",
@@ -16,9 +11,8 @@ export function Web({ stack, app }: StackContext) {
     ...(app.stage === "production" ?
       {
         customDomain: {
-          domainName: dns.domain,
-          domainAlias: `www.${dns.domain}`,
-          hostedZone: dns.zone.zoneName,
+          domainName,
+          hostedZone: domainName
         },
       }
       : {}),
