@@ -18,16 +18,16 @@
     "remove": "sst remove",
     "console": "sst console",
     "typecheck": "tsc --noEmit",
-    "sso": "aws sso login --sso-session=sso-exifbrowser",
+    "sso": "aws sso login --sso-session=d-93675d34f6",
     "set-node-v": "pnpm env use --global 20",
-    "deploy-prod": "NODE_ENV=production sst deploy --stage prod --profile exifbrowser"
+    "deploy-prod": "NODE_ENV=production sst deploy --stage production --profile quackdb"
   },
   "devDependencies": {
-    "sst": "^2.39.5",
+    "sst": "2.39.7",
     "aws-cdk-lib": "2.110.1",
     "constructs": "10.3.0",
     "typescript": "^5.3.3",
-    "@tsconfig/node18": "^18.2.2"
+    "@tsconfig/node20": "^20.1.2"
   },
   "workspaces": [
     "packages/*",

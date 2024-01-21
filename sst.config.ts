@@ -1,13 +1,12 @@
 import { SSTConfig } from "sst";
 import { Web } from "./stacks/Web";
-import { DNS } from "./stacks/DNS";
 
 export default {
   config(_input) {
     return {
       name: "quackdb",
       region: "eu-west-1",
-      profile: 'exifbrowser'
+      profile: 'quackdb'
     };
   },
   stacks(app) {
@@ -18,6 +17,6 @@ export default {
       tracing: "disabled",
       runtime: "nodejs20.x",
     });
-    app.stack(DNS).stack(Web);
+    app.stack(Web);
   }
 } satisfies SSTConfig;

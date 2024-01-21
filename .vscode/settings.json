@@ -1,5 +1,87 @@
 {
   "search.exclude": {
-    "**/.sst": true
-  }
+    "**/.sst": true,
+    "**/.git": true,
+    "**/.github": true,
+    "**/.nuxt": true,
+    "**/.output": true,
+    "**/.pnpm": true,
+    "**/.vscode": true,
+    "**/.yarn": true,
+    "**/bower_components": true,
+    "**/dist/**": true,
+    "**/logs": true,
+    "**/node_modules": true,
+    "**/out/**": true,
+    "**/package-lock.json": true,
+    "**/pnpm-lock.yaml": true,
+    "**/tmp": true,
+    "**/yarn.lock": true
+  },
+  "files.associations": {
+    "*.css": "tailwindcss",
+    "*.postcss": "tailwindcss",
+  },
+  "diffEditor.ignoreTrimWhitespace": false, // https://github.com/cpojer/dotfiles/blob/main/vscode/User/settings.json
+  "editor.minimap.enabled": false,
+  "tailwindCSS.classAttributes": [
+    "class",
+    "className",
+    "ngClass",
+    "\\w+ClassName"
+  ],
+  "tailwindCSS.experimental.classRegex": [
+    "tv\\(([^)]*)\\)"
+  ],
+  "tailwindCSS.files.exclude": [
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/.hg/**",
+    "**/.svn/**"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.fixAll.eslint": "explicit",
+  },
+  "eslint.codeAction.showDocumentation": {
+    "enable": true,
+  },
+  "editor.inlineSuggest.enabled": true,
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "[markdown]": {
+    "editor.wordWrapColumn": 100,
+    "editor.unicodeHighlight.ambiguousCharacters": false,
+    "editor.unicodeHighlight.invisibleCharacters": false,
+    "editor.wordWrap": "bounded",
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.linkedEditing": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.formatOnSave": true,
+  "editor.wordWrapColumn": 100,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescript]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "[ignore]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "editor.cursorBlinking": "phase",
+  "editor.gotoLocation.multipleDefinitions": "goto"
 }
