@@ -2,5 +2,9 @@
   "hosted-zone:account=637423363008:domainName=app.quackdb.com:region=eu-west-1": {
     "Id": "/hostedzone/Z052591413LLUQLIGB8MP",
     "Name": "app.quackdb.com."
+  },
+  "hosted-zone:account=590183798491:domainName=app.quackdb.com:region=eu-west-1": {
+    "Id": "/hostedzone/Z09652392PZCG2H353HR8",
+    "Name": "app.quackdb.com."
   }
 }

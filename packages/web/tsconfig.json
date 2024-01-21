@@ -1,8 +1,4 @@
 {
-  "include": [
-    "src",
-    "sst-env.d.ts"
-  ],
   "compilerOptions": {
     "types": [
       "@types/wicg-file-system-access"
