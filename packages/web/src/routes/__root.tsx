@@ -1,24 +1,24 @@
-import { Outlet, RootRoute } from "@tanstack/react-router";
+import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import Sidebar from "@/components/sidebar";
 import { SidebarProvider, useSidebar } from "@/components/sidebar/context";
 import { memo, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import NotFound from "@/components/NotFound";
 
-export const Route = new RootRoute({
+export const Route = createRootRoute({
   component: RootComponent,
+  notFoundComponent: NotFoundComponent,
 });
 
-function RootComponent() {
+function Layout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider>
       <LayoutContainer>
         <Sidebar />
         <main className="h-full w-full">
           <div className="flex h-full flex-col">
-            <ContentShell>
-              <Outlet />
-            </ContentShell>
+            <ContentShell>{children}</ContentShell>
           </div>
         </main>
 
@@ -26,6 +26,22 @@ function RootComponent() {
         <TanStackRouterDevtools position="bottom-right" />
       </LayoutContainer>
     </SidebarProvider>
+  );
+}
+
+function RootComponent() {
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
+  );
+}
+
+function NotFoundComponent() {
+  return (
+    <Layout>
+      <NotFound />
+    </Layout>
   );
 }
 

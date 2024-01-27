@@ -22,8 +22,9 @@ import {
 import { cn } from "@/lib/utils";
 import { formatBytes } from "@/lib/utils/inflect";
 import { CheckCircledIcon } from "@radix-ui/react-icons";
-import { Link } from "@tanstack/react-router";
+import { Link, useMatchRoute } from "@tanstack/react-router";
 import { useFileTree, type TreeNode, type TreeNodeData } from "../../context";
+import useDelete from "./hooks/useDelete";
 
 type UseOnCopyProps = {
   timeout?: number;
@@ -102,6 +103,7 @@ function ContextMenuWrapper(props: ContextWrapperProps) {
         <ContextMenuSeparator />
         <DownloadContextItem node={node} />
         <DuplicateContextItem node={node} />
+        <DeleteContextItem node={node} />
       </ContextMenuContent>
     </ContextMenu>
   );
@@ -140,6 +142,34 @@ function DuplicateContextItem(props: ContextItemProps) {
   );
 }
 
+function DeleteContextItem(props: ContextItemProps) {
+  const { onDelete } = useDelete();
+
+  useHotkeys(
+    "ctrl+d",
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onDelete(props.node.name);
+    },
+    [onDelete],
+  );
+
+  return (
+    <ContextMenuItem
+      onSelect={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onDelete(props.node.name);
+      }}
+      inset
+    >
+      Delete
+      <ContextMenuShortcut>ctrl + D</ContextMenuShortcut>
+    </ContextMenuItem>
+  );
+}
+
 /**
  * Download file
  * Includes hotkey support (cmd+s).
@@ -171,14 +201,22 @@ type ContentsProps = {
 
 const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
   function Contents(props, ref) {
+    const matchRoot = useMatchRoute();
     const { dispatch, state } = useFileTree();
     const { node } = props;
     const lastModified = new Date(node.data.lastModified);
 
+    const isMatched = matchRoot({
+      from: "/files/$fileId",
+      params: {
+        fileId: encodeURIComponent(node.id),
+      },
+    });
+
     const [isPending, startTransition] = useTransition();
 
     const isSelected = state.selected?.id === node.id;
-    const isActive = isSelected || isPending;
+    const isActive = !!isMatched || isSelected || isPending;
 
     const safeId = encodeURIComponent(node.id);
 
@@ -188,9 +226,9 @@ const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
     return (
       <Link
         key={node.id}
-        className="flex h-[84px] max-h-[84px] w-full px-4 @container" // NB. Don't use flex gap in the container above as it messes up scrolling. Rather use padding on the button. Set the estimated size in the virtualizer to the same height. Use max-height to improve scroll performance.
-        // @ts-ignore
-        to={{ to: "/files/$fileId", params: { fileId: `/files/${safeId}` } }}
+        className="flex h-[84px] max-h-[84px] w-full px-4 py-1 @container" // NB. Don't use flex gap in the container above as it messes up scrolling. Rather use padding on the button. Set the estimated size in the virtualizer to the same height. Use max-height to improve scroll performance.
+        to={`/files/$fileId`}
+        params={{ fileId: safeId }}
       >
         <ContextMenuWrapper
           key={node.id}

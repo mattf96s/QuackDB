@@ -53,7 +53,6 @@ const useDuplicateWorker = () => {
                   navigate({
                     to: "/files/$fileId",
                     params: { fileId: fileHandle.name },
-                    state: { fileHandle },
                   });
                 },
               },
@@ -89,7 +88,7 @@ const useDuplicateWorker = () => {
     };
 
     const worker = new Worker(
-      new URL("/workers/duplicate.js", import.meta.url),
+      new URL("/workers/duplicate.ts", import.meta.url),
       {
         type: "module",
       },

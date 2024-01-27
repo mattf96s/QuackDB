@@ -164,9 +164,15 @@ const useAddFilesHandler = () => {
       const fileHandles = await window.showOpenFilePicker({
         types: [
           {
-            description: "Images",
+            description: "Datasets",
             accept: {
-              "image/*": [".png", ".gif", ".jpeg", ".jpg"],
+              "application/octet-stream": [".parquet"],
+              "csv/*": [".csv"],
+              "json/*": [".json"],
+              "text/*": [".txt"],
+              "application/vnd.ms-excel": [".xls"],
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                [".xlsx"],
             },
           },
         ],
