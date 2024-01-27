@@ -11,12 +11,12 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { FileRoute, Outlet } from "@tanstack/react-router";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { useEffect, useState } from "react";
 import { useSpinDelay } from "spin-delay";
 
-export const Route = new FileRoute("/files").createRoute({
+export const Route = createFileRoute("/files")({
   component: FileExplorer,
 });
 
@@ -129,7 +129,7 @@ function TreeView() {
   }, []);
 
   return (
-    <ScrollArea className="flex h-[calc(100vh-64px)] flex-col pt-2">
+    <ScrollArea className="flex h-[calc(100vh-64px)] flex-col py-4">
       {state.tree.map((node) => (
         <FileListItem
           key={node.id}

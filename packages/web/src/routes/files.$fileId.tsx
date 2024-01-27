@@ -1,9 +1,10 @@
-import { FileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = new FileRoute("/files/$fileId").createRoute({
+export const Route = createFileRoute("/files/$fileId")({
   component: FileExplorer,
   loader: async ({ params }) => {
     const { fileId } = params;
+    console.log("fileId: ", fileId);
     const root = await navigator.storage.getDirectory();
     const file = await root.getFileHandle(fileId, { create: false });
 

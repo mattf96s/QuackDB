@@ -1,5 +1,4 @@
 import { Separator } from "@/components/ui/separator";
-import { FileRoute } from "@tanstack/react-router";
 import { CounterClockwiseClockIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,10 +17,11 @@ import {
 } from "@/components/playground";
 import PresetActions from "@/components/playground/preset-action";
 import type { Preset } from "@/components/playground/types";
+import { createFileRoute } from "@tanstack/react-router";
 
 const presets: Preset[] = [];
 
-export const Route = new FileRoute("/").createRoute({
+export const Route = createFileRoute("/")({
   component: Playground,
 });
 

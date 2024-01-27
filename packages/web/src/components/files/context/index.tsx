@@ -6,7 +6,6 @@ import {
   useEffect,
   useMemo,
   useReducer,
-  useState,
 } from "react";
 import { toast } from "sonner";
 import { type GetDirectoryFilesWorker } from "workers/get-directory-files";
@@ -213,89 +212,6 @@ function FileTreeProvider(props: FileTreeProviderProps) {
       worker?.terminate();
     };
   }, [storedWorker]);
-
-  // useEffect(() => {
-  // 	//if (workerRef.current) return
-
-  // 	const handleMessage = (ev: MessageEvent) => {
-  // 		const { data } = ev
-  // 		const type = data?.type
-
-  // 		if (!type) return
-
-  // 		switch (type) {
-  // 			case 'get-directory-tree-started': {
-  // 				dispatch({
-  // 					type: 'SET_STATUS',
-  // 					payload: {
-  // 						status: 'loading',
-  // 					},
-  // 				})
-  // 				break
-  // 			}
-  // 			case 'get-directory-tree-complete': {
-  // 				dispatch({
-  // 					type: 'SET_STATUS',
-  // 					payload: {
-  // 						status: 'idle',
-  // 					},
-  // 				})
-  // 				const { payload } = data
-  // 				const tree = payload?.tree
-
-  // 				dispatch({
-  // 					type: 'SET_TREE_STRUCTURE',
-  // 					payload: {
-  // 						tree: tree,
-  // 					},
-  // 				})
-  // 				break
-  // 			}
-  // 			case 'file-tree-error': {
-  // 				dispatch({
-  // 					type: 'SET_STATUS',
-  // 					payload: {
-  // 						status: 'idle',
-  // 					},
-  // 				})
-  // 				const { payload } = data
-  // 				const error = payload?.error
-  // 				if (error) {
-  // 					toast.warning('Error', {
-  // 						description: error,
-  // 					})
-  // 				}
-  // 				break
-  // 			}
-  // 			case 'aborted': {
-  // 				dispatch({
-  // 					type: 'SET_STATUS',
-  // 					payload: {
-  // 						status: 'idle',
-  // 					},
-  // 				})
-  // 				break
-  // 			}
-  // 			default:
-  // 				break
-  // 		}
-  // 	}
-
-  // 	const worker = new Worker('/workers/get-directory-files.js', {
-  // 		type: 'module',
-  // 	})
-
-  // 	worker.addEventListener('message', handleMessage)
-
-  // 	const wrapper = wrap<FileTreeWorker>(worker)
-  // 	wrapperRef.current = wrapper
-
-  // 	return () => {
-  // 		wrapper[releaseProxy]()
-  // 		worker.removeEventListener('message', handleMessage)
-  // 		worker.terminate()
-  // 	}
-  // }, [])
 
   const onRefreshFileTree = useCallback(async () => {
     if (!storedWorker) {
