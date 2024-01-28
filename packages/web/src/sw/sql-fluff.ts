@@ -9,7 +9,7 @@ async function loadPyodideAndPackages() {
     await self.pyodide.loadPackage(["numpy", "pytz"]);
 }
 
-let pyodideReadyPromise = loadPyodideAndPackages();
+const pyodideReadyPromise = loadPyodideAndPackages();
 
 self.onmessage = async (event) => {
     // make sure loading is done
@@ -23,7 +23,7 @@ self.onmessage = async (event) => {
     // Now is the easy part, the one that is similar to working in the main thread:
     try {
         await self.pyodide.loadPackagesFromImports(python);
-        let results = await self.pyodide.runPythonAsync(python);
+        const results = await self.pyodide.runPythonAsync(python);
         self.postMessage({ results, id });
     } catch (error) {
         self.postMessage({ error: error.message, id });

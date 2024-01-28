@@ -1,5 +1,5 @@
-import type { TreeNode, TreeNodeData } from "@/components/files/context";
 import * as Comlink from "comlink";
+import  { type TreeNode, type TreeNodeData } from "@/components/files/context";
 
 type FileWithRelativePath = File & {
   relativePath: string;
@@ -19,7 +19,7 @@ async function getDirectoryFilesWorker(startingDirectory?: string) {
   let count = 0;
 
   try {
-    let directoryHandle = await navigator.storage.getDirectory();
+    const directoryHandle = await navigator.storage.getDirectory();
     let startingHandle = directoryHandle;
 
     if (startingDirectory) {

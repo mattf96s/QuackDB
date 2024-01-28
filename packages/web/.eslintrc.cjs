@@ -5,28 +5,35 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:react-hooks/recommended',
+    "plugin:react-hooks/recommended",
+    "plugin:react/recommended",
     "prettier",
-    "plugin:tailwindcss/recommended"
+    "plugin:tailwindcss/recommended",
+    'plugin:import/recommended'
   ],
   ignorePatterns: ['dist', '.eslintrc.cjs'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
   },
-  plugins: ['tailwindcss', 'react-refresh', 'unused-imports'],
-  rules: {
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true },
-    ],
-  },
+  overrides: [
+    {
+      files: ['*.ts', '*.tsx', '*.js'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        project: ['./tsconfig.json'],
+        tsconfigRootDir: __dirname,
+      },
+    },
+  ],
+  plugins: ['react-refresh', 'unused-imports'],
   settings: {
     react: {
-      version: "detect", "import/resolver": {
-        typescript: {},
-      },
+      version: "detect"
     },
     "tailwindcss": {
       "callees": ["cn", "cva"],
@@ -34,6 +41,10 @@ module.exports = {
     },
   },
   rules: {
+    'react-refresh/only-export-components': [
+      'warn',
+      { allowConstantExport: true },
+    ],
     "react/display-name": "off",
     "no-unused-vars": "off",
     "react/react-in-jsx-scope": "off",
@@ -49,6 +60,10 @@ module.exports = {
     ],
     "import/no-duplicates": ["warn", { "prefer-inline": true }],
     "import/consistent-type-specifier-style": ["warn", "prefer-inline"],
+    "unused-imports/no-unused-vars": [
+      "warn",
+      { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
+    ],
     "import/order": [
       "warn",
       {

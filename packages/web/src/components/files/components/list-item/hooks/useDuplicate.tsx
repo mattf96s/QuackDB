@@ -1,15 +1,23 @@
-import { useFileTree } from "@/components/files/context";
 import { useNavigate } from "@tanstack/react-router";
-import { type Remote, releaseProxy, wrap } from "comlink";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type Remote, wrap } from "comlink";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { type DuplicateFileWorker } from "workers/duplicate";
+import { useFileTree } from "@/components/files/context";
+import { type DuplicateFileWorker } from "@/workers/duplicate";
 
 const useDuplicateWorker = () => {
   const wrapperRef = useRef<Remote<DuplicateFileWorker> | null>(null);
   // initializing is setting up the worker; loading is when the worker is doing something; idle is when the worker is ready to do something
   const [status, setStatus] = useState<"initializing" | "loading" | "idle">(
     "initializing",
+  );
+
+  const storedWorker = useMemo(
+    () =>
+      new Worker(new URL("@/workers/duplicate.ts", import.meta.url).href, {
+        type: "module",
+      }),
+    [],
   );
 
   const { dispatch, onRefreshFileTree } = useFileTree();
@@ -87,18 +95,9 @@ const useDuplicateWorker = () => {
       }
     };
 
-    const worker = new Worker(
-      new URL("/workers/duplicate.ts", import.meta.url),
-      {
-        type: "module",
-      },
-    );
+    const worker = storedWorker;
 
     worker.addEventListener("message", handleWorkerCallback);
-
-    // comlink
-    const wrapper = wrap<DuplicateFileWorker>(worker);
-    wrapperRef.current = wrapper;
 
     setStatus("idle");
 
@@ -107,18 +106,18 @@ const useDuplicateWorker = () => {
         clearTimeout(timerId);
       }
 
-      wrapper[releaseProxy]();
       worker.removeEventListener("message", handleWorkerCallback);
       worker.terminate();
     };
   }, [dispatch, navigate, onRefreshFileTree]);
 
   const onDuplicate = useCallback(async (handle: FileSystemFileHandle) => {
-    if (!wrapperRef.current) {
-      console.log("wrapperRef.current is null");
+    if (!storedWorker) {
+      console.error("addFilesWorkerFn failure: worker is undefined");
       return;
     }
-    await wrapperRef.current(handle);
+    const wrapper = wrap<DuplicateFileWorker>(storedWorker);
+    await wrapper(handle);
   }, []);
 
   return {

@@ -70,7 +70,7 @@ const defaultDesktopLayout = [30, 70];
  * Ensure it is client side only so we can use matchMedia.
  */
 function ResizeableGroupContainer() {
-  const [defaultLayout, setDefaultLayout] = useState<number[]>([
+  const [defaultLayout, _setDefaultLayout] = useState<number[]>([
     ...defaultDesktopLayout,
   ]);
   const isSmallerScreen = useMediaQuery("(max-width: 640px)");

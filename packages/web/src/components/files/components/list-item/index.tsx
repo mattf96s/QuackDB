@@ -1,3 +1,5 @@
+import { CheckCircledIcon } from "@radix-ui/react-icons";
+import { Link, useMatchRoute } from "@tanstack/react-router";
 import { format } from "date-fns";
 import {
   forwardRef,
@@ -7,6 +9,8 @@ import {
   useTransition,
 } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useFileTree, type TreeNode, type TreeNodeData } from "../../context";
+import useDelete from "./hooks/useDelete";
 import { useDownloadFile } from "./hooks/useDownload";
 import useDuplicateWorker from "./hooks/useDuplicate";
 import { Badge } from "@/components/ui/badge";
@@ -21,10 +25,6 @@ import {
 } from "@/components/ui/context-menu";
 import { cn } from "@/lib/utils";
 import { formatBytes } from "@/lib/utils/inflect";
-import { CheckCircledIcon } from "@radix-ui/react-icons";
-import { Link, useMatchRoute } from "@tanstack/react-router";
-import { useFileTree, type TreeNode, type TreeNodeData } from "../../context";
-import useDelete from "./hooks/useDelete";
 
 type UseOnCopyProps = {
   timeout?: number;
@@ -226,7 +226,7 @@ const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
     return (
       <Link
         key={node.id}
-        className="flex h-[84px] max-h-[84px] w-full px-4 py-1 @container" // NB. Don't use flex gap in the container above as it messes up scrolling. Rather use padding on the button. Set the estimated size in the virtualizer to the same height. Use max-height to improve scroll performance.
+        className="@container flex h-[84px] max-h-[84px] w-full px-4 py-1" // NB. Don't use flex gap in the container above as it messes up scrolling. Rather use padding on the button. Set the estimated size in the virtualizer to the same height. Use max-height to improve scroll performance.
         to={`/files/$fileId`}
         params={{ fileId: safeId }}
       >
@@ -236,10 +236,10 @@ const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
         >
           <div
             className={cn(
-              "flex h-[76px] w-full flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm hover:bg-accent",
+              "hover:bg-accent flex h-[76px] w-full flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm",
               isActive && "bg-muted",
               // target the open state of the context menu
-              "date-[state=open]:ring-2 data-[state=open]:outline data-[state=open]:ring-ring data-[state=open]:ring-offset-2",
+              "date-[state=open]:ring-2 data-[state=open]:ring-ring data-[state=open]:outline data-[state=open]:ring-offset-2",
             )}
           >
             <div className="min-w-0 max-w-full">
@@ -249,7 +249,7 @@ const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
                 </p>
                 <Badge
                   className={cn(
-                    "hidden py-0 text-center text-xs font-light @sm:inline-block",
+                    "@sm:inline-block hidden py-0 text-center text-xs font-light",
                     filesize === 0 && "bg-red-500 text-white hover:bg-red-600",
                   )}
                 >
@@ -258,7 +258,7 @@ const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
               </div>
               <div
                 className={cn(
-                  "mt-1 flex items-center gap-x-2 text-xs leading-5 text-muted-foreground",
+                  "text-muted-foreground mt-1 flex items-center gap-x-2 text-xs leading-5",
                   isActive && "text-foreground",
                 )}
               >
@@ -270,7 +270,7 @@ const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
                 </p>
                 <svg
                   viewBox="0 0 2 2"
-                  className="h-0.5 w-0.5 fill-current"
+                  className="size-0.5 fill-current"
                 >
                   <circle
                     cx={1}

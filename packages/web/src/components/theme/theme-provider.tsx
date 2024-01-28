@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Theme, ThemeProviderContext, ThemeProviderProps } from "./context"
+import { type Theme, ThemeProviderContext, type ThemeProviderProps } from "./context"
 
 export default function ThemeProvider({
     children,

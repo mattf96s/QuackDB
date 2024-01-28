@@ -1,8 +1,6 @@
-import MonacoEditor from "@monaco-editor/react";
-import type { EditorProps as MonacoEditorProps, OnMount } from "@monaco-editor/react";
+import MonacoEditor, {type  EditorProps as MonacoEditorProps,type  OnMount } from "@monaco-editor/react";
+import  { type editor , KeyMod, KeyCode } from 'monaco-editor'
 import { forwardRef, useImperativeHandle, useRef } from "react";
-import type { editor } from 'monaco-editor'
-import { KeyMod, KeyCode } from 'monaco-editor'
 type EditorProps = Exclude<MonacoEditorProps, 'value'> & { value: string };
 
 type ForwardedRef = {
@@ -69,7 +67,7 @@ const Editor = forwardRef<ForwardedRef, EditorProps>((props, ref) => {
                     showWords: true,
                 },
                 bracketPairColorization: { enabled: true },
-                matchBrackets: 'always' as 'always',
+                matchBrackets: 'always' as const,
                 ...{ ...props.options }
 
             }}
