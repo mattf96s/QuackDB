@@ -12,7 +12,7 @@ async function createFileHandle(
   fileHandle: FileSystemFileHandle,
   options?: Pick<DuplicateFileOptions, "suggestedName">,
 ) {
-  let filename = options?.suggestedName || fileHandle.name;
+  const filename = options?.suggestedName || fileHandle.name;
   // Ensure filename doesn't contain file extension
   const parts = filename.split(".");
 

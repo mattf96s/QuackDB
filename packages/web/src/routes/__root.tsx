@@ -1,14 +1,19 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { memo, type ReactNode } from "react";
+import NotFound from "@/components/NotFound";
 import Sidebar from "@/components/sidebar";
 import { SidebarProvider, useSidebar } from "@/components/sidebar/context";
-import { memo, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import NotFound from "@/components/NotFound";
 
 export const Route = createRootRoute({
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
+  loader: async () => {
+    console.log("\n", "META: ", import.meta);
+    console.log("ENV: ", import.meta.env);
+    return {};
+  },
 });
 
 function Layout({ children }: { children: ReactNode }) {
@@ -16,7 +21,7 @@ function Layout({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <LayoutContainer>
         <Sidebar />
-        <main className="h-full w-full">
+        <main className="size-full">
           <div className="flex h-full flex-col">
             <ContentShell>{children}</ContentShell>
           </div>

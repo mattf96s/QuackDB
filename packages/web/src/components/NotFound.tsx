@@ -1,5 +1,5 @@
-import spaceman from "@/assets/spaceman.webp";
 import { Link } from "@tanstack/react-router";
+import spaceman from "@/assets/spaceman.webp";
 
 export default function NotFound() {
   return (
@@ -29,7 +29,7 @@ export default function NotFound() {
         <img
           src={spaceman}
           alt=""
-          className="absolute inset-0 h-full w-full object-contain"
+          className="absolute inset-0 size-full object-contain"
         />
       </div>
     </div>

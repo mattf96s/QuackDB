@@ -7,10 +7,10 @@ import {
   useTransition,
 } from "react";
 import { toast } from "sonner";
-import { type AddFilesHandlesWorker } from "workers/add-files-worker";
 
-import { inflectedFiles } from "@/lib/utils/inflect";
 import { useFileTree } from "../context";
+import { inflectedFiles } from "@/lib/utils/inflect";
+import { type AddFilesHandlesWorker } from "@/workers/add-files-worker";
 
 const useAddFiles = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,9 +26,12 @@ const useAddFiles = () => {
 
   const storedWorker = useMemo(() => {
     if (!isClient) return null;
-    return new Worker("/workers/add-files-worker.ts", {
-      type: "module",
-    });
+    return new Worker(
+      new URL("@/workers/add-files-worker.ts", import.meta.url).href,
+      {
+        type: "module",
+      },
+    );
   }, [isClient]);
 
   useEffect(() => {
@@ -42,7 +45,12 @@ const useAddFiles = () => {
 
       if (!type) return;
 
+      console.log("useAddFiles: ", type);
+
       switch (type) {
+        case "RAW": {
+          break;
+        }
         case "start": {
           clearTimeout(timerId);
           setIsLoading(true);
@@ -180,7 +188,7 @@ const useAddFilesHandler = () => {
         multiple: true,
       });
 
-      props.addFilesWorkerFn(fileHandles);
+      await props.addFilesWorkerFn(fileHandles);
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") return; // User cancelled
       console.error("Error in onAddFilesHandler: ", e);

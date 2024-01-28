@@ -1,20 +1,18 @@
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
-  FileIcon,
   ChevronRightIcon,
-  InfoCircledIcon,
-  HamburgerMenuIcon as Menu,
   DashboardIcon,
   FileTextIcon,
+  HamburgerMenuIcon as Menu,
 } from "@radix-ui/react-icons";
+import { Link, useMatchRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { StyledLink } from "../ui/link";
 import { ScrollArea } from "../ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { useSidebar } from "./context";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Link, useMatchRoute } from "@tanstack/react-router";
 
 const navigation = [
   {
@@ -54,11 +52,11 @@ function DesktopSidebar() {
         isOpen && "lg:w-72",
       )}
     >
-      <div className="flex flex-grow flex-col overflow-y-auto px-6 lg:border-r">
+      <div className="flex grow flex-col overflow-y-auto px-6 lg:border-r">
         <div className="flex h-16 w-full shrink-0 items-center justify-between">
           {isOpen && (
             <Link
-              href="/"
+              to="/"
               className="text-xl font-medium -tracking-wide"
             >
               QuackDB
@@ -114,7 +112,7 @@ function NavItem({
   return (
     <li key={href}>
       <StyledLink
-        key={href}
+        params={{}}
         to={href}
         variant="ghost"
         className={cn(
@@ -125,7 +123,7 @@ function NavItem({
         )}
       >
         <span className="inline-flex items-center gap-x-2">
-          <Icon className={cn("h-5 w-5 text-inherit", isOpen && "mr-3")} />
+          <Icon className={cn("size-5 text-inherit", isOpen && "mr-3")} />
           {isOpen ? name : ""}
         </span>
       </StyledLink>
@@ -160,7 +158,7 @@ function MobileMenu() {
             className="flex items-center"
             onClick={() => setOpen(!open)}
           >
-            <Menu className="mr-2 h-4 w-4" />
+            <Menu className="mr-2 size-4" />
             <span className="font-bold">BioDuck</span>
           </Button>
           <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
@@ -191,7 +189,7 @@ function MobileNavItem({
   const match = matchRoute({ from: href });
   return (
     <StyledLink
-      key={href}
+      params={{}}
       href={href}
       variant="ghost"
       className={cn(
@@ -202,7 +200,7 @@ function MobileNavItem({
       )}
     >
       <span className="inline-flex items-center gap-x-2">
-        <Icon className={cn("h-5 w-5 text-inherit", isOpen && "mr-3")} />
+        <Icon className={cn("size-5 text-inherit", isOpen && "mr-3")} />
 
         {isOpen ? name : ""}
       </span>

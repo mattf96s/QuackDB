@@ -1,14 +1,5 @@
-import { Separator } from "@/components/ui/separator";
 import { CounterClockwiseClockIcon } from "@radix-ui/react-icons";
-import { Button } from "@/components/ui/button";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   CodeViewer,
   PresetSave,
@@ -16,8 +7,17 @@ import {
   PresetShare,
 } from "@/components/playground";
 import PresetActions from "@/components/playground/preset-action";
-import type { Preset } from "@/components/playground/types";
-import { createFileRoute } from "@tanstack/react-router";
+import  { type Preset } from "@/components/playground/types";
+import { Button } from "@/components/ui/button";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 
 const presets: Preset[] = [];
 
@@ -72,7 +72,7 @@ function Playground() {
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="none"
-                      className="h-5 w-5"
+                      className="size-5"
                     >
                       <rect
                         x="4"
@@ -138,7 +138,7 @@ function Playground() {
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="none"
-                      className="h-5 w-5"
+                      className="size-5"
                     >
                       <path
                         fillRule="evenodd"
@@ -178,7 +178,7 @@ function Playground() {
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="none"
-                      className="h-5 w-5"
+                      className="size-5"
                     >
                       <rect
                         x="4"
@@ -247,7 +247,7 @@ function Playground() {
                     <Button>Submit</Button>
                     <Button variant="secondary">
                       <span className="sr-only">Show history</span>
-                      <CounterClockwiseClockIcon className="h-4 w-4" />
+                      <CounterClockwiseClockIcon className="size-4" />
                     </Button>
                   </div>
                 </div>
@@ -262,13 +262,13 @@ function Playground() {
                       placeholder="We're writing to [inset]. Congrats from OpenAI!"
                       className="h-full min-h-[300px] lg:min-h-[700px] xl:min-h-[700px]"
                     />
-                    <div className="rounded-md border bg-muted"></div>
+                    <div className="bg-muted rounded-md border"></div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button>Submit</Button>
                     <Button variant="secondary">
                       <span className="sr-only">Show history</span>
-                      <CounterClockwiseClockIcon className="h-4 w-4" />
+                      <CounterClockwiseClockIcon className="size-4" />
                     </Button>
                   </div>
                 </div>
@@ -296,13 +296,13 @@ function Playground() {
                         />
                       </div>
                     </div>
-                    <div className="mt-[21px] min-h-[400px] rounded-md border bg-muted lg:min-h-[700px]" />
+                    <div className="bg-muted mt-[21px] min-h-[400px] rounded-md border lg:min-h-[700px]" />
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button>Submit</Button>
                     <Button variant="secondary">
                       <span className="sr-only">Show history</span>
-                      <CounterClockwiseClockIcon className="h-4 w-4" />
+                      <CounterClockwiseClockIcon className="size-4" />
                     </Button>
                   </div>
                 </div>

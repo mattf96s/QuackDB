@@ -8,7 +8,7 @@ import {
   useReducer,
 } from "react";
 import { toast } from "sonner";
-import { type GetDirectoryFilesWorker } from "workers/get-directory-files";
+import { type GetDirectoryFilesWorker } from "@/workers/get-directory-files";
 
 export type TreeNode<T> = {
   id: string;
@@ -133,9 +133,12 @@ function FileTreeProvider(props: FileTreeProviderProps) {
 
   const storedWorker = useMemo(
     () =>
-      new Worker("/workers/get-directory-files.ts", {
-        type: "module",
-      }),
+      new Worker(
+        new URL("@/workers/get-directory-files.ts", import.meta.url).href,
+        {
+          type: "module",
+        },
+      ),
     [],
   );
 
@@ -145,6 +148,8 @@ function FileTreeProvider(props: FileTreeProviderProps) {
       const type = data?.type;
 
       if (!type) return;
+
+      console.log("FileTreeProvider: ", type);
 
       switch (type) {
         case "start": {
@@ -203,7 +208,7 @@ function FileTreeProvider(props: FileTreeProviderProps) {
       }
     };
 
-    let worker = storedWorker;
+    const worker = storedWorker;
 
     worker?.addEventListener("message", handleMessage);
 
@@ -211,7 +216,7 @@ function FileTreeProvider(props: FileTreeProviderProps) {
       worker?.removeEventListener("message", handleMessage);
       worker?.terminate();
     };
-  }, [storedWorker]);
+  }, []);
 
   const onRefreshFileTree = useCallback(async () => {
     if (!storedWorker) {

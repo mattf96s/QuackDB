@@ -1,6 +1,6 @@
-import { useFileTree } from "@/components/files/context";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { useFileTree } from "@/components/files/context";
 
 const useDelete = () => {
   const { onRefreshFileTree } = useFileTree();

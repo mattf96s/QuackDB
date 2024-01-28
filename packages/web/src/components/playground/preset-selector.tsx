@@ -1,10 +1,11 @@
 "use client"
 
-import * as React from "react"
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
-import type { PopoverProps } from "@radix-ui/react-popover"
+import  { type PopoverProps } from "@radix-ui/react-popover"
 
-import { cn } from "@/lib/utils"
+import { useNavigate } from "@tanstack/react-router"
+import * as React from "react"
+import  { type Preset } from "./types"
 import { Button } from "@/components/ui/button"
 import {
     Command,
@@ -18,8 +19,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import type { Preset } from "./types"
-import { useNavigate, useRouter } from "@tanstack/react-router"
+import { cn } from "@/lib/utils"
 
 
 interface PresetSelectorProps extends PopoverProps {
@@ -41,7 +41,7 @@ export default function PresetSelector({ presets, ...props }: PresetSelectorProp
                     className="flex-1 justify-between md:max-w-[200px] lg:max-w-[300px]"
                 >
                     {selectedPreset ? selectedPreset.name : "Load a preset..."}
-                    <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <CaretSortIcon className="ml-2 size-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0">
@@ -60,7 +60,7 @@ export default function PresetSelector({ presets, ...props }: PresetSelectorProp
                                 {preset.name}
                                 <CheckIcon
                                     className={cn(
-                                        "ml-auto h-4 w-4",
+                                        "ml-auto size-4",
                                         selectedPreset?.id === preset.id
                                             ? "opacity-100"
                                             : "opacity-0"

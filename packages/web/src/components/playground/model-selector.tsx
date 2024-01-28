@@ -1,11 +1,10 @@
 "use client"
 
-import * as React from "react"
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons"
-import type { PopoverProps } from "@radix-ui/react-popover"
+import  { type PopoverProps } from "@radix-ui/react-popover"
+import * as React from "react"
 
-import { cn } from "@/lib/utils"
-import { useMutationObserver } from "@/hooks/use-mutation-selector"
+import  { type Model, type ModelType } from "./types"
 import { Button } from "@/components/ui/button"
 import {
     Command,
@@ -26,7 +25,8 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import type { Model, ModelType } from "./types"
+import { useMutationObserver } from "@/hooks/use-mutation-selector"
+import { cn } from "@/lib/utils"
 
 
 interface ModelSelectorProps extends PopoverProps {
@@ -64,7 +64,7 @@ export default function ModelSelector({ models, types, ...props }: ModelSelector
                         className="w-full justify-between"
                     >
                         {selectedModel ? selectedModel.name : "Select a model..."}
-                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <CaretSortIcon className="ml-2 size-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-[250px] p-0">
@@ -77,7 +77,7 @@ export default function ModelSelector({ models, types, ...props }: ModelSelector
                         >
                             <div className="grid gap-2">
                                 <h4 className="font-medium leading-none">{peekedModel.name}</h4>
-                                <div className="text-sm text-muted-foreground">
+                                <div className="text-muted-foreground text-sm">
                                     {peekedModel.description}
                                 </div>
                                 {peekedModel.strengths ? (
@@ -85,7 +85,7 @@ export default function ModelSelector({ models, types, ...props }: ModelSelector
                                         <h5 className="text-sm font-medium leading-none">
                                             Strengths
                                         </h5>
-                                        <ul className="text-sm text-muted-foreground">
+                                        <ul className="text-muted-foreground text-sm">
                                             {peekedModel.strengths}
                                         </ul>
                                     </div>
@@ -154,7 +154,7 @@ function ModelItem({ model, isSelected, onSelect, onPeek }: ModelItemProps) {
             {model.name}
             <CheckIcon
                 className={cn(
-                    "ml-auto h-4 w-4",
+                    "ml-auto size-4",
                     isSelected ? "opacity-100" : "opacity-0"
                 )}
             />

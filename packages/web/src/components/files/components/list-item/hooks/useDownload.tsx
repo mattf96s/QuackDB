@@ -1,7 +1,7 @@
-import type { TreeNode, TreeNodeData } from "@/components/files/context";
 import { useCallback, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { toast } from "sonner";
+import  { type TreeNode, type TreeNodeData } from "@/components/files/context";
 
 type UseDownloadFileProps = {
   node: TreeNode<TreeNodeData>;

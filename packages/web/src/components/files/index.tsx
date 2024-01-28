@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
 import { useFileTree } from "./context";
 import { useAddFilesHandler } from "./hooks/useOnAddFile";
+import { cn } from "@/lib/utils";
 
 export function FileTreeDropContainer(props: { children: React.ReactNode }) {
   const { dispatch, state } = useFileTree();
@@ -41,7 +41,7 @@ export function FileTreeDropContainer(props: { children: React.ReactNode }) {
   return (
     <div
       className={cn(
-        "flex-1 flex-grow",
+        "flex-1 grow",
         state.isDragging &&
           "max-h-full cursor-pointer rounded-xl outline-dashed -outline-offset-8 outline-blue-500",
       )}
