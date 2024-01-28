@@ -7,8 +7,8 @@ import {
   PresetShare,
 } from "@/components/playground";
 import PresetActions from "@/components/playground/preset-action";
-import  { type Preset } from "@/components/playground/types";
-import { Button } from "@/components/ui/button";
+import { type Preset } from "@/components/playground/types";
+import { Button } from "@/components/ui/button/button";
 import {
   HoverCard,
   HoverCardContent,
@@ -262,7 +262,7 @@ function Playground() {
                       placeholder="We're writing to [inset]. Congrats from OpenAI!"
                       className="h-full min-h-[300px] lg:min-h-[700px] xl:min-h-[700px]"
                     />
-                    <div className="bg-muted rounded-md border"></div>
+                    <div className="rounded-md border bg-muted"></div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button>Submit</Button>
@@ -296,7 +296,7 @@ function Playground() {
                         />
                       </div>
                     </div>
-                    <div className="bg-muted mt-[21px] min-h-[400px] rounded-md border lg:min-h-[700px]" />
+                    <div className="mt-[21px] min-h-[400px] rounded-md border bg-muted lg:min-h-[700px]" />
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button>Submit</Button>

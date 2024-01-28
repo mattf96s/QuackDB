@@ -1,29 +1,30 @@
-import { Outlet, createRootRoute } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { memo, type ReactNode } from "react";
+import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import NotFound from "@/components/NotFound";
 import Sidebar from "@/components/sidebar";
-import { SidebarProvider, useSidebar } from "@/components/sidebar/context";
+import { SidebarProvider } from "@/components/sidebar/context";
+import { useSidebar } from "@/components/sidebar/hooks/useSidebar";
 import { cn } from "@/lib/utils";
 
 export const Route = createRootRoute({
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
-  loader: async () => {
-    console.log("\n", "META: ", import.meta);
-    console.log("ENV: ", import.meta.env);
-    return {};
-  },
 });
 
-function Layout({ children }: { children: ReactNode }) {
+// function RouterSpinner() {
+//   const isLoading = useRouterState({ select: (s) => s.status === "pending" });
+//   return <Loader2 show={isLoading} />;
+// }
+
+function Layout(props: { children: ReactNode }) {
   return (
     <SidebarProvider>
       <LayoutContainer>
         <Sidebar />
         <main className="size-full">
           <div className="flex h-full flex-col">
-            <ContentShell>{children}</ContentShell>
+            <ContentShell>{props.children}</ContentShell>
           </div>
         </main>
 

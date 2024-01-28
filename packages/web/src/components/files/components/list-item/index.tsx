@@ -1,6 +1,3 @@
-import { CheckCircledIcon } from "@radix-ui/react-icons";
-import { Link, useMatchRoute } from "@tanstack/react-router";
-import { format } from "date-fns";
 import {
   forwardRef,
   type ReactNode,
@@ -9,10 +6,9 @@ import {
   useTransition,
 } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useFileTree, type TreeNode, type TreeNodeData } from "../../context";
-import useDelete from "./hooks/useDelete";
-import { useDownloadFile } from "./hooks/useDownload";
-import useDuplicateWorker from "./hooks/useDuplicate";
+import { CheckCircledIcon } from "@radix-ui/react-icons";
+import { Link, useMatchRoute } from "@tanstack/react-router";
+import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import {
   ContextMenu,
@@ -25,6 +21,10 @@ import {
 } from "@/components/ui/context-menu";
 import { cn } from "@/lib/utils";
 import { formatBytes } from "@/lib/utils/inflect";
+import { type TreeNode, type TreeNodeData } from "../../context/types";
+import useDelete from "./hooks/useDelete";
+import { useDownloadFile } from "./hooks/useDownload";
+import useDuplicateWorker from "./hooks/useDuplicate";
 
 type UseOnCopyProps = {
   timeout?: number;
@@ -67,7 +67,7 @@ function ContextMenuWrapper(props: ContextWrapperProps) {
   });
 
   const { node } = props;
-  const { name, data, id } = node;
+  const { name } = node;
 
   return (
     <ContextMenu>
@@ -200,9 +200,8 @@ type ContentsProps = {
 };
 
 const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
-  function Contents(props, ref) {
+  function Contents(props, _ref) {
     const matchRoot = useMatchRoute();
-    const { dispatch, state } = useFileTree();
     const { node } = props;
     const lastModified = new Date(node.data.lastModified);
 
@@ -213,10 +212,10 @@ const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
       },
     });
 
-    const [isPending, startTransition] = useTransition();
+    const [isPending, _startTransition] = useTransition();
 
-    const isSelected = state.selected?.id === node.id;
-    const isActive = !!isMatched || isSelected || isPending;
+    //const isSelected = state.selected?.id === node.id;
+    const isActive = !!isMatched || isPending;
 
     const safeId = encodeURIComponent(node.id);
 
@@ -226,7 +225,7 @@ const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
     return (
       <Link
         key={node.id}
-        className="@container flex h-[84px] max-h-[84px] w-full px-4 py-1" // NB. Don't use flex gap in the container above as it messes up scrolling. Rather use padding on the button. Set the estimated size in the virtualizer to the same height. Use max-height to improve scroll performance.
+        className="flex h-[84px] max-h-[84px] w-full px-4 py-1 @container" // NB. Don't use flex gap in the container above as it messes up scrolling. Rather use padding on the button. Set the estimated size in the virtualizer to the same height. Use max-height to improve scroll performance.
         to={`/files/$fileId`}
         params={{ fileId: safeId }}
       >
@@ -236,10 +235,10 @@ const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
         >
           <div
             className={cn(
-              "hover:bg-accent flex h-[76px] w-full flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm",
+              "flex h-[76px] w-full flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm hover:bg-accent",
               isActive && "bg-muted",
               // target the open state of the context menu
-              "date-[state=open]:ring-2 data-[state=open]:ring-ring data-[state=open]:outline data-[state=open]:ring-offset-2",
+              "date-[state=open]:ring-2 data-[state=open]:outline data-[state=open]:ring-ring data-[state=open]:ring-offset-2",
             )}
           >
             <div className="min-w-0 max-w-full">
@@ -249,7 +248,7 @@ const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
                 </p>
                 <Badge
                   className={cn(
-                    "@sm:inline-block hidden py-0 text-center text-xs font-light",
+                    "hidden py-0 text-center text-xs font-light @sm:inline-block",
                     filesize === 0 && "bg-red-500 text-white hover:bg-red-600",
                   )}
                 >
@@ -258,7 +257,7 @@ const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
               </div>
               <div
                 className={cn(
-                  "text-muted-foreground mt-1 flex items-center gap-x-2 text-xs leading-5",
+                  "mt-1 flex items-center gap-x-2 text-xs leading-5 text-muted-foreground",
                   isActive && "text-foreground",
                 )}
               >

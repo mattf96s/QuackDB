@@ -1,5 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
 import {
   ChevronRightIcon,
   DashboardIcon,
@@ -8,11 +7,12 @@ import {
 } from "@radix-ui/react-icons";
 import { Link, useMatchRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { StyledLink } from "../ui/link";
+import { Button } from "@/components/ui/button/button";
+import { cn } from "@/lib/utils";
+import { StyledLink } from "../ui/link/link";
 import { ScrollArea } from "../ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
-import { useSidebar } from "./context";
+import { useSidebar } from "./hooks/useSidebar";
 
 const navigation = [
   {

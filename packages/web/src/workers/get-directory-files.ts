@@ -1,5 +1,8 @@
 import * as Comlink from "comlink";
-import  { type TreeNode, type TreeNodeData } from "@/components/files/context";
+import {
+  type TreeNode,
+  type TreeNodeData,
+} from "@/components/files/context/types";
 
 type FileWithRelativePath = File & {
   relativePath: string;
@@ -32,6 +35,7 @@ async function getDirectoryFilesWorker(startingDirectory?: string) {
       }
     }
 
+    // eslint-disable-next-line no-inner-declarations
     async function* getFilesRecursively(
       entry: FileSystemDirectoryHandle | FileSystemFileHandle,
     ): AsyncGenerator<FileWithRelativePath> {
@@ -78,6 +82,7 @@ async function getDirectoryFilesWorker(startingDirectory?: string) {
       type: "complete",
       payload: { tree: fileTree, count },
     });
+    return { tree: fileTree, count };
   } catch (e) {
     console.error("Failed to get directory tree: ", e);
     postMessage({

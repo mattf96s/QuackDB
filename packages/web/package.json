@@ -64,12 +64,14 @@
     "comlink": "^4.4.1",
     "date-fns": "^3.3.1",
     "embla-carousel-react": "8.0.0-rc21",
-    "framer-motion": "^11.0.3",
+    "framer-motion": "^10.0.3",
     "idb-keyval": "^6.2.1",
     "idle-task": "^4.2.2",
+    "lucide-react": "^0.316.0",
     "monaco-editor": "^0.45.0",
     "radix-icons": "^1.0.0",
     "react": "18.3.0-canary-c5b937576-20231219",
+    "react-day-picker": "^8.10.0",
     "react-dom": "18.3.0-canary-c5b937576-20231219",
     "react-hook-form": "^7.49.3",
     "react-hotkeys-hook": "^4.4.4",
@@ -83,7 +85,6 @@
   },
   "devDependencies": {
     "@tanstack/router-vite-plugin": "^1.12.16",
-    "@total-typescript/ts-reset": "^0.5.1",
     "@types/eslint": "^8.56.2",
     "@types/node": "^20.11.8",
     "@types/react": "^18.2.48",
@@ -94,14 +95,12 @@
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
-    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-jsx": "^1.0.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "eslint-plugin-simple-import-sort": "^10.0.0",
-    "eslint-plugin-tailwindcss": "^3.14.1",
     "eslint-plugin-unused-imports": "^3.0.0",
     "postcss": "^8.4.33",
     "prettier": "^3.2.4",
@@ -114,5 +113,10 @@
   "overrides": {
     "react": "18.3.0-canary-c5b937576-20231219",
     "react-dom": "18.3.0-canary-c5b937576-20231219"
-  }
+  },
+  "eslintIgnore": [
+    "dist",
+    "node_modules",
+    "public"
+  ]
 }

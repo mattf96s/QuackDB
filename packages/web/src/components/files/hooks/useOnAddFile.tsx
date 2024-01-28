@@ -1,4 +1,3 @@
-import { wrap } from "comlink";
 import {
   useCallback,
   useEffect,
@@ -6,48 +5,76 @@ import {
   useState,
   useTransition,
 } from "react";
+import { wrap } from "comlink";
 import { toast } from "sonner";
-
-import { useFileTree } from "../context";
 import { inflectedFiles } from "@/lib/utils/inflect";
 import { type AddFilesHandlesWorker } from "@/workers/add-files-worker";
+import { useFileTree } from "../context/";
 
 const useAddFiles = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [isPending, _startTransition] = useTransition();
   const [progress, setProgress] = useState(0);
   const [currentFilename, setCurrentFilename] = useState("");
-  const { onRefreshFileTree } = useFileTree();
+  const { onRefreshFileTree, dispatch, state } = useFileTree();
+  const [isReady, setIsReady] = useState(false);
 
-  const [isClient, setIsClient] = useState(false);
+  const storedWorker = useMemo(
+    () =>
+      new Worker(
+        new URL("@/workers/add-files-worker.ts", import.meta.url).href,
+        {
+          type: "module",
+        },
+      ),
+    [],
+  );
+
+  // update when the worker is ready
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (!storedWorker) {
+      console.error("storedWorker is undefined");
+      return;
+    }
 
-  const storedWorker = useMemo(() => {
-    if (!isClient) return null;
-    return new Worker(
-      new URL("@/workers/add-files-worker.ts", import.meta.url).href,
-      {
-        type: "module",
-      },
-    );
-  }, [isClient]);
+    const worker = storedWorker;
 
-  useEffect(() => {
-    if (!storedWorker) return;
-    // Only show start toast if it takes longer than 500ms
-    let timerId: NodeJS.Timeout;
-
-    const handleWorkerCallback = (ev: MessageEvent<any>) => {
+    const handleLoad = (ev: MessageEvent) => {
       const { data } = ev;
       const type = data?.type;
 
       if (!type) return;
 
-      console.log("useAddFiles: ", type);
+      switch (type) {
+        case "IS_READY": {
+          setIsReady(true);
+          break;
+        }
+        default:
+          break;
+      }
+    };
+
+    worker.addEventListener("message", handleLoad, { once: true });
+
+    return () => {
+      worker.removeEventListener("message", handleLoad);
+    };
+  }, [storedWorker]);
+
+  useEffect(() => {
+    if (!isReady) return;
+    // Only show start toast if it takes longer than 500ms
+    let timerId: NodeJS.Timeout;
+
+    const handleWorkerCallback = (ev: MessageEvent) => {
+      const { data } = ev;
+      const type = data?.type;
+
+      if (!type) return;
 
       switch (type) {
+        case "IS_READY":
         case "RAW": {
           break;
         }
@@ -133,23 +160,31 @@ const useAddFiles = () => {
       worker?.removeEventListener("message", handleWorkerCallback);
       worker.terminate();
     };
-  }, [onRefreshFileTree, storedWorker]);
+  }, [isReady, onRefreshFileTree, storedWorker]);
 
   const addFilesWorkerFn = useCallback(
     async (newHandles: FileSystemFileHandle[]) => {
-      if (!storedWorker) {
-        console.error("addFilesWorkerFn failure: worker is undefined");
+      if (!isReady) {
+        console.log("Worker is not ready");
         return;
       }
 
-      await wrap<AddFilesHandlesWorker>(storedWorker)(newHandles).catch((e) => {
-        console.error("Failed to add files: ", e);
+      dispatch({ type: "SET_STATUS", payload: { status: "loading" } });
+      try {
+        const fn = wrap<AddFilesHandlesWorker>(storedWorker);
+        await fn(newHandles);
+        dispatch({ type: "SET_STATUS", payload: { status: "idle" } });
+      } catch (e) {
         toast.error("Failed to add files", {
           description: e instanceof Error ? e.message : undefined,
         });
-      });
+        dispatch({
+          type: "SET_STATUS",
+          payload: { status: "idle" },
+        });
+      }
     },
-    [storedWorker],
+    [dispatch, isReady, storedWorker],
   );
 
   return useMemo(

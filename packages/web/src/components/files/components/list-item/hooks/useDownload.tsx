@@ -1,7 +1,10 @@
 import { useCallback, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { toast } from "sonner";
-import  { type TreeNode, type TreeNodeData } from "@/components/files/context";
+import {
+  type TreeNode,
+  type TreeNodeData,
+} from "@/components/files/context/provider";
 
 type UseDownloadFileProps = {
   node: TreeNode<TreeNodeData>;
