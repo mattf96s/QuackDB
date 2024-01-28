@@ -1,6 +1,10 @@
-import { memo, type ReactNode } from "react";
-import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { memo, type ReactNode, useEffect } from "react";
+import {
+  createRootRoute,
+  Outlet,
+  useRouterState,
+} from "@tanstack/react-router";
+import NProgress from "nprogress";
 import NotFound from "@/components/NotFound";
 import Sidebar from "@/components/sidebar";
 import { SidebarProvider } from "@/components/sidebar/context";
@@ -12,10 +16,15 @@ export const Route = createRootRoute({
   notFoundComponent: NotFoundComponent,
 });
 
-// function RouterSpinner() {
-//   const isLoading = useRouterState({ select: (s) => s.status === "pending" });
-//   return <Loader2 show={isLoading} />;
-// }
+function ProgressBar() {
+  const isLoading = useRouterState({ select: (s) => s.status === "pending" });
+  useEffect(() => {
+    if (isLoading) NProgress.start();
+    else NProgress.done();
+  }, [isLoading]);
+
+  return null;
+}
 
 function Layout(props: { children: ReactNode }) {
   return (
@@ -29,7 +38,7 @@ function Layout(props: { children: ReactNode }) {
         </main>
 
         {/* Start rendering router matches */}
-        <TanStackRouterDevtools position="bottom-right" />
+        {/* <TanStackRouterDevtools position="bottom-right" /> */}
       </LayoutContainer>
     </SidebarProvider>
   );
@@ -37,9 +46,12 @@ function Layout(props: { children: ReactNode }) {
 
 function RootComponent() {
   return (
-    <Layout>
-      <Outlet />
-    </Layout>
+    <>
+      <Layout>
+        <Outlet />
+      </Layout>
+      <ProgressBar />
+    </>
   );
 }
 
@@ -55,7 +67,9 @@ const LayoutContainer = memo(function LayoutContainer(props: {
   children: ReactNode;
 }) {
   return (
-    <div className="flex h-screen flex-col lg:flex-row">{props.children}</div>
+    <div className="flex h-screen min-h-0 flex-col lg:flex-row">
+      {props.children}
+    </div>
   );
 });
 

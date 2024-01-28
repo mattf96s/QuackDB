@@ -4,7 +4,9 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as FilesImport } from './routes/files'
+import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
+import { Route as FilesIndexImport } from './routes/files.index'
 import { Route as FilesFileIdImport } from './routes/files.$fileId'
 
 // Create/Update Routes
@@ -14,9 +16,19 @@ const FilesRoute = FilesImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AboutRoute = AboutImport.update({
+  path: '/about',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const FilesIndexRoute = FilesIndexImport.update({
+  path: '/',
+  getParentRoute: () => FilesRoute,
 } as any)
 
 const FilesFileIdRoute = FilesFileIdImport.update({
@@ -32,12 +44,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/about': {
+      preLoaderRoute: typeof AboutImport
+      parentRoute: typeof rootRoute
+    }
     '/files': {
       preLoaderRoute: typeof FilesImport
       parentRoute: typeof rootRoute
     }
     '/files/$fileId': {
       preLoaderRoute: typeof FilesFileIdImport
+      parentRoute: typeof FilesImport
+    }
+    '/files/': {
+      preLoaderRoute: typeof FilesIndexImport
       parentRoute: typeof FilesImport
     }
   }
@@ -47,5 +67,6 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
-  FilesRoute.addChildren([FilesFileIdRoute]),
+  AboutRoute,
+  FilesRoute.addChildren([FilesFileIdRoute, FilesIndexRoute]),
 ])

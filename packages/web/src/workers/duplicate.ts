@@ -92,6 +92,7 @@ async function duplicateFile(
         fileHandle: newFileHandle,
       },
     });
+    return newFileHandle;
   } catch (e) {
     console.error("Error duplicating file: ", e);
     postMessage({

@@ -4,6 +4,7 @@ import {
   DashboardIcon,
   FileTextIcon,
   HamburgerMenuIcon as Menu,
+  InfoCircledIcon,
 } from "@radix-ui/react-icons";
 import { Link, useMatchRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
@@ -24,6 +25,11 @@ const navigation = [
     name: "Files",
     href: "/files",
     icon: FileTextIcon,
+  },
+  {
+    name: "About",
+    href: "/about",
+    icon: InfoCircledIcon,
   },
 ] as const;
 
@@ -108,7 +114,7 @@ function NavItem({
   const { isOpen } = useSidebar();
   const matchRoute = useMatchRoute();
 
-  const match = matchRoute({ from: href });
+  const match = matchRoute({ from: href, fuzzy: true });
   return (
     <li key={href}>
       <StyledLink
