@@ -1,12 +1,12 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { type Remote, wrap } from "comlink";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { wrap } from "comlink";
 import { toast } from "sonner";
 import { useFileTree } from "@/components/files/context";
 import { type DuplicateFileWorker } from "@/workers/duplicate";
 
 const useDuplicateWorker = () => {
-  const wrapperRef = useRef<Remote<DuplicateFileWorker> | null>(null);
+  // const wrapperRef = useRef<Remote<DuplicateFileWorker> | null>(null);
   // initializing is setting up the worker; loading is when the worker is doing something; idle is when the worker is ready to do something
   const [status, setStatus] = useState<"initializing" | "loading" | "idle">(
     "initializing",
@@ -27,7 +27,7 @@ const useDuplicateWorker = () => {
   useEffect(() => {
     let timerId: NodeJS.Timeout | undefined;
 
-    const handleWorkerCallback = (ev: MessageEvent<any>) => {
+    const handleWorkerCallback = (ev: MessageEvent) => {
       const { data } = ev;
       const type = data?.type;
 
@@ -109,16 +109,19 @@ const useDuplicateWorker = () => {
       worker.removeEventListener("message", handleWorkerCallback);
       worker.terminate();
     };
-  }, [dispatch, navigate, onRefreshFileTree]);
+  }, [dispatch, navigate, onRefreshFileTree, storedWorker]);
 
-  const onDuplicate = useCallback(async (handle: FileSystemFileHandle) => {
-    if (!storedWorker) {
-      console.error("addFilesWorkerFn failure: worker is undefined");
-      return;
-    }
-    const wrapper = wrap<DuplicateFileWorker>(storedWorker);
-    await wrapper(handle);
-  }, []);
+  const onDuplicate = useCallback(
+    async (handle: FileSystemFileHandle) => {
+      if (!storedWorker) {
+        console.error("addFilesWorkerFn failure: worker is undefined");
+        return;
+      }
+      const wrapper = wrap<DuplicateFileWorker>(storedWorker);
+      await wrapper(handle);
+    },
+    [storedWorker],
+  );
 
   return {
     onDuplicate,

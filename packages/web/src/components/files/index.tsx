@@ -1,6 +1,6 @@
+import { cn } from "@/lib/utils";
 import { useFileTree } from "./context";
 import { useAddFilesHandler } from "./hooks/useOnAddFile";
-import { cn } from "@/lib/utils";
 
 export function FileTreeDropContainer(props: { children: React.ReactNode }) {
   const { dispatch, state } = useFileTree();
@@ -34,7 +34,7 @@ export function FileTreeDropContainer(props: { children: React.ReactNode }) {
     }
   };
 
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = (_e: React.DragEvent<HTMLDivElement>) => {
     dispatch({ type: "IS_DRAGGING", payload: { isDragging: false } });
   };
 

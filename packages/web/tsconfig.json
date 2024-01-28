@@ -1,31 +1,42 @@
 {
+  "exclude": [
+    "node_modules",
+    "dist",
+    "./src/routeTree.gen.ts"
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+  ],
+  "references": [],
   "compilerOptions": {
+    /* Base Options: */
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "target": "es2022",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    // strictness
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
     "types": [
       "@types/wicg-file-system-access"
     ],
-    "target": "ES2022",
     "useDefineForClassFields": true,
     "lib": [
       "ES2022",
       "DOM",
       "DOM.Iterable"
     ],
-    "esModuleInterop": true,
     "module": "ESNext",
-    "skipLibCheck": true,
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
     "noEmit": true,
-    "allowJs": true,
-    "jsx": "react-jsx",
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
+    "jsx": "preserve",
     /* Paths */
     "baseUrl": ".",
     "paths": {

@@ -41,8 +41,7 @@
   ],
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": true
+    "source.fixAll.eslint": "explicit"
   },
   "eslint.codeAction.showDocumentation": {
     "enable": true,

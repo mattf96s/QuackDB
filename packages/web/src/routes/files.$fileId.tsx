@@ -1,26 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
+import FilePreview from "@/components/file-preview";
 
 export const Route = createFileRoute("/files/$fileId")({
   component: FileExplorer,
   loader: async ({ params }) => {
-    const { fileId } = params;
-    console.log("fileId: ", fileId);
-    const root = await navigator.storage.getDirectory();
-    const file = await root.getFileHandle(fileId, { create: false });
+    const { fileId: encodedFileId } = params;
 
-    if (!file) {
-      return { redirect: { to: "/404" } };
+    const fileId = decodeURIComponent(encodedFileId);
+
+    const root = await navigator.storage.getDirectory();
+    const fileHandle = await root.getFileHandle(fileId, { create: false });
+
+    if (!fileHandle) {
+      throw { redirect: { to: "/404" } };
     }
-    return { file };
+    return { fileHandle };
   },
 });
 
 function FileExplorer() {
-  const { file } = Route.useLoaderData();
-  return (
-    <div>
-      <h2>File</h2>
-      <h3>{file?.name ?? "unknown"}</h3>
-    </div>
-  );
+  const { fileHandle } = Route.useLoaderData();
+  return <FilePreview fileHandle={fileHandle} />;
 }

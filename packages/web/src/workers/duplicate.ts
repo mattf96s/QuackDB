@@ -79,7 +79,6 @@ async function duplicateFile(
     ]);
 
     // Get sync access handle
-    // @ts-ignore not in types yet
     const accessHandle = await newFileHandle.createSyncAccessHandle();
 
     // Write to file

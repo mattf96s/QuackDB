@@ -1,85 +1,14 @@
+import { useCallback, useEffect, useMemo, useReducer } from "react";
 import { wrap } from "comlink";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
-} from "react";
 import { toast } from "sonner";
 import { type GetDirectoryFilesWorker } from "@/workers/get-directory-files";
-
-export type TreeNode<T> = {
-  id: string;
-  name: string;
-  data: T;
-  children?: TreeNode<T>[];
-};
-
-export type TreeNodeData = {
-  fileSize: number;
-  fileType: string;
-  handle: FileSystemFileHandle;
-  lastModified: number;
-};
-
-type Status = "initializing" | "loading" | "idle" | "error";
-
-type State<T> = {
-  tree: TreeNode<T>[];
-  status: Status;
-  isDragging: boolean;
-  selected: TreeNode<T> | undefined;
-};
-
-type Action<T> =
-  | {
-      type: "IS_DRAGGING";
-      payload: {
-        isDragging: boolean;
-      };
-    }
-  | {
-      type: "SET_TREE_STRUCTURE";
-      payload: {
-        tree: TreeNode<T>[];
-      };
-    }
-  | {
-      type: "SET_STATUS";
-      payload: {
-        status: Status;
-      };
-    }
-  | {
-      type: "SET_SELECTED";
-      payload: {
-        selected: TreeNode<T>;
-      };
-    }
-  | {
-      type: "UNSET_SELECTED";
-    }
-  | {
-      type: "MERGE_TREE_STRUCTURE";
-      payload: {
-        tree: TreeNode<T>[];
-      };
-    };
-
-type Dispatch<T> = (action: Action<T>) => void;
-
-type FileTreeProviderProps = { children: React.ReactNode };
-
-const FileTreeStateContext = createContext<
-  | {
-      state: State<TreeNodeData>;
-      dispatch: Dispatch<TreeNodeData>;
-      onRefreshFileTree: () => Promise<void>;
-    }
-  | undefined
->(undefined);
+import { FileTreeStateContext } from "./context";
+import type {
+  Action,
+  FileTreeProviderProps,
+  State,
+  TreeNodeData,
+} from "./types";
 
 function fileHandleReducer<T>(state: State<T>, action: Action<T>): State<T> {
   switch (action.type) {
@@ -131,25 +60,22 @@ function FileTreeProvider(props: FileTreeProviderProps) {
     ...initialHandleState,
   });
 
-  const storedWorker = useMemo(
-    () =>
-      new Worker(
-        new URL("@/workers/get-directory-files.ts", import.meta.url).href,
-        {
-          type: "module",
-        },
-      ),
-    [],
-  );
+  const storedWorker = useMemo(() => {
+    return new Worker(
+      new URL("@/workers/get-directory-files.ts", import.meta.url).href,
+      {
+        type: "module",
+      },
+    );
+  }, []);
 
   useEffect(() => {
+    if (state.status === "initializing") return;
     const handleMessage = (ev: MessageEvent) => {
       const { data } = ev;
       const type = data?.type;
 
       if (!type) return;
-
-      console.log("FileTreeProvider: ", type);
 
       switch (type) {
         case "start": {
@@ -196,6 +122,9 @@ function FileTreeProvider(props: FileTreeProviderProps) {
           }
           break;
         }
+        case "IS_READY": {
+          break;
+        }
         // Internal Comlink thing (I think)
         case "RAW": {
           break;
@@ -216,17 +145,49 @@ function FileTreeProvider(props: FileTreeProviderProps) {
       worker?.removeEventListener("message", handleMessage);
       worker?.terminate();
     };
-  }, []);
+  }, [state.status, storedWorker]);
 
   const onRefreshFileTree = useCallback(async () => {
-    if (!storedWorker) {
-      console.error("onRefreshFileTree failure: storedWorker is undefined");
-      return;
-    }
+    console.log("onRefreshFileTree: Start");
+    dispatch({
+      type: "SET_STATUS",
+      payload: {
+        status: "loading",
+      },
+    });
+    const worker = new Worker(
+      new URL("@/workers/get-directory-files.ts", import.meta.url).href,
+      {
+        type: "module",
+      },
+    );
 
-    const getFiles = wrap<GetDirectoryFilesWorker>(storedWorker);
-    await getFiles();
-  }, [storedWorker]);
+    const getFilesFn = wrap<GetDirectoryFilesWorker>(worker);
+    try {
+      const res = await getFilesFn();
+      if (res?.tree === undefined) throw new Error("Failed to get tree");
+      dispatch({
+        type: "SET_TREE_STRUCTURE",
+        payload: {
+          tree: res.tree,
+        },
+      });
+      dispatch({
+        type: "SET_STATUS",
+        payload: {
+          status: "idle",
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      dispatch({
+        type: "SET_STATUS",
+        payload: {
+          status: "idle",
+        },
+      });
+    }
+  }, []);
 
   const value = useMemo(
     () => ({ state, dispatch, onRefreshFileTree }),
@@ -239,13 +200,4 @@ function FileTreeProvider(props: FileTreeProviderProps) {
   );
 }
 
-function useFileTree() {
-  const context = useContext(FileTreeStateContext);
-
-  if (context === undefined) {
-    throw new Error("useFileTree must be used within a FileTreeProvider");
-  }
-  return context;
-}
-
-export { FileTreeProvider, useFileTree };
+export { FileTreeProvider };

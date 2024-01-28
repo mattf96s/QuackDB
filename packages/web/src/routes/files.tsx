@@ -1,8 +1,14 @@
-import { FileTreeDropContainer } from "@/components/files";
+import { useState } from "react";
+import {
+  createFileRoute,
+  Outlet,
+  useRouterState,
+} from "@tanstack/react-router";
+import { useMediaQuery } from "@uidotdev/usehooks";
+import { wrap } from "comlink";
+import { useSpinDelay } from "spin-delay";
 import FileListItem from "@/components/files/components/list-item";
-import { FileTreeProvider, useFileTree } from "@/components/files/context";
-import { useAddFilesHandler } from "@/components/files/hooks/useOnAddFile";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button/button";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -11,29 +17,83 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Outlet, createFileRoute } from "@tanstack/react-router";
-import { useMediaQuery } from "@uidotdev/usehooks";
-import { useEffect, useState } from "react";
-import { useSpinDelay } from "spin-delay";
+import type { AddFilesHandlesWorker } from "@/workers/add-files-worker";
+import type { GetDirectoryFilesWorker } from "@/workers/get-directory-files";
 
 export const Route = createFileRoute("/files")({
   component: FileExplorer,
+  loader: async () => {
+    const worker = new Worker(
+      new URL("@/workers/get-directory-files.ts", import.meta.url).href,
+      {
+        type: "module",
+      },
+    );
+    const getFilesFn = wrap<GetDirectoryFilesWorker>(worker);
+
+    const res = await getFilesFn();
+
+    worker.terminate();
+
+    return res;
+  },
 });
 
 function FileExplorer() {
   return (
-    <FileTreeProvider>
-      <div className="hidden h-full flex-col md:flex">
-        <Header />
-        <Separator />
-        <FileTree />
-      </div>
-    </FileTreeProvider>
+    <div className="hidden h-full flex-col md:flex">
+      <Header />
+      <Separator />
+      <FileTree />
+    </div>
   );
 }
 
 function Header() {
-  const { onAddFilesHandler, isLoading } = useAddFilesHandler();
+  const [isLoading, setIsLoading] = useState(false);
+  const onAddFilesHandler = async () => {
+    let worker: Worker | undefined;
+    try {
+      const fileHandles = await window.showOpenFilePicker({
+        types: [
+          {
+            description: "Datasets",
+            accept: {
+              "application/octet-stream": [".parquet"],
+              "csv/*": [".csv"],
+              "json/*": [".json"],
+              "text/*": [".txt"],
+              "application/vnd.ms-excel": [".xls"],
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                [".xlsx"],
+            },
+          },
+        ],
+        excludeAcceptAllOption: false,
+        multiple: true,
+      });
+
+      if (fileHandles.length === 0) return;
+
+      setIsLoading(true);
+
+      worker = new Worker(
+        new URL("@/workers/add-files-worker.ts", import.meta.url).href,
+        {
+          type: "module",
+        },
+      );
+
+      const fn = wrap<AddFilesHandlesWorker>(worker);
+      await fn(fileHandles);
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return; // User cancelled
+      console.error("Error in onAddFilesHandler: ", e);
+    } finally {
+      setIsLoading(false);
+      worker?.terminate();
+    }
+  };
 
   const showDisabledState = useSpinDelay(isLoading, {
     delay: 500,
@@ -56,11 +116,11 @@ function Header() {
 
 function FileTree() {
   return (
-    <FileTreeDropContainer>
+    <>
       <TooltipProvider delayDuration={0}>
         <ResizeableGroupContainer />
       </TooltipProvider>
-    </FileTreeDropContainer>
+    </>
   );
 }
 
@@ -90,7 +150,7 @@ function ResizeableGroupContainer() {
           maxSize={75}
         >
           <ScrollArea className="h-[500px]">
-            <TreeView />
+            <TreeViewWrapper />
           </ScrollArea>
         </ResizablePanel>
       </ResizablePanelGroup>
@@ -121,16 +181,22 @@ function ResizeableGroupContainer() {
   );
 }
 
-function TreeView() {
-  const { state, onRefreshFileTree } = useFileTree();
+function TreeViewWrapper() {
+  const isPending = useRouterState({ select: (s) => s.status === "pending" });
 
-  useEffect(() => {
-    onRefreshFileTree();
-  }, []);
+  if (isPending) {
+    return <div>Loading...</div>;
+  }
+
+  return <TreeView />;
+}
+
+function TreeView() {
+  const files = Route.useLoaderData();
 
   return (
     <ScrollArea className="flex h-[calc(100vh-64px)] flex-col py-4">
-      {state.tree.map((node) => (
+      {files?.tree.map((node) => (
         <FileListItem
           key={node.id}
           node={node}
