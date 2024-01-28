@@ -1,5 +1,6 @@
 import "@/styles/globals.css";
 import "@fontsource-variable/inter";
+import "nprogress/nprogress.css";
 import { StrictMode } from "react";
 import * as ReactDOM from "react-dom/client";
 import { createRouter, RouterProvider } from "@tanstack/react-router";

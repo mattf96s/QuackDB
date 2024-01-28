@@ -1,19 +1,21 @@
 import { useCallback } from "react";
+import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { useFileTree } from "@/components/files/context";
 
 const useDelete = () => {
-  const { onRefreshFileTree } = useFileTree();
+  const router = useRouter();
+
+  // check if we are currently at the file.$fileId location. If so, we need to navigate away,
 
   const onDelete = useCallback(
     async (name: string) => {
       try {
         const root = await navigator.storage.getDirectory();
         await root.removeEntry(name, { recursive: true });
-        await onRefreshFileTree();
         toast.success("Success!", {
           description: `Deleted ${name}`,
         });
+        router.invalidate();
       } catch (error) {
         console.error(error);
         toast.error("Error", {
@@ -21,7 +23,7 @@ const useDelete = () => {
         });
       }
     },
-    [onRefreshFileTree],
+    [router],
   );
 
   return {

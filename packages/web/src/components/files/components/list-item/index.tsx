@@ -208,7 +208,7 @@ const FileListItem = forwardRef<HTMLButtonElement, ContentsProps>(
     const isMatched = matchRoot({
       from: "/files/$fileId",
       params: {
-        fileId: encodeURIComponent(node.id),
+        fileId: node.id,
       },
     });
 

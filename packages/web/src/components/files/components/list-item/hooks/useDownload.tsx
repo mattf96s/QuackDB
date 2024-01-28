@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import {
   type TreeNode,
   type TreeNodeData,
-} from "@/components/files/context/provider";
+} from "@/components/files/context/types";
 
 type UseDownloadFileProps = {
   node: TreeNode<TreeNodeData>;

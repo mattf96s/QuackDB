@@ -6,8 +6,20 @@ import {
 } from "@tanstack/react-router";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { wrap } from "comlink";
+import { Plus, Trash2Icon } from "lucide-react";
 import { useSpinDelay } from "spin-delay";
 import FileListItem from "@/components/files/components/list-item";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button/button";
 import {
   ResizableHandle,
@@ -17,7 +29,8 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import type { AddFilesHandlesWorker } from "@/workers/add-files-worker";
+import useAddFiles from "@/hooks/use-add-files";
+import useReset from "@/hooks/use-reset";
 import type { GetDirectoryFilesWorker } from "@/workers/get-directory-files";
 
 export const Route = createFileRoute("/files")({
@@ -50,77 +63,66 @@ function FileExplorer() {
 }
 
 function Header() {
-  const [isLoading, setIsLoading] = useState(false);
-  const onAddFilesHandler = async () => {
-    let worker: Worker | undefined;
-    try {
-      const fileHandles = await window.showOpenFilePicker({
-        types: [
-          {
-            description: "Datasets",
-            accept: {
-              "application/octet-stream": [".parquet"],
-              "csv/*": [".csv"],
-              "json/*": [".json"],
-              "text/*": [".txt"],
-              "application/vnd.ms-excel": [".xls"],
-              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-                [".xlsx"],
-            },
-          },
-        ],
-        excludeAcceptAllOption: false,
-        multiple: true,
-      });
-
-      if (fileHandles.length === 0) return;
-
-      setIsLoading(true);
-
-      worker = new Worker(
-        new URL("@/workers/add-files-worker.ts", import.meta.url).href,
-        {
-          type: "module",
-        },
-      );
-
-      const fn = wrap<AddFilesHandlesWorker>(worker);
-      await fn(fileHandles);
-    } catch (e) {
-      if (e instanceof DOMException && e.name === "AbortError") return; // User cancelled
-      console.error("Error in onAddFilesHandler: ", e);
-    } finally {
-      setIsLoading(false);
-      worker?.terminate();
-    }
-  };
+  const { isLoading, onAddFilesHandler } = useAddFiles();
 
   const showDisabledState = useSpinDelay(isLoading, {
     delay: 500,
   });
 
   return (
-    <div className="container flex flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
+    <div className="container flex max-w-none flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
       <h2 className="text-lg font-semibold">Files</h2>
       <div className="ml-auto flex w-full space-x-2 sm:justify-end">
+        <ResetButton />
         <Button
           disabled={showDisabledState}
           onClick={onAddFilesHandler}
+          size="icon"
         >
-          Add
+          <Plus className="h-4 w-4" />
         </Button>
       </div>
     </div>
   );
 }
 
+function ResetButton() {
+  const { isLoading, onResetFilesHandler } = useReset();
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          size="icon"
+          variant="outline"
+          disabled={isLoading}
+        >
+          <Trash2Icon className="h-4 w-4" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Clear all files?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will clear all your local files
+            from QuackDB.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onResetFilesHandler}>
+            Continue
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 function FileTree() {
   return (
-    <>
-      <TooltipProvider delayDuration={0}>
-        <ResizeableGroupContainer />
-      </TooltipProvider>
-    </>
+    <TooltipProvider delayDuration={0}>
+      <ResizeableGroupContainer />
+    </TooltipProvider>
   );
 }
 
@@ -169,7 +171,7 @@ function ResizeableGroupContainer() {
     >
       <ResizablePanel
         defaultSize={defaultLayout[0]}
-        minSize={30}
+        minSize={20}
       >
         <TreeView />
       </ResizablePanel>

@@ -1,4 +1,4 @@
-import { buttonVariants } from "../button/button";
+import { buttonVariants } from "../button/variants";
 
 export { StyledLink } from "./link";
 export { buttonVariants as linkVariants };
