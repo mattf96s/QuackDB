@@ -1,7 +1,29 @@
 import { DuckDBDataProtocol } from "@duckdb/duckdb-wasm";
+import * as duckdb from "@duckdb/duckdb-wasm";
 import * as Comlink from "comlink";
-import { makeDB } from "@/lib/modules/duckdb";
 import { columnMapper } from "@/utils/duckdb/helpers/columnMapper";
+
+const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
+
+export const makeDB = async () => {
+  // Select a bundle based on browser checks
+  const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+
+  const worker_url = URL.createObjectURL(
+    new Blob([`importScripts("${bundle.mainWorker!}");`], {
+      type: "text/javascript",
+    }),
+  );
+  // Instantiate the asynchronus version of DuckDB-wasm
+  const worker = new Worker(worker_url);
+  const logger = new duckdb.ConsoleLogger(duckdb.LogLevel.ERROR);
+  const db = new duckdb.AsyncDuckDB(logger, worker);
+  await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+
+  URL.revokeObjectURL(worker_url);
+
+  return db;
+};
 
 type PreviewFileOptions = {
   offset?: number;
@@ -48,6 +70,7 @@ function getMimeType(file: File) {
 const parseFile = async (file: File, options?: PreviewFileOptions) => {
   const kind = getMimeType(file);
   const filename = file.name;
+
   try {
     const db = await makeDB();
     await db.open({
@@ -106,7 +129,7 @@ const parseFile = async (file: File, options?: PreviewFileOptions) => {
       columnMapper(conn, filename),
       conn.query(countQuery),
     ]);
-    await conn.close();
+
     const results = await queryResults
       .toArray()
       .map((row: { toJSON(): Record<string, unknown> }) => row.toJSON());
@@ -116,6 +139,8 @@ const parseFile = async (file: File, options?: PreviewFileOptions) => {
       .map((row: { toJSON(): Record<string, unknown> }) => row.toJSON())[0][
       "count_star()"
     ];
+
+    await conn.close();
 
     return { results, columns, count };
   } catch (e) {

@@ -23,7 +23,7 @@ const useDuplicateWorker = () => {
           },
         );
         const wrapper = wrap<DuplicateFileWorker>(worker);
-        const newFile = await wrapper(handle);
+        await wrapper(handle);
         router.invalidate();
         setStatus("idle");
       } catch (e) {

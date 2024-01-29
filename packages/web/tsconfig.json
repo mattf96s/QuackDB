@@ -9,7 +9,6 @@
     "**/*.tsx",
     "**/*.js",
   ],
-  "references": [],
   "compilerOptions": {
     /* Base Options: */
     "esModuleInterop": true,
@@ -44,6 +43,6 @@
         "src/*"
       ]
     },
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
   },
 }

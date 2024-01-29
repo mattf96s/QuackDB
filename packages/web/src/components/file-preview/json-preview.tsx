@@ -6,49 +6,19 @@ import type { PreviewFileWorker } from "@/workers/preview-file";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 
-const parsableTypes = ["application/parquet", "text/csv", "application/json"];
-
-function getMimeType(file: File) {
-  const { type } = file;
-  if (type) {
-    return type;
-  }
-
-  const { name } = file;
-  const ext = name.split(".").pop();
-  if (!ext) {
-    return null;
-  }
-
-  switch (ext) {
-    case "parquet": {
-      return "application/parquet";
-    }
-    case "csv": {
-      return "text/csv";
-    }
-    case "json": {
-      return "application/json";
-    }
-    default: {
-      return null;
-    }
-  }
-}
-
 type TablePreviewProps = {
   handle: FileSystemFileHandle;
 };
 
 export default function JSONPreview(props: TablePreviewProps) {
   const [results, setResults] = useState<Record<string, unknown>[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
 
     const worker = new Worker(
-      new URL("@/workers/preview-file.ts", import.meta.url).href,
+      new URL("@/workers/preview-file.ts", import.meta.url),
       {
         type: "module",
       },

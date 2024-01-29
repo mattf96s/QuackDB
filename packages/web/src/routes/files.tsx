@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-router";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { wrap } from "comlink";
-import { Plus, Trash2Icon } from "lucide-react";
+import { EyeIcon, MoreVerticalIcon, Plus, Trash2Icon } from "lucide-react";
 import { useSpinDelay } from "spin-delay";
 import FileListItem from "@/components/files/components/list-item";
 import {
@@ -22,6 +22,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button/button";
 import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
@@ -32,14 +42,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import useAddFiles from "@/hooks/use-add-files";
 import useReset from "@/hooks/use-reset";
 import type { GetDirectoryFilesWorker } from "@/workers/get-directory-files";
-
 export const Route = createFileRoute("/files")({
   component: FileExplorer,
   loader: async () => {
     const worker = new Worker(
-      new URL("@/workers/get-directory-files.ts", import.meta.url).href,
+      new URL("@/workers/get-directory-files.ts", import.meta.url),
       {
         type: "module",
+        name: "GetDirectoryFilesWorker",
       },
     );
     const getFilesFn = wrap<GetDirectoryFilesWorker>(worker);
@@ -54,7 +64,7 @@ export const Route = createFileRoute("/files")({
 
 function FileExplorer() {
   return (
-    <div className="hidden h-full flex-col md:flex">
+    <div className="flex h-full flex-col">
       <Header />
       <Separator />
       <FileTree />
@@ -63,6 +73,70 @@ function FileExplorer() {
 }
 
 function Header() {
+  const isSmallerScreen = useMediaQuery("(max-width: 640px)");
+
+  return <>{isSmallerScreen ? <MobileHeader /> : <DesktopHeader />}</>;
+}
+
+function MobileHeader() {
+  const { isLoading, onAddFilesHandler } = useAddFiles();
+  const { isLoading: isResetting, onResetFilesHandler } = useReset();
+
+  const showDisabledState = useSpinDelay(isLoading, {
+    delay: 500,
+  });
+
+  return (
+    <Drawer>
+      <DrawerTrigger asChild>
+        <div className="absolute right-2 top-2 z-50">
+          <Button
+            variant="ghost"
+            size="icon"
+          >
+            <MoreVerticalIcon className="h-6 w-6" />
+          </Button>
+        </div>
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Files</DrawerTitle>
+          <DrawerDescription>Manage your files</DrawerDescription>
+        </DrawerHeader>
+        <div className="flex w-full flex-col gap-2 px-4">
+          {/* #TODO */}
+          <Button variant="outline">
+            View Files <EyeIcon className="ml-2 h-4 w-4" />
+          </Button>
+          <Button
+            disabled={showDisabledState}
+            onClick={onAddFilesHandler}
+          >
+            Add Files
+            <Plus className="ml-2 h-4 w-4" />
+          </Button>
+
+          <Button
+            disabled={isResetting}
+            onClick={onResetFilesHandler}
+            variant="destructive"
+          >
+            Reset <Trash2Icon className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+
+        <DrawerFooter>
+          <Separator />
+          <DrawerClose>
+            <Button variant="outline">Cancel</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
+function DesktopHeader() {
   const { isLoading, onAddFilesHandler } = useAddFiles();
 
   const showDisabledState = useSpinDelay(isLoading, {
@@ -70,9 +144,9 @@ function Header() {
   });
 
   return (
-    <div className="container flex max-w-none flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
+    <div className="container flex max-w-none flex-row items-center justify-between space-y-2 py-4 sm:space-y-0 md:h-16">
       <h2 className="text-lg font-semibold">Files</h2>
-      <div className="ml-auto flex w-full space-x-2 sm:justify-end">
+      <div className="ml-auto flex w-full justify-end space-x-2">
         <ResetButton />
         <Button
           disabled={showDisabledState}
@@ -143,13 +217,13 @@ function ResizeableGroupContainer() {
         className="min-h-[calc(100vh-64px)]"
         direction="vertical"
       >
-        <ResizablePanel maxSize={75}>
+        <ResizablePanel minSize={25}>
           <Outlet />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel
-          className="max-h-[500px] overflow-y-auto"
-          maxSize={75}
+          className="h-full max-h-[500px] overflow-y-auto"
+          minSize={0}
         >
           <ScrollArea className="h-[500px]">
             <TreeViewWrapper />
