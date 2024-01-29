@@ -1,18 +1,25 @@
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   ChevronRightIcon,
   DashboardIcon,
   FileTextIcon,
-  HamburgerMenuIcon as Menu,
   InfoCircledIcon,
 } from "@radix-ui/react-icons";
-import { Link, useMatchRoute } from "@tanstack/react-router";
+import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button/button";
 import { cn } from "@/lib/utils";
 import { StyledLink } from "../ui/link/link";
 import { ScrollArea } from "../ui/scroll-area";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../ui/sheet";
 import { useSidebar } from "./hooks/useSidebar";
 
 const navigation = [
@@ -138,45 +145,66 @@ function NavItem({
 }
 
 function MobileMenu() {
-  const [open, setOpen] = useState(false);
+  const { isOpen, onToggleSidebar } = useSidebar();
+  const initialPath = useRef(
+    useRouterState({ select: (s) => s.location.pathname }),
+  );
+
+  const { pathname } = useRouterState({ select: (s) => s.location });
+
+  useEffect(() => {
+    if (initialPath.current !== pathname) {
+      initialPath.current = pathname;
+      onToggleSidebar(false);
+    }
+  }, [onToggleSidebar, pathname]);
 
   return (
     <div className="w-full lg:hidden">
-      <Sheet>
-        <SheetTrigger
-          className="ml-4"
-          asChild
-        >
-          <Button
-            variant="ghost"
-            className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 lg:hidden"
+      <Sheet
+        open={isOpen}
+        onOpenChange={onToggleSidebar}
+      >
+        <div className="flex w-full items-center justify-between">
+          <SheetTrigger
+            className="ml-4"
+            asChild
           >
-            <Menu className="size-24" />
-            <span className="sr-only">Toggle Menu</span>
-          </Button>
-        </SheetTrigger>
+            <Button
+              variant="ghost"
+              className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 lg:hidden"
+            >
+              <MenuIcon className="h-6 w-6" />
+              <span className="sr-only">Toggle Menu</span>
+            </Button>
+          </SheetTrigger>
+          <div
+            className="hidden md:block"
+            id="mobile-header-portal"
+          />
+        </div>
         <SheetContent
           side="left"
-          className="pr-0"
+          className="w-[350px]"
         >
-          <Button
-            variant="ghost"
-            className="flex items-center"
-            onClick={() => setOpen(!open)}
-          >
-            <Menu className="mr-2 size-4" />
-            <span className="font-bold">BioDuck</span>
-          </Button>
-          <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
-            <div className="flex flex-col space-y-3">
-              {navigation.map((item) => (
-                <MobileNavItem
-                  key={item.href}
-                  {...item}
-                />
-              ))}
-            </div>
-          </ScrollArea>
+          <SheetHeader className="text-left">
+            <SheetTitle>QuackDB</SheetTitle>
+            <SheetDescription>
+              {`Local-first DuckDB playground.`}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex flex-col py-4">
+            <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10">
+              <div className="flex flex-col space-y-3">
+                {navigation.map((item) => (
+                  <MobileNavItem
+                    key={item.href}
+                    {...item}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
         </SheetContent>
       </Sheet>
     </div>
@@ -192,11 +220,11 @@ function MobileNavItem({
   const matchRoute = useMatchRoute();
   const { isOpen } = useSidebar();
 
-  const match = matchRoute({ from: href });
+  const match = matchRoute({ from: href, fuzzy: true });
   return (
     <StyledLink
       params={{}}
-      href={href}
+      to={href}
       variant="ghost"
       className={cn(
         match
@@ -207,7 +235,6 @@ function MobileNavItem({
     >
       <span className="inline-flex items-center gap-x-2">
         <Icon className={cn("size-5 text-inherit", isOpen && "mr-3")} />
-
         {isOpen ? name : ""}
       </span>
     </StyledLink>

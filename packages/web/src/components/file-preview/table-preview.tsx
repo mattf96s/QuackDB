@@ -42,9 +42,10 @@ export default function JSONPreview(props: TablePreviewProps) {
     setIsLoading(true);
 
     const worker = new Worker(
-      new URL("@/workers/preview-file.ts", import.meta.url).href,
+      new URL("@/workers/preview-file.ts", import.meta.url),
       {
         type: "module",
+        name: "PreviewFileWorker",
       },
     );
 
