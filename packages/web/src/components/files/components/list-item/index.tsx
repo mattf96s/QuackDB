@@ -199,7 +199,7 @@ function RenameQueryContextItem(props: ContextItemProps) {
         const handle = props.node.data.handle;
 
         const worker = new Worker(
-          new URL("@/workers/rename.ts", import.meta.url),
+          new URL("@/workers/rename-worker.ts", import.meta.url),
           {
             type: "module",
           },

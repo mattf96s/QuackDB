@@ -41,7 +41,12 @@ function Layout(props: { children: ReactNode }) {
         {/* Start rendering router matches */}
         {/* <TanStackRouterDevtools position="bottom-right" /> */}
       </LayoutContainer>
-      <Toaster />
+      <Toaster
+        closeButton
+        pauseWhenPageIsHidden
+        visibleToasts={3}
+        expand
+      />
     </SidebarProvider>
   );
 }
