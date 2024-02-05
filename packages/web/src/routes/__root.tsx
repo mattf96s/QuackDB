@@ -9,6 +9,7 @@ import NotFound from "@/components/NotFound";
 import Sidebar from "@/components/sidebar";
 import { SidebarProvider } from "@/components/sidebar/context";
 import { useSidebar } from "@/components/sidebar/hooks/useSidebar";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createRootRoute({
@@ -40,6 +41,7 @@ function Layout(props: { children: ReactNode }) {
         {/* Start rendering router matches */}
         {/* <TanStackRouterDevtools position="bottom-right" /> */}
       </LayoutContainer>
+      <Toaster />
     </SidebarProvider>
   );
 }
@@ -67,7 +69,7 @@ const LayoutContainer = memo(function LayoutContainer(props: {
   children: ReactNode;
 }) {
   return (
-    <div className="flex h-screen min-h-0 flex-col lg:flex-row">
+    <div className="flex h-screen min-h-0 flex-col font-sans antialiased lg:flex-row">
       {props.children}
     </div>
   );

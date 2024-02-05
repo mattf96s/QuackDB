@@ -53,6 +53,8 @@ async function addFilesHandles(newHandles: FileSystemFileHandle[]) {
       type: "complete",
       payload: { total: count },
     });
+
+    return { total: count, success: true };
   } catch (e) {
     console.error("Failed to add files: ", e);
     postMessage({
@@ -61,6 +63,7 @@ async function addFilesHandles(newHandles: FileSystemFileHandle[]) {
         error: e instanceof Error ? e.message : "Something went wrong",
       },
     });
+    return { total: count, success: false };
   }
 }
 

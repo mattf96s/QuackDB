@@ -1,31 +1,54 @@
 import * as duckdb from "@duckdb/duckdb-wasm";
-import eh_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
-import mvp_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url";
-import duckdb_wasm_eh from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
-import duckdb_wasm from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url";
 
-const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
-  mvp: {
-    mainModule: duckdb_wasm,
-    mainWorker: mvp_worker,
-  },
-  eh: {
-    mainModule: duckdb_wasm_eh,
-    mainWorker: eh_worker,
-  },
-};
+const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
 
 export const makeDB = async () => {
   // Select a bundle based on browser checks
-  const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
+  const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+
+  const worker_url = URL.createObjectURL(
+    new Blob([`importScripts("${bundle.mainWorker!}");`], {
+      type: "text/javascript",
+    }),
+  );
   // Instantiate the asynchronus version of DuckDB-wasm
-  const worker = new Worker(bundle.mainWorker!);
+  const worker = new Worker(worker_url);
   const logger = new duckdb.ConsoleLogger(duckdb.LogLevel.ERROR);
   const db = new duckdb.AsyncDuckDB(logger, worker);
   await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
 
+  URL.revokeObjectURL(worker_url);
+
   return db;
 };
+
+export function getMimeType(file: File) {
+  const { type } = file;
+  if (type) {
+    return type;
+  }
+
+  const { name } = file;
+  const ext = name.split(".").pop();
+  if (!ext) {
+    return null;
+  }
+
+  switch (ext) {
+    case "parquet": {
+      return "application/parquet";
+    }
+    case "csv": {
+      return "text/csv";
+    }
+    case "json": {
+      return "application/json";
+    }
+    default: {
+      return null;
+    }
+  }
+}
 // export class DuckDBClient {
 //     _db: duckdb.AsyncDuckDB | null
 //     _counter: number
