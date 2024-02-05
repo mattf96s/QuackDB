@@ -7,8 +7,8 @@
     "typecheck": "tsc -noEmit"
   },
   "devDependencies": {
-    "@types/node": "^20.11.10",
-    "sst": "2.39.13",
+    "@types/node": "^20.11.15",
+    "sst": "2.40.0",
     "vitest": "^1.2.2"
   },
   "dependencies": {

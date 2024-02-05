@@ -60,7 +60,8 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Inter var", ...defaultTheme.fontFamily.sans],
+        sans: ["geist-sans", ...defaultTheme.fontFamily.sans],
+        mono: ["geist-mono", ...defaultTheme.fontFamily.mono]
       },
       keyframes: {
         "accordion-down": {

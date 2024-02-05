@@ -23,8 +23,8 @@
     "deploy-prod": "NODE_ENV=production sst deploy --stage production --profile quackdb"
   },
   "devDependencies": {
-    "sst": "2.39.13",
-    "aws-cdk-lib": "2.110.1",
+    "sst": "2.40.0",
+    "aws-cdk-lib": "2.124.0",
     "constructs": "10.3.0",
     "typescript": "^5.3.3",
     "@tsconfig/node20": "^20.1.2"

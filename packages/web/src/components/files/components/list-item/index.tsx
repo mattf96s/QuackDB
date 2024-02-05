@@ -5,11 +5,17 @@ import {
   useState,
   useTransition,
 } from "react";
+import { useForm } from "react-hook-form";
 import { useHotkeys } from "react-hotkeys-hook";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircledIcon } from "@radix-ui/react-icons";
-import { Link, useMatchRoute } from "@tanstack/react-router";
+import { Link, useMatchRoute, useRouter } from "@tanstack/react-router";
+import { wrap } from "comlink";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -19,8 +25,25 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { formatBytes } from "@/lib/utils/inflect";
+import type { RenameFileWorker } from "@/workers/rename-worker";
 import { type TreeNode, type TreeNodeData } from "../../context/types";
 import useDelete from "./hooks/useDelete";
 import { useDownloadFile } from "./hooks/useDownload";
@@ -103,9 +126,174 @@ function ContextMenuWrapper(props: ContextWrapperProps) {
         <ContextMenuSeparator />
         <DownloadContextItem node={node} />
         <DuplicateContextItem node={node} />
+        <RenameQueryContextItem node={node} />
+
+        <ContextMenuSeparator />
         <DeleteContextItem node={node} />
       </ContextMenuContent>
     </ContextMenu>
+  );
+}
+
+const renameSchema = z.object({
+  name: z
+    .string()
+    .min(3)
+    .superRefine((val, ctx) => {
+      // check the name has a file extension we recognize: csv, parquet, json, txt
+      const extension = val.split(".").pop();
+
+      if (!extension) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "The file name must have a file extension",
+          fatal: true,
+        });
+
+        return z.NEVER;
+      }
+
+      const isValid = ["csv", "parquet", "json", "txt"].includes(extension);
+
+      if (!isValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          fatal: true,
+          message:
+            "The file extension is not recognized. We support csv, parquet, json, and txt files.",
+        });
+
+        return z.NEVER;
+      }
+    }),
+});
+
+function RenameQueryContextItem(props: ContextItemProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+  const [status, setStatus] = useState<"loading" | "idle">("idle");
+
+  const { node } = props;
+
+  const form = useForm<z.infer<typeof renameSchema>>({
+    resolver: zodResolver(renameSchema),
+    defaultValues: {
+      name: node.name,
+    },
+    shouldUnregister: true,
+  });
+
+  const onRename = useCallback(
+    async (name: string) => {
+      // firefox supports the 'move' method but it's experimental
+
+      // check that the name is different
+      if (name === props.node.name) {
+        toast.warning("The name is the same");
+        return;
+      }
+
+      try {
+        setStatus("loading");
+
+        const handle = props.node.data.handle;
+
+        const worker = new Worker(
+          new URL("@/workers/rename.ts", import.meta.url),
+          {
+            type: "module",
+          },
+        );
+
+        const wrapper = wrap<RenameFileWorker>(worker);
+        await wrapper(handle, { name });
+        router.invalidate();
+        setStatus("idle");
+      } catch (e) {
+        toast.error("Error", {
+          description: e instanceof Error ? e.message : undefined,
+        });
+        setStatus("idle");
+      }
+    },
+    [props, router],
+  );
+
+  function onSubmit(values: z.infer<typeof renameSchema>) {
+    console.log("values", values);
+    onRename(values.name);
+  }
+
+  useHotkeys(
+    "mod+r",
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsOpen(true);
+    },
+    [],
+  );
+
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(s) => setIsOpen(s)}
+    >
+      <DialogTrigger asChild>
+        <ContextMenuItem
+          onSelect={(e) => {
+            e.preventDefault();
+            setIsOpen(true);
+          }}
+          inset
+        >
+          Rename
+          <ContextMenuShortcut>⌘R</ContextMenuShortcut>
+        </ContextMenuItem>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <div className="grid gap-4">
+          <DialogHeader className="space-y-2">
+            <h4 className="font-medium leading-none">Rename</h4>
+            <p className="text-sm text-muted-foreground">
+              Enter a new name for this file.
+            </p>
+          </DialogHeader>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-8"
+            >
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="sales.parquet"
+                        // disable auto complete
+                        autoComplete="off"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      This is your file name. It must have a file extension.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit">Submit</Button>
+            </form>
+          </Form>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
