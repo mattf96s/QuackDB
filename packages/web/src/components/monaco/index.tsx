@@ -90,9 +90,10 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
       language="pgsql"
       theme="vs-light"
       options={{
+        "semanticHighlighting.enabled": true,
         language: "pgsql",
-        fontSize: 16,
-        fontFamily: "Geist Mono",
+        fontSize: 15,
+        fontFamily: "geist-mono",
         formatOnType: true,
         autoClosingBrackets: "always",
         automaticLayout: true,

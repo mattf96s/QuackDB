@@ -7,7 +7,6 @@ import {
 } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { type AsyncDuckDB, DuckDBDataProtocol } from "@duckdb/duckdb-wasm";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
 import { useRouter } from "@tanstack/react-router";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -18,6 +17,7 @@ import {
   Database,
   Loader2,
   Plus,
+  PlusIcon,
   RefreshCw,
   X,
 } from "lucide-react";
@@ -37,20 +37,16 @@ import {
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getMimeType, makeDB } from "@/lib/modules/duckdb";
+import { getMimeType } from "@/lib/modules/duckdb";
 import { cn } from "@/lib/utils";
 import { columnMapper } from "@/utils/duckdb/helpers/columnMapper";
 import type { AddFilesHandlesWorker } from "@/workers/add-files-worker";
+import { useDB } from "../-db-context";
+import type { PanelFile } from "../-types";
+import CodeActionMenu from "./-components/code-action-menu";
 
-type File = {
-  code: string;
-  language: "sql" | "json" | "csv" | "parquet";
-  fileName: string;
-  path: string[];
-};
-
-type CloseAction = { type: "close"; file: File };
-type OpenAction = { type: "open"; file: File };
+type CloseAction = { type: "close"; file: PanelFile };
+type OpenAction = { type: "open"; file: PanelFile };
 type ToggleCollapsedAction = { type: "toggleCollapsed"; collapsed: boolean };
 
 export type FilesAction = CloseAction | OpenAction | ToggleCollapsedAction;
@@ -58,7 +54,7 @@ export type FilesAction = CloseAction | OpenAction | ToggleCollapsedAction;
 type FilesState = {
   currentFileIndex: number;
   fileListCollapsed: boolean;
-  openFiles: File[];
+  openFiles: PanelFile[];
 };
 
 const initialState: FilesState = {
@@ -140,11 +136,11 @@ export default function FilePanels(props: FilePanelsProps) {
     return openFiles[currentFileIndex] ?? null;
   }, [currentFileIndex, openFiles]);
 
-  const closeFile = (file: File) => {
+  const closeFile = (file: PanelFile) => {
     dispatch({ type: "close", file });
   };
 
-  const openFile = (file: File) => {
+  const openFile = (file: PanelFile) => {
     dispatch({ type: "open", file });
   };
 
@@ -200,7 +196,7 @@ export default function FilePanels(props: FilePanelsProps) {
               )}
             >
               {props.files.map((file) => {
-                const fileData: File = {
+                const fileData: PanelFile = {
                   code: "SELECT * FROM READ_PARQUET('tbl');",
                   language: "sql",
                   fileName: file.name,
@@ -216,7 +212,7 @@ export default function FilePanels(props: FilePanelsProps) {
                           currentFile?.fileName === file.name || undefined
                         }
                         key={file.id}
-                        onClick={(event) => openFile(fileData)}
+                        onClick={() => openFile(fileData)}
                         title={file.name}
                       >
                         <Database className="size-4" />
@@ -260,35 +256,53 @@ export default function FilePanels(props: FilePanelsProps) {
           className="flex flex-col"
           minSize={50}
         >
-          <div className="flex flex-[0_0_auto] flex-row overflow-auto bg-french-porcelain">
-            {Array.from(openFiles).map((file) => (
-              <div
-                className={cn(
-                  "flex flex-[0_0_auto] cursor-pointer flex-row flex-nowrap items-center gap-[1ch] bg-gray-200 p-[0.5rem_1ch] hover:bg-gray-300",
-                  currentFile === file && "bg-slate-300",
-                )}
-                data-current={currentFile === file || undefined}
-                key={file.fileName}
-                onClick={() => openFile(file)}
-              >
-                <Code2 className="size-5" />
-                <span>{file.fileName}</span>
-                <Button
-                  size="xs"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    closeFile(file);
-                  }}
-                  variant="ghost"
-                  className="p-0"
+          <div className="flex flex-[0_0_auto] flex-row justify-between overflow-auto bg-french-porcelain">
+            <div className="flex h-full w-full items-center">
+              {Array.from(openFiles).map((file) => (
+                <div
+                  className={cn(
+                    "flex flex-[0_0_auto] cursor-pointer flex-row flex-nowrap items-center gap-[1ch] bg-gray-200 p-[0.5rem_1ch] hover:bg-gray-300",
+                    currentFile === file && "bg-slate-300",
+                  )}
+                  data-current={currentFile === file || undefined}
+                  key={file.fileName}
+                  onClick={() => openFile(file)}
                 >
-                  <X
-                    className="size-4"
-                    type="close"
-                  />
-                </Button>
-              </div>
-            ))}
+                  <Code2 className="size-5" />
+                  <span>{file.fileName}</span>
+                  <Button
+                    size="xs"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      closeFile(file);
+                    }}
+                    variant="ghost"
+                    className="p-0"
+                  >
+                    <X
+                      className="size-4"
+                      type="close"
+                    />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            <div className="inline-flex items-center gap-2 pr-4">
+              <Button
+                onClick={() => {
+                  openFile({
+                    code: "SELECT * FROM READ_PARQUET('tbl');",
+                    fileName: "new_query.sql",
+                    language: "sql",
+                    path: ["/new_query.sql"],
+                  });
+                }}
+                size="sm"
+              >
+                <PlusIcon className="mr-1 size-4" />
+                New Query
+              </Button>
+            </div>
           </div>
           <Separator />
           {currentFile && (
@@ -304,7 +318,52 @@ export default function FilePanels(props: FilePanelsProps) {
 }
 
 type EditorPanelProps = {
-  currentFile: File;
+  currentFile: PanelFile;
+};
+
+const useSuggestions = (sql: string) => {
+  const { db } = useDB();
+  const [suggestions, setSuggestions] = useState([]);
+  const lastSQL = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!db) return;
+    if (!sql) return;
+
+    const getData = async (sql: string) => {
+      const conn = await db.connect();
+
+      try {
+        const cleanSQL = sql.replaceAll("'", "").replaceAll(";", "");
+        const query = await conn.query(
+          `SELECT * FROM sql_auto_complete('${cleanSQL}');`,
+        );
+
+        const results = await query
+          .toArray()
+          .map((row: { toJSON(): Record<string, unknown> }) => row.toJSON());
+        return results;
+      } catch (e) {
+        console.error("Failed to generate suggestions: ", e);
+        return [];
+      } finally {
+        await conn.close();
+      }
+    };
+
+    if (sql && lastSQL.current !== sql) {
+      lastSQL.current = sql;
+      getData(sql)
+        .catch((e) => {
+          console.error("Failed to generate suggestions: ", e);
+        })
+        .then((results) => {
+          setSuggestions(results);
+        });
+    }
+  }, [db, sql]);
+
+  return suggestions;
 };
 
 function EditorPanel(props: EditorPanelProps) {
@@ -330,7 +389,7 @@ function EditorPanel(props: EditorPanelProps) {
       className="flex flex-col"
       direction="vertical"
     >
-      <Panel>
+      <Panel className="relative">
         {currentFile && (
           <Editor
             onBlur={onBlur}
@@ -348,6 +407,15 @@ function EditorPanel(props: EditorPanelProps) {
             }}
           />
         )}
+        {/* code actions */}
+        <div className="absolute bottom-3 right-7 flex items-center gap-2">
+          <CodeActionMenu
+            currentFile={currentFile}
+            sql={deferredQuery}
+            isEditorFocused={isFocused}
+          />
+          <Button className="h-7">Run</Button>
+        </div>
       </Panel>
 
       <PanelResizeHandle
@@ -372,159 +440,163 @@ function EditorPanel(props: EditorPanelProps) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
+function Suggestions({ sql }: { sql: string }) {
+  const suggestions = useSuggestions(sql);
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <Button
+          className="h-7"
+          variant="ghost"
+        >
+          <ChevronDown className="h-4 w-4" />
+        </Button>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        {suggestions?.map((suggestion, i) => (
+          <ContextMenuItem key={i}>{suggestion}</ContextMenuItem>
+        ))}
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+
 type ResultsViewProps = {
   sql: string;
-  currentFile: File;
+  currentFile: PanelFile;
   isEditorFocused: boolean;
 };
 
 function ResultsView(props: ResultsViewProps) {
-  const [isInitializing, setIsInitializing] = useState(true);
+  const [status, setStatus] = useState<"idle" | "initializing" | "ready">(
+    "idle",
+  );
 
-  const duckdb = useRef<AsyncDuckDB | undefined>(undefined);
+  const { db } = useDB();
 
-  const { sql, currentFile, isEditorFocused } = props;
+  const { sql, currentFile } = props;
 
   const debouncedSQL = useDebounce(sql, 500);
 
-  useEffect(() => {
-    const initDB = async () => {
-      duckdb.current = await makeDB();
-      await duckdb.current.open({
-        query: {
-          castBigIntToDouble: true,
-          castTimestampToDate: true,
-          castDecimalToDouble: true,
-        },
-      });
-    };
-
-    initDB()
-      .then(() => {
-        console.log("DuckDB initialized");
-        setIsInitializing(false);
-      })
-      .catch((e) => {
-        console.error("Error: ", e);
-        toast.error("Failed to initialize DuckDB", {
-          description: e instanceof Error ? e.message : undefined,
-        });
-      });
-
-    return () => {
-      if (duckdb.current) {
-        duckdb.current.terminate().catch((e) => {
-          console.error("Error terminating DuckDB: ", e);
-        });
-      }
-    };
-  }, []);
-
   const lastSQL = useRef<string | null>(null);
-
+  const [raw, setRaw] = useState<string>("");
   const [results, setResults] = useState([]);
-  const [columns, setColumns] = useState(new Map<string, string>());
-  const [count, setCount] = useState(0);
+  const [_columns, setColumns] = useState(new Map<string, string>());
+  const [_count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isInitializing) return;
+    if (!db) return;
+    if (status !== "idle") return;
 
-    const db = duckdb.current;
+    setStatus("initializing");
+
+    const init = async () => {
+      try {
+        const root = await navigator.storage.getDirectory();
+        const fileHandle = await root.getFileHandle(currentFile.fileName);
+
+        const file = await fileHandle.getFile();
+
+        await db.registerFileHandle(currentFile.fileName, file);
+
+        const conn = await db.connect();
+
+        // validate sql
+        await conn.query("");
+
+        const filename = currentFile.fileName;
+        const kind = getMimeType(file);
+
+        switch (kind) {
+          case "application/parquet": {
+            await conn.query(
+              `CREATE OR REPLACE VIEW '${filename}' AS SELECT * FROM parquet_scan('${filename}')`,
+            );
+            break;
+          }
+          case "text/csv": {
+            conn.query(
+              `CREATE OR REPLACE VIEW '${filename}' AS SELECT * FROM read_csv_auto('${filename}')`,
+            );
+            break;
+          }
+          case "application/json": {
+            conn.query(
+              `CREATE OR REPLACE VIEW '${filename}' AS SELECT * FROM read_json_auto('${filename}')`,
+            );
+            break;
+          }
+          default: {
+            throw new Error(`File type ${kind} not supported`);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to initialize: ", e);
+      } finally {
+        setStatus("ready");
+      }
+    };
+
+    init();
+  }, [currentFile.fileName, db, status]);
+
+  useEffect(() => {
+    if (status !== "ready") return;
 
     const getData = async ({
       currentFile,
       sql,
     }: {
-      currentFile: File;
+      currentFile: PanelFile;
       sql: string;
     }) => {
-      if (!db) return;
-      const root = await navigator.storage.getDirectory();
-      const fileHandle = await root.getFileHandle(currentFile.fileName);
-
-      const file = await fileHandle.getFile();
-
-      await db.registerFileHandle(
-        currentFile.fileName,
-        file,
-        DuckDBDataProtocol.BROWSER_FILEREADER,
-        true,
-      );
-
       const conn = await db.connect();
+      try {
+        const filename = currentFile.fileName;
 
-      // validate sql
-      await conn.query("");
+        const countQuery = `SELECT COUNT(*) FROM '${filename}'`;
 
-      const filename = currentFile.fileName;
-      const kind = getMimeType(file);
+        const [queryResults, columns, countRes] = await Promise.all([
+          conn.query(sql),
+          columnMapper(conn, filename),
+          conn.query(countQuery),
+        ]);
 
-      switch (kind) {
-        case "application/parquet": {
-          await conn.query(
-            `CREATE OR REPLACE VIEW '${filename}' AS SELECT * FROM parquet_scan('${filename}')`,
-          );
-          break;
-        }
-        case "text/csv": {
-          conn.query(
-            `CREATE OR REPLACE VIEW '${filename}' AS SELECT * FROM read_csv_auto('${filename}')`,
-          );
-          break;
-        }
-        case "application/json": {
-          conn.query(
-            `CREATE OR REPLACE VIEW '${filename}' AS SELECT * FROM read_json_auto('${filename}')`,
-          );
-          break;
-        }
-        default: {
-          throw new Error(`File type ${kind} not supported`);
-        }
+        setRaw(queryResults);
+
+        const results = await queryResults
+          .toArray()
+          .map((row: { toJSON(): Record<string, unknown> }) => row.toJSON());
+
+        const count = countRes
+          .toArray()
+          .map((row: { toJSON(): Record<string, unknown> }) => row.toJSON())[0][
+          "count_star()"
+        ];
+
+        setResults(results);
+        setColumns(columns);
+        setCount(count);
+      } catch (e) {
+        console.error("Failed to execute query: ", e);
+        toast.error("Failed to execute query", {
+          description: e instanceof Error ? e.message : undefined,
+        });
+      } finally {
+        await conn.close();
+        setIsLoading(false);
       }
-
-      const countQuery = `SELECT COUNT(*) FROM '${filename}'`;
-
-      const [queryResults, columns, countRes] = await Promise.all([
-        conn.query(sql),
-        columnMapper(conn, filename),
-        conn.query(countQuery),
-      ]);
-
-      const results = await queryResults
-        .toArray()
-        .map((row: { toJSON(): Record<string, unknown> }) => row.toJSON());
-
-      const count = countRes
-        .toArray()
-        .map((row: { toJSON(): Record<string, unknown> }) => row.toJSON())[0][
-        "count_star()"
-      ];
-
-      setResults(results);
-      setColumns(columns);
-      setCount(count);
-
-      await conn.close();
     };
 
     if (debouncedSQL && lastSQL.current !== debouncedSQL) {
       setIsLoading(true);
       lastSQL.current = debouncedSQL;
-      getData({ currentFile, sql: debouncedSQL })
-        .then(() => {
-          setIsLoading(false);
-        })
-        .catch((e) => {
-          console.error("Error: ", e);
-          toast.error("Failed to execute query", {
-            description: e instanceof Error ? e.message : undefined,
-          });
-          setIsLoading(false);
-        });
+      getData({ currentFile, sql: debouncedSQL });
     }
-  }, [debouncedSQL, isInitializing, currentFile]);
+  }, [currentFile, db, debouncedSQL, status]);
 
   return (
     <div className="h-full px-4 py-6 lg:px-8">
@@ -542,6 +614,7 @@ function ResultsView(props: ResultsViewProps) {
             </TabsTrigger>
             <TabsTrigger value="chart">Chart</TabsTrigger>
             <TabsTrigger value="json">JSON</TabsTrigger>
+            <TabsTrigger value="text">TEXT</TabsTrigger>
           </TabsList>
           <div className="ml-auto mr-4">
             {isLoading && (
@@ -635,6 +708,17 @@ function ResultsView(props: ResultsViewProps) {
             <pre className="whitespace-pre-wrap text-sm text-gray-900">
               {JSON.stringify(results, null, 2)}
             </pre>
+          </div>
+        </TabsContent>
+        <TabsContent
+          value="text"
+          className="h-full pb-10"
+        >
+          <div className="h-full max-h-full overflow-y-auto">
+            <div
+              className="prose"
+              dangerouslySetInnerHTML={{ __html: raw }}
+            />
           </div>
         </TabsContent>
       </Tabs>

@@ -1,7 +1,12 @@
-export const createInsertSnippet = (file: File) => {
-  const kind = getMimeType(file);
-  const filename = file.name;
+type CreateViewProps = {
+  kind: string;
+  filename: string;
+};
 
+/**
+ * Create a DuckDB view from a file
+ */
+export const createView = ({ kind, filename }: CreateViewProps) => {
   switch (kind) {
     case "application/parquet": {
       return `CREATE OR REPLACE VIEW '${filename}' AS SELECT * FROM parquet_scan('${filename}')`;
@@ -12,10 +17,23 @@ export const createInsertSnippet = (file: File) => {
     case "application/json": {
       return `CREATE OR REPLACE VIEW '${filename}' AS SELECT * FROM read_json_auto('${filename}')`;
     }
+    // #TODO: sql
+
     default: {
       return `Unknown file type: ${kind}`;
     }
   }
+};
+
+export const createInsertSnippet = (file: File) => {
+  const kind = getMimeType(file);
+  const filename = file.name;
+
+  if (!kind) {
+    return `Unknown file type: ${filename}`;
+  }
+
+  return createView({ kind, filename });
 };
 
 function getMimeType(file: File) {
