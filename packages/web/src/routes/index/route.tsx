@@ -11,7 +11,7 @@ import { type Preset } from "@/components/playground/types";
 import { Separator } from "@/components/ui/separator";
 import type { GetDirectoryFilesWorker } from "@/workers/get-directory-files";
 import { DBProvider } from "./-components/-db-context";
-import FilePanels from "./-components/panels/index.lazy";
+import FilePanels from "./-components/panels";
 
 const presets: Preset[] = [];
 
@@ -41,7 +41,7 @@ function Playground() {
     <DBProvider>
       <div className="h-full flex-col md:flex">
         <div className="container flex max-w-none flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
-          <h2 className="text-lg font-semibold">Playground</h2>
+          <h2 className="text-lg font-semibold">QuackDB</h2>
           <div className="ml-auto flex w-full space-x-2 sm:justify-end">
             <PresetSelector presets={presets} />
             <PresetSave />

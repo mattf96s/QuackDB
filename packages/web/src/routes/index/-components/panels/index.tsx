@@ -168,6 +168,26 @@ export default function FilePanels(props: FilePanelsProps) {
           onCollapse={onCollapse}
           onExpand={onExpand}
         >
+          {/* <div className="flex w-full items-center justify-between">
+            <div className="flex grow">
+              <Button
+                onClick={fileListCollapsed ? onExpand : onCollapse}
+                variant="ghost"
+                className="flex w-full items-center justify-start gap-1 hover:bg-transparent"
+              >
+                <ChevronDown
+                  className={cn(
+                    "size-5",
+                    fileListCollapsed && "rotate-180 transition-transform",
+                  )}
+                />
+                <span className="text-sm font-semibold">Files</span>
+              </Button>
+            </div>
+            <div className="flex items-center gap-1">
+              <SourcesToolbar />
+            </div>
+          </div> */}
           <div className="flex w-full flex-col pt-2">
             <div className="flex w-full items-center justify-between">
               <div className="flex grow">
@@ -202,6 +222,7 @@ export default function FilePanels(props: FilePanelsProps) {
                   fileName: file.name,
                   path: [`/${file.name}`],
                 };
+
                 return (
                   <ContextMenu key={file.id}>
                     <ContextMenuTrigger className="data-[state=open]:bg-gray-100">
@@ -256,48 +277,68 @@ export default function FilePanels(props: FilePanelsProps) {
           className="flex flex-col"
           minSize={50}
         >
-          <div className="flex flex-[0_0_auto] flex-row justify-between overflow-auto bg-french-porcelain">
+          <div className="flex h-8 flex-[0_0_auto] flex-row justify-between overflow-auto bg-muted">
             <div className="flex h-full w-full items-center">
-              {Array.from(openFiles).map((file) => (
-                <div
-                  className={cn(
-                    "flex flex-[0_0_auto] cursor-pointer flex-row flex-nowrap items-center gap-[1ch] bg-gray-200 p-[0.5rem_1ch] hover:bg-gray-300",
-                    currentFile === file && "bg-slate-300",
-                  )}
-                  data-current={currentFile === file || undefined}
-                  key={file.fileName}
-                  onClick={() => openFile(file)}
-                >
-                  <Code2 className="size-5" />
-                  <span>{file.fileName}</span>
-                  <Button
-                    size="xs"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      closeFile(file);
-                    }}
-                    variant="ghost"
-                    className="p-0"
+              {Array.from(openFiles).map((file) => {
+                const isCurrent = currentFile === file;
+                return (
+                  <div
+                    className={cn(
+                      "flex flex-[0_0_auto] cursor-pointer flex-row flex-nowrap items-center gap-[1ch] border bg-gray-100 p-[0.5rem_1ch] transition-colors hover:bg-gray-200",
+                      currentFile === file &&
+                        "bg-primary text-primary-foreground hover:bg-primary/90",
+                    )}
+                    data-current={currentFile === file || undefined}
+                    key={file.fileName}
+                    onClick={() => openFile(file)}
                   >
-                    <X
-                      className="size-4"
-                      type="close"
-                    />
-                  </Button>
-                </div>
-              ))}
+                    <Code2 className="size-5" />
+                    <span className="text-md">{file.fileName}</span>
+
+                    <button
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        closeFile(file);
+                      }}
+                      className={cn(
+                        "bg-inherit px-0.5 py-0 hover:bg-gray-300",
+                        isCurrent && "hover:bg-gray-100/50",
+                      )}
+                    >
+                      <X
+                        className="size-4"
+                        type="close"
+                      />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
+            <Separator orientation="vertical" />
             <div className="inline-flex items-center gap-2 pr-4">
               <Button
                 onClick={() => {
+                  // check if the file already exists
+                  let counter = 0;
+                  let newFilename = "new_query.sql";
+                  while (true) {
+                    const exists = openFiles.some(
+                      (f) => f.fileName === newFilename,
+                    );
+                    if (!exists) break;
+                    counter++;
+                    newFilename = `new_query_${counter}.sql`;
+                  }
+
                   openFile({
                     code: "SELECT * FROM READ_PARQUET('tbl');",
-                    fileName: "new_query.sql",
+                    fileName: newFilename,
                     language: "sql",
-                    path: ["/new_query.sql"],
+                    path: [`/${newFilename}`],
                   });
                 }}
                 size="sm"
+                className="bg-indigo-500 text-white hover:bg-indigo-600"
               >
                 <PlusIcon className="mr-1 size-4" />
                 New Query

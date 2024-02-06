@@ -1,12 +1,14 @@
-@import "@fontsource/geist-sans";
-@import "@fontsource/geist-mono";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
+    --font-geist-sans: "geist-sans", -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol";
+    --font-jetbrains-mono: "jetbrains-mono", SFMono-Regular, Menlo, Monaco,
+      Consolas, "Liberation Mono", "Courier New", monospace;
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
@@ -61,5 +63,74 @@
     @apply bg-background text-foreground;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
+  }
+}
+
+@supports (font-variation-settings: normal) {
+  @font-face {
+    font-family: "geist-sans";
+    font-weight: 300 900;
+    font-style: normal;
+    font-stretch: normal;
+    src: url("/fonts/Geist/GeistVariableVF.ttf")
+      format("woff2 supports variations");
+  }
+  @font-face {
+    font-family: "jetbrains-mono";
+    font-weight: 300 900;
+    font-style: normal;
+    font-stretch: normal;
+    src: url("/fonts/JetBrainsMono/JetBrainsMono[wght].woff2")
+      format("woff2 supports variations");
+  }
+
+  @font-face {
+    font-family: "jetbrains-mono";
+    font-weight: 300 900;
+    font-style: italic;
+    font-stretch: normal;
+    src: url("/fonts/JetBrainsMono/JetBrainsMono-Italic[wght].woff2")
+      format("woff2 supports variations");
+  }
+}
+
+@supports not (font-variation-settings: normal) {
+  /* static fonts */
+  @font-face {
+    font-family: "geist-sans";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("/fonts/Geist/Geist-Regular.woff2") format("woff2");
+  }
+
+  @font-face {
+    font-family: "geist-sans";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("/fonts/Geist/Geist-Medium.woff2") format("woff2");
+  }
+
+  @font-face {
+    font-family: "geist-sans";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("/fonts/Geist/Geist-SemiBold.woff2") format("woff2");
+  }
+
+  @font-face {
+    font-family: "geist-sans";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("/fonts/Geist/Geist-Bold.woff2") format("woff2");
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    @apply px-4;
   }
 }
