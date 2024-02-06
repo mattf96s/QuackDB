@@ -2,8 +2,10 @@ import { memo, type ReactNode, useEffect } from "react";
 import {
   createRootRoute,
   Outlet,
+  useRouter,
   useRouterState,
 } from "@tanstack/react-router";
+import * as Fathom from "fathom-client";
 import NProgress from "nprogress";
 import NotFound from "@/components/NotFound";
 import Sidebar from "@/components/sidebar";
@@ -26,6 +28,31 @@ function ProgressBar() {
 
   return null;
 }
+
+const Analytics = memo(function Analytics() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const domain = window.location.hostname;
+    const isProduction = domain === "app.quackdb.com";
+    if (!isProduction) return;
+
+    Fathom.load("OSRZURZO", {
+      includedDomains: ["app.quackdb.com"],
+      excludedDomains: ["localhost"],
+      honorDNT: true,
+      auto: false,
+    });
+
+    // doesn't appear to have an unsubscribe method
+    router.subscribe("onResolved", (e) => {
+      const location = e.toLocation;
+      const url = location.pathname + location.search;
+      Fathom.trackPageview({ url, referrer: document.referrer });
+    });
+  }, [router]);
+  return null;
+});
 
 function Layout(props: { children: ReactNode }) {
   return (
@@ -58,6 +85,7 @@ function RootComponent() {
         <Outlet />
       </Layout>
       <ProgressBar />
+      <Analytics />
     </>
   );
 }
