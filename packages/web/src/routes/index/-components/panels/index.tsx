@@ -34,7 +34,6 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getMimeType } from "@/lib/modules/duckdb";
@@ -43,6 +42,7 @@ import { columnMapper } from "@/utils/duckdb/helpers/columnMapper";
 import type { AddFilesHandlesWorker } from "@/workers/add-files-worker";
 import { useDB } from "../-db-context";
 import type { PanelFile } from "../-types";
+import TableView from "../table";
 import CodeActionMenu from "./-components/code-action-menu";
 
 type CloseAction = { type: "close"; file: PanelFile };
@@ -293,7 +293,7 @@ export default function FilePanels(props: FilePanelsProps) {
                     onClick={() => openFile(file)}
                   >
                     <Code2 className="size-5" />
-                    <span className="text-md">{file.fileName}</span>
+                    <span className="text-sm">{file.fileName}</span>
 
                     <button
                       onClick={(event) => {
@@ -524,7 +524,7 @@ function ResultsView(props: ResultsViewProps) {
   const lastSQL = useRef<string | null>(null);
   const [raw, setRaw] = useState<string>("");
   const [results, setResults] = useState([]);
-  const [_columns, setColumns] = useState(new Map<string, string>());
+  const [columns, setColumns] = useState(new Map<string, string>());
   const [_count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -640,10 +640,10 @@ function ResultsView(props: ResultsViewProps) {
   }, [currentFile, db, debouncedSQL, status]);
 
   return (
-    <div className="h-full px-4 py-6 lg:px-8">
+    <div className="h-full w-full px-4 py-6 lg:px-8">
       <Tabs
         defaultValue="table"
-        className="h-full space-y-6"
+        className="h-full w-full space-y-6"
       >
         <div className="space-between flex items-center">
           <TabsList>
@@ -667,79 +667,22 @@ function ResultsView(props: ResultsViewProps) {
         </div>
         <TabsContent
           value="table"
-          className="border-none p-0 outline-none"
+          className="h-full max-w-full border-none p-0 pb-20 outline-none"
         >
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h2 className="text-2xl font-semibold tracking-tight">
-                Listen Now
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Top picks for you. Updated daily.
-              </p>
-            </div>
-          </div>
-          <Separator className="my-4" />
-          <div className="relative">
-            <ScrollArea>
-              <div className="flex space-x-4 pb-4">
-                {/* {listenNowAlbums.map((album) => (
-                              <AlbumArtwork
-                                key={album.name}
-                                album={album}
-                                className="w-[250px]"
-                                aspectRatio="portrait"
-                                width={250}
-                                height={330}
-                              />
-                            ))} */}
-              </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-          </div>
-          <div className="mt-6 space-y-1">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              Made for You
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Your personal playlists. Updated daily.
-            </p>
-          </div>
-          <Separator className="my-4" />
-          <div className="relative">
-            <ScrollArea>
-              <div className="flex space-x-4 pb-4">
-                {/* {madeForYouAlbums.map((album) => (
-                              <AlbumArtwork
-                                key={album.name}
-                                album={album}
-                                className="w-[150px]"
-                                aspectRatio="square"
-                                width={150}
-                                height={150}
-                              />
-                            ))} */}
-              </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+          <div className="h-full max-h-full w-full max-w-full overflow-x-auto overflow-y-auto">
+            {results && Array.isArray(results) && (
+              <TableView
+                results={results}
+                columns={columns}
+              />
+            )}
           </div>
         </TabsContent>
         <TabsContent
           value="chart"
           className="h-full flex-col border-none p-0 data-[state=active]:flex"
         >
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h2 className="text-2xl font-semibold tracking-tight">
-                New Episodes
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Your favorite podcasts. Updated daily.
-              </p>
-            </div>
-          </div>
-          <Separator className="my-4" />
-          <p>placeholder</p>
+          <p>Coming soon</p>
         </TabsContent>
         <TabsContent
           value="json"
