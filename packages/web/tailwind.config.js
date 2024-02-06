@@ -1,7 +1,13 @@
-const defaultTheme = require("tailwindcss/defaultTheme")
+import aspectRatio from "@tailwindcss/aspect-ratio"
+import containerQueries from '@tailwindcss/container-queries'
+import form from "@tailwindcss/forms"
+import typography from '@tailwindcss/typography'
+import { fontFamily } from "tailwindcss/defaultTheme"
+import animate from "tailwindcss-animate"
+
 
 /** @type {import("tailwindcss").Config} */
-module.exports = {
+export default {
   darkMode: ["class"],
   content: [
     "./index.html",
@@ -60,8 +66,8 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["geist-sans", ...defaultTheme.fontFamily.sans],
-        mono: ["geist-mono", ...defaultTheme.fontFamily.mono]
+        sans: ["var(--font-geist-sans)", ...fontFamily.sans],
+        mono: ["var(--font-jetbrains-mono)", ...fontFamily.mono],
       },
       keyframes: {
         "accordion-down": {
@@ -80,10 +86,10 @@ module.exports = {
     },
   },
   plugins: [
-    require("@tailwindcss/forms"),
-    require("@tailwindcss/typography"),
-    require("tailwindcss-animate"),
-    require("@tailwindcss/aspect-ratio"),
-    require('@tailwindcss/container-queries'),
+    form,
+    typography,
+    animate,
+    aspectRatio,
+    containerQueries
   ],
 }

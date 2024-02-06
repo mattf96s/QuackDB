@@ -31,26 +31,29 @@ function ProgressBar() {
 
 const Analytics = memo(function Analytics() {
   const router = useRouter();
+  router.subscribe("onLoad", () => {
+    const url = window.location.href;
+    Fathom.trackPageview({
+      url,
+      referrer: document.referrer,
+    });
+  });
 
   useEffect(() => {
-    const domain = window.location.hostname;
-    const isProduction = domain === "app.quackdb.com";
+    const url = window.location.href;
+    const { hostname } = new URL(url);
+
+    const isProduction = hostname === "app.quackdb.com";
+
     if (!isProduction) return;
 
     Fathom.load("OSRZURZO", {
       includedDomains: ["app.quackdb.com"],
       excludedDomains: ["localhost"],
       honorDNT: true,
-      auto: false,
     });
+  }, []);
 
-    // doesn't appear to have an unsubscribe method
-    router.subscribe("onResolved", (e) => {
-      const location = e.toLocation;
-      const url = location.pathname + location.search;
-      Fathom.trackPageview({ url, referrer: document.referrer });
-    });
-  }, [router]);
   return null;
 });
 
@@ -78,12 +81,10 @@ function Layout(props: { children: ReactNode }) {
   );
 }
 
-function RootComponent() {
+function Shell(props: { children: ReactNode }) {
   return (
     <>
-      <Layout>
-        <Outlet />
-      </Layout>
+      <Layout>{props.children}</Layout>
       <ProgressBar />
       <Analytics />
     </>
@@ -92,9 +93,17 @@ function RootComponent() {
 
 function NotFoundComponent() {
   return (
-    <Layout>
+    <Shell>
       <NotFound />
-    </Layout>
+    </Shell>
+  );
+}
+
+function RootComponent() {
+  return (
+    <Shell>
+      <Outlet />
+    </Shell>
   );
 }
 
