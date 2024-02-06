@@ -67,6 +67,7 @@
     "comlink": "^4.4.1",
     "date-fns": "^3.3.1",
     "embla-carousel-react": "8.0.0-rc21",
+    "fathom-client": "^3.6.0",
     "framer-motion": "^10.18.0",
     "idb-keyval": "^6.2.1",
     "idle-task": "^4.3.0",
