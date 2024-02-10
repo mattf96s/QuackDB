@@ -7,10 +7,11 @@ import {
 } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import type { AsyncPreparedStatement } from "@duckdb/duckdb-wasm";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
 import { useRouter } from "@tanstack/react-router";
 import { useDebounce } from "@uidotdev/usehooks";
-import { wrap } from "comlink";
+import { releaseProxy, type Remote, wrap } from "comlink";
 import {
   ChevronDown,
   Code2,
@@ -36,11 +37,10 @@ import {
 } from "@/components/ui/context-menu";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getMimeType } from "@/lib/modules/duckdb";
+import { useDB } from "@/context/db/useDB";
+import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
-import { columnMapper } from "@/utils/duckdb/helpers/columnMapper";
 import type { AddFilesHandlesWorker } from "@/workers/add-files-worker";
-import { useDB } from "../-db-context";
 import type { PanelFile } from "../-types";
 import TableView from "../table";
 import CodeActionMenu from "./-components/code-action-menu";
@@ -368,40 +368,43 @@ const useSuggestions = (sql: string) => {
   const lastSQL = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!db) return;
-    if (!sql) return;
+    let isCancelled = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let stmt: AsyncPreparedStatement<any> | undefined;
 
     const getData = async (sql: string) => {
-      const conn = await db.connect();
+      if (stmt) await stmt.close();
 
-      try {
-        const cleanSQL = sql.replaceAll("'", "").replaceAll(";", "");
-        const query = await conn.query(
-          `SELECT * FROM sql_auto_complete('${cleanSQL}');`,
-        );
+      while (!isCancelled) {
+        try {
+          const cleanSQL = sql.replaceAll("'", "").replaceAll(";", "");
+          stmt = await db?.prepareQuery(cleanSQL);
 
-        const results = await query
-          .toArray()
-          .map((row: { toJSON(): Record<string, unknown> }) => row.toJSON());
-        return results;
-      } catch (e) {
-        console.error("Failed to generate suggestions: ", e);
-        return [];
-      } finally {
-        await conn.close();
+          const query = await stmt?.send();
+
+          const results = await query
+            .toArray()
+            .map((row: { toJSON(): Record<string, unknown> }) => row.toJSON());
+          setSuggestions(results);
+
+          break;
+        } catch (e) {
+          console.error("Failed to generate suggestions: ", e);
+          setSuggestions([]);
+          break;
+        } finally {
+          await stmt?.close();
+        }
       }
     };
 
     if (sql && lastSQL.current !== sql) {
       lastSQL.current = sql;
-      getData(sql)
-        .catch((e) => {
-          console.error("Failed to generate suggestions: ", e);
-        })
-        .then((results) => {
-          setSuggestions(results);
-        });
+      getData(sql);
     }
+    return () => {
+      isCancelled = true;
+    };
   }, [db, sql]);
 
   return suggestions;
@@ -523,69 +526,14 @@ function ResultsView(props: ResultsViewProps) {
 
   const lastSQL = useRef<string | null>(null);
   const [raw, setRaw] = useState<string>("");
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<Record<string, unknown>[]>([]);
   const [columns, setColumns] = useState(new Map<string, string>());
   const [_count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!db) return;
-    if (status !== "idle") return;
-
-    setStatus("initializing");
-
-    const init = async () => {
-      try {
-        const root = await navigator.storage.getDirectory();
-        const fileHandle = await root.getFileHandle(currentFile.fileName);
-
-        const file = await fileHandle.getFile();
-
-        await db.registerFileHandle(currentFile.fileName, file);
-
-        const conn = await db.connect();
-
-        // validate sql
-        await conn.query("");
-
-        const filename = currentFile.fileName;
-        const kind = getMimeType(file);
-
-        switch (kind) {
-          case "application/parquet": {
-            await conn.query(
-              `CREATE OR REPLACE VIEW '${filename}' AS SELECT * FROM parquet_scan('${filename}')`,
-            );
-            break;
-          }
-          case "text/csv": {
-            conn.query(
-              `CREATE OR REPLACE VIEW '${filename}' AS SELECT * FROM read_csv_auto('${filename}')`,
-            );
-            break;
-          }
-          case "application/json": {
-            conn.query(
-              `CREATE OR REPLACE VIEW '${filename}' AS SELECT * FROM read_json_auto('${filename}')`,
-            );
-            break;
-          }
-          default: {
-            throw new Error(`File type ${kind} not supported`);
-          }
-        }
-      } catch (e) {
-        console.error("Failed to initialize: ", e);
-      } finally {
-        setStatus("ready");
-      }
-    };
-
-    init();
-  }, [currentFile.fileName, db, status]);
-
-  useEffect(() => {
-    if (status !== "ready") return;
+    const controller = new AbortController();
+    const { signal } = controller;
 
     const getData = async ({
       currentFile,
@@ -594,32 +542,55 @@ function ResultsView(props: ResultsViewProps) {
       currentFile: PanelFile;
       sql: string;
     }) => {
-      const conn = await db.connect();
       try {
         const filename = currentFile.fileName;
 
         const countQuery = `SELECT COUNT(*) FROM '${filename}'`;
 
         const [queryResults, columns, countRes] = await Promise.all([
-          conn.query(sql),
-          columnMapper(conn, filename),
-          conn.query(countQuery),
+          db?.query(sql),
+          db?.describeTableSchema({ table: `'${filename}'` }),
+          db?.query(countQuery),
         ]);
 
-        setRaw(queryResults);
+        if (signal.aborted) return;
 
-        const results = await queryResults
-          .toArray()
-          .map((row: { toJSON(): Record<string, unknown> }) => row.toJSON());
+        const rawResultsAsText = queryResults?.toString();
+        setRaw(rawResultsAsText ?? "");
 
-        const count = countRes
-          .toArray()
-          .map((row: { toJSON(): Record<string, unknown> }) => row.toJSON())[0][
-          "count_star()"
-        ];
+        // results
+
+        const results = queryResults
+          ? queryResults
+              .toArray()
+              .map((row: { toJSON(): Record<string, unknown> }) => row.toJSON())
+          : [];
 
         setResults(results);
-        setColumns(columns);
+
+        // columns
+        const columnsItems = columns ?? [];
+        const columnsMap = new Map<string, string>();
+        columnsItems.forEach((column) => {
+          columnsMap.set(column.name, column.type);
+        });
+        setColumns(columnsMap);
+
+        //  count
+        const countItems =
+          countRes
+            ?.toArray()
+            .map((row: { toJSON(): Record<string, unknown> }) =>
+              row.toJSON(),
+            ) ?? [];
+        let count = 0;
+        if (countItems.length > 0) {
+          const item = countItems[0];
+          if (item) {
+            count = item["count_star()"] as number;
+          }
+        }
+
         setCount(count);
       } catch (e) {
         console.error("Failed to execute query: ", e);
@@ -627,7 +598,6 @@ function ResultsView(props: ResultsViewProps) {
           description: e instanceof Error ? e.message : undefined,
         });
       } finally {
-        await conn.close();
         setIsLoading(false);
       }
     };
@@ -637,6 +607,9 @@ function ResultsView(props: ResultsViewProps) {
       lastSQL.current = debouncedSQL;
       getData({ currentFile, sql: debouncedSQL });
     }
+    return () => {
+      controller.abort();
+    };
   }, [currentFile, db, debouncedSQL, status]);
 
   return (
@@ -711,9 +684,13 @@ function ResultsView(props: ResultsViewProps) {
 }
 
 function SourcesToolbar() {
-  const workerRef = useRef<null | Worker>(null);
   const router = useRouter();
+  const { session } = useSession();
+
   const onAddFiles = useCallback(async () => {
+    let worker: Worker | undefined;
+    let addFilesWorkerFn: Remote<AddFilesHandlesWorker> | undefined;
+
     try {
       const fileHandles = await window.showOpenFilePicker({
         types: [
@@ -737,17 +714,19 @@ function SourcesToolbar() {
 
       if (!fileHandles || fileHandles.length === 0) return;
 
-      const worker = new Worker(
+      worker = new Worker(
         new URL("@/workers/add-files-worker.ts", import.meta.url),
         {
           type: "module",
         },
       );
 
-      workerRef.current = worker;
+      addFilesWorkerFn = wrap<AddFilesHandlesWorker>(worker);
 
-      const addFilesWorkerFn = wrap<AddFilesHandlesWorker>(worker);
-      const { success, total } = await addFilesWorkerFn(fileHandles);
+      const { success, total } = await addFilesWorkerFn({
+        newHandles: fileHandles,
+        sessionName: session,
+      });
 
       if (success) {
         toast.success("Files added successfully", {
@@ -766,16 +745,11 @@ function SourcesToolbar() {
       toast.error("Failed to add files", {
         description: e instanceof Error ? e.message : undefined,
       });
+    } finally {
+      addFilesWorkerFn?.[releaseProxy]();
+      worker?.terminate();
     }
-  }, [router]);
-
-  useEffect(() => {
-    return () => {
-      if (workerRef.current) {
-        workerRef.current.terminate();
-      }
-    };
-  }, []);
+  }, [router, session]);
 
   const onRefresh = () => {
     router.invalidate();
