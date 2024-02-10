@@ -1,4 +1,4 @@
-import type { AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
+import type { DuckDBInstance } from "@/modules/duckdb-singleton";
 
 /**
  * Return a mapping from column names to data types, or the empty Map if no such table columns exist.
@@ -6,10 +6,10 @@ import type { AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
  * https://github.com/holdenmatt/duckdb-wasm-kit/blob/main/src/util/queries.ts
  */
 export async function columnMapper(
-  conn: AsyncDuckDBConnection,
+  query: DuckDBInstance["query"],
   name: string,
 ): Promise<Map<string, string>> {
-  const arrow = await conn.query(
+  const arrow = await query(
     `select column_name, data_type from information_schema.columns where table_name = '${name}'`,
   );
 

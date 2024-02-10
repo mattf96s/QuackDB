@@ -1,3 +1,5 @@
+/// <reference lib="webworker" />
+
 import * as Comlink from "comlink";
 
 postMessage({
@@ -10,7 +12,13 @@ postMessage({
  * This method is really quick.
  * We could probably do more files at once based on the user hardware.
  */
-async function addFilesHandles(newHandles: FileSystemFileHandle[]) {
+async function addFilesHandles({
+  newHandles,
+  sessionName,
+}: {
+  newHandles: FileSystemFileHandle[];
+  sessionName: string;
+}) {
   const total = newHandles.length;
 
   postMessage({
@@ -19,6 +27,13 @@ async function addFilesHandles(newHandles: FileSystemFileHandle[]) {
   });
 
   const opfsRoot = await navigator.storage.getDirectory();
+  const sessionRoot = await opfsRoot.getDirectoryHandle(sessionName, {
+    create: true,
+  });
+
+  const sessionStorage = await sessionRoot.getDirectoryHandle("storage", {
+    create: true,
+  });
 
   let count = 0;
 
@@ -29,7 +44,7 @@ async function addFilesHandles(newHandles: FileSystemFileHandle[]) {
       const file = await handle.getFile();
 
       // create a new file handle
-      const fileHandle = await opfsRoot.getFileHandle(file.name, {
+      const fileHandle = await sessionStorage.getFileHandle(file.name, {
         create: true,
       });
 
@@ -37,7 +52,8 @@ async function addFilesHandles(newHandles: FileSystemFileHandle[]) {
 
       const buffer = await fileToBuffer(file);
 
-      accessHandle.write(buffer);
+      // overwrite the file with the new contents
+      accessHandle.write(buffer, { at: 0 });
       accessHandle.flush();
       accessHandle.close();
 

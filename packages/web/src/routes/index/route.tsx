@@ -1,5 +1,6 @@
+import { Suspense } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { wrap } from "comlink";
+import { releaseProxy, type Remote, wrap } from "comlink";
 import {
   CodeViewer,
   PresetSave,
@@ -9,53 +10,116 @@ import {
 import PresetActions from "@/components/playground/preset-action";
 import { type Preset } from "@/components/playground/types";
 import { Separator } from "@/components/ui/separator";
-import type { GetDirectoryFilesWorker } from "@/workers/get-directory-files";
-import { DBProvider } from "./-components/-db-context";
+import { DbProvider } from "@/context/db/provider";
+import { useDB } from "@/context/db/useDB";
+import { SessionProvider } from "@/context/session/provider";
+import type { DuckDBInstance } from "@/modules/duckdb-singleton";
+import type { GetSessionWorker } from "@/workers/get-session-worker";
 import FilePanels from "./-components/panels";
+import SessionCombobox from "./-components/session-selector";
 
 const presets: Preset[] = [];
 
 export const Route = createFileRoute("/")({
-  component: Playground,
-  loader: async () => {
-    const worker = new Worker(
-      new URL("@/workers/get-directory-files.ts", import.meta.url),
-      {
-        type: "module",
-        name: "GetDirectoryFilesWorker",
-      },
-    );
-    const getFilesFn = wrap<GetDirectoryFilesWorker>(worker);
+  component: PlaygroundContainer,
+  loader: async ({ abortController }) => {
+    let worker: Worker | undefined;
+    let getFilesFn: Remote<GetSessionWorker> | undefined;
 
-    const res = await getFilesFn();
+    try {
+      worker = new Worker(
+        new URL("@/workers/get-session-worker.ts", import.meta.url),
+        {
+          type: "module",
+          name: "GetSessionWorker",
+        },
+      );
 
-    worker.terminate();
+      getFilesFn = wrap<GetSessionWorker>(worker);
 
-    return res;
+      const resPromise = getFilesFn("default");
+
+      // abort worker if route is aborted
+      abortController.signal.addEventListener("abort", () => {
+        worker?.terminate();
+      });
+
+      const res = await resPromise;
+
+      return res;
+    } finally {
+      getFilesFn?.[releaseProxy]();
+      worker?.terminate();
+    }
   },
 });
 
+function PlaygroundContainer() {
+  return (
+    <SessionProvider>
+      <DbProvider>
+        <DBInitializer>
+          <Playground />
+        </DBInitializer>
+      </DbProvider>
+    </SessionProvider>
+  );
+}
+
+const initializeDB = (db: DuckDBInstance) => async (session: string) => {
+  let worker: Worker | undefined;
+
+  try {
+    worker = new Worker(
+      new URL("@/workers/get-session-worker.ts", import.meta.url),
+      {
+        type: "module",
+        name: "GetSessionWorker",
+      },
+    );
+    const getFilesFn = wrap<GetSessionWorker>(worker);
+
+    const { storage } = await getFilesFn(session);
+
+    const instance = await db._getDB();
+
+    await instance.registerFileHandle;
+  } finally {
+    worker?.terminate();
+  }
+};
+
+function DBInitializer(props: { children: React.ReactNode }) {
+  const { db } = useDB();
+
+  return <>{props.children}</>;
+}
+
 function Playground() {
   const data = Route.useLoaderData();
+  const { session, storage } = data;
   return (
-    <DBProvider>
-      <div className="h-full flex-col md:flex">
-        <div className="container flex max-w-none flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
-          <h2 className="text-lg font-semibold">QuackDB</h2>
-          <div className="ml-auto flex w-full space-x-2 sm:justify-end">
-            <PresetSelector presets={presets} />
-            <PresetSave />
-            <div className="hidden space-x-2 md:flex">
-              <CodeViewer />
-              <PresetShare />
-            </div>
-            <PresetActions />
-          </div>
+    <div className="h-full flex-col md:flex">
+      <div className="container flex max-w-none flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
+        <div>
+          {/* <h2 className="text-lg font-semibold">QuackDB</h2> */}
+          <SessionCombobox />
         </div>
-        <Separator />
-
-        <FilePanels files={data?.tree ?? []} />
+        <div className="ml-auto flex w-full space-x-2 sm:justify-end">
+          <PresetSelector presets={presets} />
+          <PresetSave />
+          <div className="hidden space-x-2 md:flex">
+            <CodeViewer />
+            <PresetShare />
+          </div>
+          <PresetActions />
+        </div>
       </div>
-    </DBProvider>
+      <Separator />
+
+      <Suspense fallback={<p>Loading...</p>}>
+        <FilePanels files={storage?.tree ?? []} />
+      </Suspense>
+    </div>
   );
 }

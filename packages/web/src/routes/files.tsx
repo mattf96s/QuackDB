@@ -42,6 +42,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import useAddFiles from "@/hooks/use-add-files";
 import useReset from "@/hooks/use-reset";
 import type { GetDirectoryFilesWorker } from "@/workers/get-directory-files";
+
 export const Route = createFileRoute("/files")({
   component: FileExplorer,
   loader: async () => {

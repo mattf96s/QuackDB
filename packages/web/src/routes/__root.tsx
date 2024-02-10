@@ -70,13 +70,15 @@ function Layout(props: { children: ReactNode }) {
 
         {/* Start rendering router matches */}
         {/* <TanStackRouterDevtools position="bottom-right" /> */}
+
+        {/* should be inside LayoutContainer incase we change tailwind things */}
+        <Toaster
+          closeButton
+          pauseWhenPageIsHidden
+          visibleToasts={3}
+          expand
+        />
       </LayoutContainer>
-      <Toaster
-        closeButton
-        pauseWhenPageIsHidden
-        visibleToasts={3}
-        expand
-      />
     </SidebarProvider>
   );
 }
@@ -111,7 +113,11 @@ const LayoutContainer = memo(function LayoutContainer(props: {
   children: ReactNode;
 }) {
   return (
-    <div className="flex h-screen min-h-0 flex-col font-sans antialiased lg:flex-row">
+    <div
+      className="relative flex h-screen min-h-screen flex-col bg-background font-sans antialiased lg:flex-row"
+      // eslint-disable-next-line react/no-unknown-property
+      vaul-drawer-wrapper=""
+    >
       {props.children}
     </div>
   );

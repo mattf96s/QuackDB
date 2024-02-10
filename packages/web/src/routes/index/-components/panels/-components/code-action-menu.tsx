@@ -16,7 +16,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDB } from "../../-db-context";
+import { useDB } from "@/context/db/useDB";
 import type { PanelFile } from "../../-types";
 
 type CodeActionMenuProps = {

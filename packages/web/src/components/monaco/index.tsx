@@ -82,33 +82,34 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 
   return (
     <MonacoEditor
-      className={cn("rounded-md border", props.className)}
+      className={cn(props.className)}
       beforeMount={handleEditorWillMount}
       onMount={handleEditorDidMount}
       //height="90vh"
-
+      defaultLanguage="pgsql"
       language="pgsql"
-      theme="vs-light"
+      theme="vs"
       options={{
         "semanticHighlighting.enabled": true,
         language: "pgsql",
         fontSize: 15,
-        fontFamily: "geist-mono",
+        fontFamily: "jetbrains-mono",
         formatOnType: true,
         autoClosingBrackets: "always",
         automaticLayout: true,
         renderLineHighlight: "none",
         lineDecorationsWidth: 15,
         lineNumbersMinChars: 2,
-        scrollbar: { alwaysConsumeMouseWheel: false },
+        scrollbar: {
+          verticalScrollbarSize: 10,
+        },
+
         folding: false,
-        scrollBeyondLastLine: false,
+        //scrollBeyondLastLine: false,
         minimap: {
           enabled: false,
         },
-        lightbulb: {
-          enabled: true,
-        },
+
         suggest: {
           showFields: true,
           showKeywords: true,
