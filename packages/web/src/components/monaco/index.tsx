@@ -1,12 +1,19 @@
 import "monaco-editor/esm/vs/basic-languages/pgsql/pgsql.contribution";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import MonacoEditor, {
   type BeforeMount,
   type EditorProps as MonacoEditorProps,
   type OnMount,
 } from "@monaco-editor/react";
-import { type editor } from "monaco-editor";
+import { type editor, languages } from "monaco-editor";
 import { cn } from "@/lib/utils";
+import { snippets } from "@/utils/duckdb/snippets";
 import { conf, language } from "./pgsql";
 
 type EditorProps = Exclude<MonacoEditorProps, "value"> & {
@@ -19,8 +26,70 @@ export type EditorForwardedRef = {
   getEditor: () => editor.IStandaloneCodeEditor | null;
 };
 
+type PartialMonacoCompletionItem = Pick<
+  languages.CompletionItem,
+  "label" | "kind" | "insertText" | "detail"
+>;
+
+const getDefaultSuggestions = (): PartialMonacoCompletionItem[] => {
+  const keywords: PartialMonacoCompletionItem[] = (
+    language.keywords as string[]
+  ).map((keyword) => ({
+    label: keyword,
+    kind: languages.CompletionItemKind.Keyword,
+    insertText: keyword,
+  }));
+
+  const fns: PartialMonacoCompletionItem[] = (
+    language.builtinFunctions as string[]
+  ).map((fn) => ({
+    label: fn,
+    kind: languages.CompletionItemKind.Function,
+    insertText: fn,
+  }));
+
+  const operators: PartialMonacoCompletionItem[] = (
+    language.operators as string[]
+  ).map((op) => ({
+    label: op,
+    kind: languages.CompletionItemKind.Operator,
+    insertText: op,
+  }));
+
+  const duckdbSnippets: PartialMonacoCompletionItem[] = snippets.map(
+    (snippet) => ({
+      label: snippet.name,
+      kind: languages.CompletionItemKind.Snippet,
+      insertText: snippet.code,
+      detail: snippet.description,
+    }),
+  );
+
+  return [...duckdbSnippets, ...keywords, ...fns, ...operators];
+};
+
 const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+
+  const onSaveFile = useCallback(async () => {
+    const editor = editorRef.current;
+    if (editor) {
+      const model = editor.getModel();
+      if (model) {
+        const value = model.getValue();
+        console.log(value);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (editorRef.current) {
+        editorRef.current.dispose();
+        editorRef.current = null;
+      }
+    };
+  }, []);
 
   const handleEditorWillMount: BeforeMount = (monaco) => {
     monaco.languages.register({
@@ -29,25 +98,31 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     });
     monaco.languages.setLanguageConfiguration("pgsql", conf);
     monaco.languages.registerCompletionItemProvider("pgsql", {
-      provideCompletionItems: (model, position) => {
-        const d = language.keywords as string[];
-        const suggestions = [
-          ...d
-            .filter((k) => !!k)
-            .map((keyword) => ({
-              label: `${keyword}`,
-              kind: monaco.languages.CompletionItemKind.Keyword,
-              insertText: `${keyword}`,
-              range: new monaco.Range(
-                position.lineNumber,
-                position.column,
-                position.lineNumber,
-                position.column,
-              ),
-            })),
-        ];
+      provideCompletionItems: async (model, position, context, token) => {
+        const word = model.getWordUntilPosition(position);
+        const suggestions = getDefaultSuggestions();
+
+        const filtered = word
+          ? suggestions.filter((suggestion) =>
+              suggestion.label
+                .toString()
+                .toLowerCase()
+                .includes(word.word.toLowerCase()),
+            )
+          : suggestions;
+
+        const final = filtered.map((suggestion) => ({
+          ...suggestion,
+          range: new monaco.Range(
+            position.lineNumber,
+            word.startColumn,
+            position.lineNumber,
+            word.endColumn,
+          ),
+        }));
+
         return {
-          suggestions,
+          suggestions: final,
         };
       },
     });
@@ -64,8 +139,10 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
       if (props.onBlur) {
         editor.onDidBlurEditorText(props.onBlur);
       }
+
+      editor.setValue(props.value);
     },
-    [props.onBlur, props.onFocus],
+    [props.onBlur, props.onFocus, props.value],
   );
 
   useImperativeHandle(

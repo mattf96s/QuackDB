@@ -2,6 +2,7 @@ import type { Table, TypeMap } from "@apache-arrow/esnext-esm";
 import { type AsyncDuckDB, DuckDBDataProtocol } from "@duckdb/duckdb-wasm";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import { getArrowTableSchema } from "@/utils/arrow/helpers";
+import { getCompletions } from "@/utils/duckdb/autocomplete";
 import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
 
 export const makeDB = async () => {
@@ -200,8 +201,8 @@ export class DuckDBInstance {
       }
     }
 
-    // set errors as JSON
-    await conn.query("SET errors_as_json = true;");
+    // set errors as JSON (not in the release yet, but will be in the next release);
+    //await conn.query("SET errors_as_json = true;");
 
     // Note: extensions are automatically handled by DuckDB wasm; https://duckdb.org/docs/api/wasm/extensions
 
@@ -255,13 +256,16 @@ export class DuckDBInstance {
    * @example
    * const { rows, schema } = await DuckDBInstance.fetchResults({ query: "SELECT * FROM sales;" });
    */
-  async fetchResults({ query }: { query: string }) {
+  async fetchResults({ query, noCache }: { query: string; noCache?: boolean }) {
     const t1 = performance.now();
 
     const conn = await this.#connect();
 
+    // Allow local override of caching
+    const shouldCache = this.#shouldCache && !noCache;
+
     try {
-      if (this.#shouldCache) {
+      if (shouldCache) {
         console.debug("Caching is enabled.");
         // ensure all relevant query parameters are included in the cache key
         const cacheKey = await this.createHashKey(query);
@@ -292,7 +296,7 @@ export class DuckDBInstance {
 
       const results = { rows, schema };
 
-      if (!this.#shouldCache) return results;
+      if (!shouldCache) return results;
 
       // cache the results
 
@@ -416,6 +420,54 @@ export class DuckDBInstance {
       throw e;
     } finally {
       await this.#cleanupConnection(conn);
+    }
+  }
+
+  /**
+   * Autocompletions
+   *
+   * Source: [Harlequin](https://github.com/tconbeer/harlequin/blob/main/src/harlequin_duckdb/completions.py)
+   */
+
+  async autoCompletion({ query }: { query?: string }) {
+    try {
+      const completions = await getCompletions(this);
+      const flattened = completions.flatMap((completion) => completion.rows);
+
+      console.log("flattened", flattened);
+
+      if (!query) return flattened;
+
+      const queryLower = query.toLowerCase();
+      const queryWords = queryLower.split(" ");
+      const lastWord = queryWords[queryWords.length - 1];
+
+      const filteredCompletions = flattened.filter((completion) =>
+        completion.label.toLowerCase().startsWith(lastWord),
+      );
+
+      return filteredCompletions;
+    } catch (e) {
+      console.error("Error in autoCompletion: ", e);
+      return [];
+    }
+  }
+
+  /**
+   * Validate a query.
+   */
+  async validateQuery(query: string) {
+    try {
+      const escapedQuery = query.replace(/'/g, "''");
+
+      await this.fetchResults({
+        query: `SELECT json_serialize_auto('${escapedQuery}');`,
+      });
+
+      return true;
+    } catch (e) {
+      console.error("Error in validateQuery: ", e);
+      return false;
     }
   }
 }

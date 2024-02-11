@@ -20,3 +20,23 @@ AWS Login: <https://d-93675d34f6.awsapps.com/start#/>
 ### Oddities
 
 We need to add `@types/wicg-file-system-access` to tsconfig to get types for the OPFS (Origin Private File System).
+
+## File Directory Structure
+
+```plaintext
+root
+  sessions
+    [session-id]
+      metadata.txt
+      datasets
+        stores.csv
+        sales.json
+        logs.parquet
+      editors
+        [editor-id]
+          editor-state.json (latest state of the editor; can be restored to this state)
+          versions
+            -- 2021-07-01.json (previous states of the editor)
+            -- 2021-07-02.json
+            -- 2021-07-03.json
+```
