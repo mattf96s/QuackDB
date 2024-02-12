@@ -141,6 +141,14 @@ export class DuckDBInstance {
     this.#shouldCache = shouldCache;
   }
 
+  getConfig() {
+    return {
+      shouldCache: this.#shouldCache,
+      cacheTimeout: this.#cacheTimeout,
+      extensions: this.#extensions,
+    };
+  }
+
   setCacheTimeout(timeout: number) {
     this.#cacheTimeout = timeout;
   }

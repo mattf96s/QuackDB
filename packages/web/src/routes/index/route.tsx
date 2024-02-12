@@ -1,9 +1,14 @@
 import { memo, Suspense, useCallback, useEffect } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { Panel, PanelGroup } from "react-resizable-panels";
-import { createFileRoute } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  type ErrorComponentProps,
+} from "@tanstack/react-router";
 import { releaseProxy, type Remote, wrap } from "comlink";
-import { Loader2, TerminalIcon } from "lucide-react";
+import { Loader2, PlayIcon, TerminalIcon } from "lucide-react";
 import { toast } from "sonner";
+import { useSpinDelay } from "spin-delay";
 import PanelHandle from "@/components/panel-handle";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -16,11 +21,13 @@ import { useQuery } from "@/context/query/useQuery";
 import { SessionProvider } from "@/context/session/provider";
 import type { GetSessionWorker } from "@/workers/get-session-worker";
 import EditorPanel from "./-components/editor-panel";
+import Settings from "./-components/settings";
 import Sidepanel from "./-components/sidepanel";
 import { PanelProvider } from "./-context/panel/provider";
 
 export const Route = createFileRoute("/")({
   component: PlaygroundContainer,
+  //errorComponent: (props)=><ErrorComponent {...props} />,
   loader: async ({ abortController }) => {
     let worker: Worker | undefined;
     let getFilesFn: Remote<GetSessionWorker> | undefined;
@@ -52,6 +59,35 @@ export const Route = createFileRoute("/")({
     }
   },
 });
+
+function ErrorComponent(props: ErrorComponentProps) {
+  const error = props.error;
+  return (
+    <div className="text-center">
+      <p className="text-base font-semibold text-indigo-600">404</p>
+      <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+        Something went wrong
+      </h1>
+      <p className="mt-6 text-base leading-7 text-gray-600">
+        Sorry, we couldn’t find the page you’re looking for.
+      </p>
+      <div className="mt-10 flex items-center justify-center gap-x-6">
+        <a
+          href="#"
+          className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        >
+          Go back home
+        </a>
+        <a
+          href="#"
+          className="text-sm font-semibold text-gray-900"
+        >
+          Contact support <span aria-hidden="true">&rarr;</span>
+        </a>
+      </div>
+    </div>
+  );
+}
 
 function PlaygroundContainer() {
   return (
@@ -100,8 +136,6 @@ const DBInitializer = memo(function DBInitializer(props: {
       }
     };
 
-    console.log("Initializing DB with datasets");
-
     init();
 
     return () => {
@@ -120,12 +154,11 @@ const Playground = memo(function Playground() {
           <h2 className="text-lg font-semibold">QuackDB</h2>
           <TerminalIcon className="size-5" />
         </div>
-        <div className="ml-auto flex w-full space-x-2 sm:justify-end">
+        <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
           {/* <PresetSelector presets={presets} /> */}
 
-          <div className="hidden space-x-2 md:flex">
-            <Toolbar />
-          </div>
+          <Toolbar />
+          <Settings />
 
           {/* <SessionCombobox /> */}
         </div>
@@ -170,64 +203,91 @@ function Toolbar() {
 
   // run the whole file contents rather than the selected text;
   // Don't wait;
-  const onRun = useCallback(() => {
+  const onRun = useCallback(async () => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const editor = editorRef.current?.getEditor();
-    if (!editor) return;
+    if (!editor) {
+      toast.warning("Editor not ready yet", {
+        description: "Please wait a moment and try again.",
+      });
+      return;
+    }
 
     const query = editor?.getModel()?.getValue();
 
-    console.log("Running query: ", query);
+    if (!query) {
+      toast.warning("No query to run", {
+        description: "Please write a query and try again.",
+      });
+      return;
+    }
 
-    if (!query) return;
+    signal.addEventListener("abort", () => {
+      onCancelQuery("cancelled");
+      toast.info("Query cancelled", {
+        description: "The query was cancelled.",
+      });
+    });
 
     onRunQuery(query);
-  }, [editorRef, onRunQuery]);
-
-  // shortcut to run / cancel query
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && e.ctrlKey) {
-        onRun();
-      }
-      if (e.key === "Escape") {
-        onCancelQuery("cancelled");
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
 
     return () => {
-      window.removeEventListener("keydown", onKeyDown);
+      controller.abort();
     };
-  }, [onCancelQuery, onRun]);
+  }, [editorRef, onCancelQuery, onRunQuery]);
+
+  useHotkeys(
+    "mod+enter",
+    () => {
+      if (status === "loading") {
+        onCancelQuery("cancelled");
+      } else {
+        onRun();
+      }
+    },
+    [status, onCancelQuery, onRun],
+  );
+
+  const isLoading = useSpinDelay(status === "loading", {
+    minDuration: 200,
+  });
+
+  const isError = status === "error";
+
+  if (isLoading) {
+    return (
+      <Button
+        onClick={() => onCancelQuery("cancelled")}
+        className="h-7"
+        variant="destructive"
+      >
+        Cancel
+        <Loader2 className="ml-2 size-4 animate-spin" />
+      </Button>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Button
+        onClick={onRun}
+        className="h-7"
+      >
+        Retry
+      </Button>
+    );
+  }
+
   return (
-    <>
-      {status === "loading" && (
-        <Button
-          onClick={() => onCancelQuery("cancelled")}
-          className="h-7"
-          variant="destructive"
-        >
-          Cancel
-          <Loader2 className="ml-2 size-4 animate-spin" />
-        </Button>
-      )}
-      {status === "idle" && (
-        <Button
-          onClick={onRun}
-          className="h-7"
-        >
-          Run
-        </Button>
-      )}
-      {status === "error" && (
-        <Button
-          onClick={onRun}
-          className="h-7"
-        >
-          Retry
-        </Button>
-      )}
-    </>
+    <Button
+      onClick={onRun}
+      variant="success"
+      size="sm"
+    >
+      Run
+      <PlayIcon className="ml-2 size-4" />
+    </Button>
   );
 }
