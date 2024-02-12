@@ -1,10 +1,5 @@
 import { useEffect, useRef } from "react";
-import {
-  ChevronRightIcon,
-  DashboardIcon,
-  FileTextIcon,
-  InfoCircledIcon,
-} from "@radix-ui/react-icons";
+import { ChevronRightIcon, DashboardIcon } from "@radix-ui/react-icons";
 import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { MenuIcon } from "lucide-react";
@@ -28,16 +23,16 @@ const navigation = [
     href: "/",
     icon: DashboardIcon,
   },
-  {
-    name: "Files",
-    href: "/files",
-    icon: FileTextIcon,
-  },
-  {
-    name: "About",
-    href: "/about",
-    icon: InfoCircledIcon,
-  },
+  // {
+  //   name: "Files",
+  //   href: "/files",
+  //   icon: FileTextIcon,
+  // },
+  // {
+  //   name: "About",
+  //   href: "/about",
+  //   icon: InfoCircledIcon,
+  // },
 ] as const;
 
 const MotionChevronsRight = motion(ChevronRightIcon);

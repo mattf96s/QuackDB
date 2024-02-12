@@ -115,7 +115,5 @@ export const getCompletions = async (db: DuckDBInstance) => {
 
   const allCompletions = completions.flat();
 
-  console.log("completions", allCompletions);
-
   return allCompletions;
 };

@@ -80,7 +80,7 @@
     "react-dom": "18.3.0-canary-c5b937576-20231219",
     "react-hook-form": "^7.50.1",
     "react-hotkeys-hook": "^4.5.0",
-    "react-resizable-panels": "^2.0.4",
+    "react-resizable-panels": "^2.0.5",
     "sonner": "^1.4.0",
     "spin-delay": "^1.2.0",
     "tailwind-merge": "^2.2.1",
@@ -119,7 +119,8 @@
   },
   "overrides": {
     "react": "18.3.0-canary-c5b937576-20231219",
-    "react-dom": "18.3.0-canary-c5b937576-20231219"
+    "react-dom": "18.3.0-canary-c5b937576-20231219",
+    "@duckdb/duckdb-wasm": "1.28.1-dev106.0"
   },
   "eslintIgnore": [
     "dist",

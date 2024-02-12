@@ -1,28 +1,23 @@
-import { memo, Suspense, useEffect } from "react";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { DragHandleDots2Icon } from "@radix-ui/react-icons";
+import { memo, Suspense, useCallback, useEffect } from "react";
+import { Panel, PanelGroup } from "react-resizable-panels";
 import { createFileRoute } from "@tanstack/react-router";
 import { releaseProxy, type Remote, wrap } from "comlink";
+import { Loader2, TerminalIcon } from "lucide-react";
 import { toast } from "sonner";
-import {
-  CodeViewer,
-  PresetSave,
-  PresetSelector,
-  PresetShare,
-} from "@/components/playground";
-import PresetActions from "@/components/playground/preset-action";
-import { type Preset } from "@/components/playground/types";
+import PanelHandle from "@/components/panel-handle";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { DbProvider } from "@/context/db/provider";
 import { useDB } from "@/context/db/useDB";
+import { EditorProvider } from "@/context/editor/provider";
+import { useEditor } from "@/context/editor/useEditor";
+import { QueryProvider } from "@/context/query/provider";
+import { useQuery } from "@/context/query/useQuery";
 import { SessionProvider } from "@/context/session/provider";
-import { cn } from "@/lib/utils";
 import type { GetSessionWorker } from "@/workers/get-session-worker";
-import SessionCombobox from "./-components/session-selector";
+import EditorPanel from "./-components/editor-panel";
 import Sidepanel from "./-components/sidepanel";
 import { PanelProvider } from "./-context/panel/provider";
-
-const presets: Preset[] = [];
 
 export const Route = createFileRoute("/")({
   component: PlaygroundContainer,
@@ -63,7 +58,13 @@ function PlaygroundContainer() {
     <SessionProvider>
       <DbProvider>
         <DBInitializer>
-          <Playground />
+          <PanelProvider>
+            <QueryProvider>
+              <EditorProvider>
+                <Playground />
+              </EditorProvider>
+            </QueryProvider>
+          </PanelProvider>
         </DBInitializer>
       </DbProvider>
     </SessionProvider>
@@ -85,7 +86,9 @@ const DBInitializer = memo(function DBInitializer(props: {
     const init = async () => {
       try {
         for (const dataset of datasets) {
-          if (signal.aborted) return;
+          if (signal.aborted) {
+            break;
+          }
           const file = await dataset.handle.getFile();
           await db?.registerFileHandle(dataset.name, file);
         }
@@ -109,69 +112,122 @@ const DBInitializer = memo(function DBInitializer(props: {
   return <Suspense fallback={<p>Loading...</p>}>{props.children}</Suspense>;
 });
 
-function Playground() {
-  const data = Route.useLoaderData();
-
+const Playground = memo(function Playground() {
   return (
     <div className="h-full flex-col md:flex">
       <div className="container flex max-w-none flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
-        <div>
-          {/* <h2 className="text-lg font-semibold">QuackDB</h2> */}
-          <SessionCombobox />
+        <div className="flex items-center justify-evenly gap-2">
+          <h2 className="text-lg font-semibold">QuackDB</h2>
+          <TerminalIcon className="size-5" />
         </div>
         <div className="ml-auto flex w-full space-x-2 sm:justify-end">
-          <PresetSelector presets={presets} />
-          <PresetSave />
+          {/* <PresetSelector presets={presets} /> */}
+
           <div className="hidden space-x-2 md:flex">
-            <CodeViewer />
-            <PresetShare />
+            <Toolbar />
           </div>
-          <PresetActions />
+
+          {/* <SessionCombobox /> */}
         </div>
       </div>
       <Separator />
 
       {/* Panel provider is custom context while PanelGroup is unrelated component; poor naming. */}
-      <PanelProvider>
-        <Suspense fallback={<p>Loading...</p>}>
-          <div className="h-full">
-            <PanelGroup
-              className="rounded-md"
-              direction="horizontal"
-            >
-              <Panel
-                className="flex flex-col"
-                collapsedSize={5}
-                collapsible={true}
-                defaultSize={15}
-                maxSize={20}
-                minSize={15}
-              >
-                <Sidepanel />
-              </Panel>
-              <PanelResizeHandle
-                className={cn(
-                  "relative flex w-px items-center justify-center bg-border after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 data-[panel-group-direction=vertical]:h-px data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:after:left-0 data-[panel-group-direction=vertical]:after:h-1 data-[panel-group-direction=vertical]:after:w-full data-[panel-group-direction=vertical]:after:-translate-y-1/2 data-[panel-group-direction=vertical]:after:translate-x-0 [&[data-panel-group-direction=vertical]>div]:rotate-90",
-                )}
-              >
-                <div className="z-10 flex h-4 w-3 items-center justify-center rounded-sm border bg-border">
-                  <DragHandleDots2Icon className="size-2.5" />
-                </div>
-              </PanelResizeHandle>
-              <Panel
-                className="flex flex-col"
-                minSize={50}
-              >
-                <p>editor</p>
-              </Panel>
-            </PanelGroup>
-          </div>
-        </Suspense>
-      </PanelProvider>
 
-      {/* <Suspense fallback={<p>Loading...</p>}>
-        <FilePanels files={storage?.tree ?? []} />
-      </Suspense> */}
+      <Suspense fallback={<p>Loading...</p>}>
+        <div className="h-full">
+          <PanelGroup
+            className="rounded-md"
+            direction="horizontal"
+          >
+            <Panel
+              className="flex flex-col"
+              collapsedSize={5}
+              collapsible={true}
+              defaultSize={15}
+              maxSize={20}
+              minSize={15}
+            >
+              <Sidepanel />
+            </Panel>
+            <PanelHandle />
+            <Panel
+              className="flex flex-col"
+              minSize={50}
+            >
+              <EditorPanel />
+            </Panel>
+          </PanelGroup>
+        </div>
+      </Suspense>
     </div>
+  );
+});
+
+function Toolbar() {
+  const { status, onCancelQuery, onRunQuery } = useQuery();
+  const { editorRef } = useEditor();
+
+  // run the whole file contents rather than the selected text;
+  // Don't wait;
+  const onRun = useCallback(() => {
+    const editor = editorRef.current?.getEditor();
+    if (!editor) return;
+
+    const query = editor?.getModel()?.getValue();
+
+    console.log("Running query: ", query);
+
+    if (!query) return;
+
+    onRunQuery(query);
+  }, [editorRef, onRunQuery]);
+
+  // shortcut to run / cancel query
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && e.ctrlKey) {
+        onRun();
+      }
+      if (e.key === "Escape") {
+        onCancelQuery("cancelled");
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onCancelQuery, onRun]);
+  return (
+    <>
+      {status === "loading" && (
+        <Button
+          onClick={() => onCancelQuery("cancelled")}
+          className="h-7"
+          variant="destructive"
+        >
+          Cancel
+          <Loader2 className="ml-2 size-4 animate-spin" />
+        </Button>
+      )}
+      {status === "idle" && (
+        <Button
+          onClick={onRun}
+          className="h-7"
+        >
+          Run
+        </Button>
+      )}
+      {status === "error" && (
+        <Button
+          onClick={onRun}
+          className="h-7"
+        >
+          Retry
+        </Button>
+      )}
+    </>
   );
 }

@@ -13,4 +13,12 @@ export const ecosystemData = {
       href: "https://mause.me/duckdb-ast/",
     },
   ],
+  articles: [
+    {
+      name: "QuackingDuck",
+      description:
+        "Using OpenAI's ChatGPT as Natural Language Interface for DuckDB.",
+      href: "https://tdoehmen.github.io/blog/2023/03/07/quackingduck.html",
+    },
+  ],
 };

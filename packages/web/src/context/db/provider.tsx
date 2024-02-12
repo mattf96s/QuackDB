@@ -13,12 +13,13 @@ type DBProviderProps = { children: React.ReactNode };
  * Rather create as many connections to the DB as needed.
  */
 function DbProvider({ children }: DBProviderProps) {
-  const db = useRef<DuckDBInstance | null>(null);
+  const db = useRef<DuckDBInstance | null>(new DuckDBInstance());
 
   // initialization and cleanup
   useEffect(() => {
     const instance = new DuckDBInstance();
-    db.current = instance;
+    // const instance = new DuckDBInstance();
+    // db.current = instance;
     return () => {
       instance.dispose();
     };
