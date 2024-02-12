@@ -11,7 +11,13 @@ import MonacoEditor, {
   type EditorProps as MonacoEditorProps,
   type OnMount,
 } from "@monaco-editor/react";
-import { type editor, languages } from "monaco-editor";
+import {
+  type editor,
+  type IDisposable,
+  KeyCode,
+  KeyMod,
+  languages,
+} from "monaco-editor";
 import { cn } from "@/lib/utils";
 import { snippets } from "@/utils/duckdb/snippets";
 import { conf, language } from "./pgsql";
@@ -20,6 +26,7 @@ type EditorProps = Exclude<MonacoEditorProps, "value"> & {
   value: string;
   onFocus?: () => void;
   onBlur?: () => void;
+  onSave?: (value: string) => void;
 };
 
 export type EditorForwardedRef = {
@@ -70,20 +77,27 @@ const getDefaultSuggestions = (): PartialMonacoCompletionItem[] => {
 
 const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const disposables = useRef<IDisposable[]>([]);
 
   const onSaveFile = useCallback(async () => {
+    if (!props.onSave) return;
+
     const editor = editorRef.current;
-    if (editor) {
-      const model = editor.getModel();
-      if (model) {
-        const value = model.getValue();
-        console.log(value);
-      }
-    }
-  }, []);
+    if (!editor) return;
+
+    const model = editor.getModel();
+    if (!model) return;
+
+    const value = model.getValue();
+    props.onSave(value);
+  }, [props]);
 
   useEffect(() => {
     return () => {
+      if (disposables.current.length > 0) {
+        disposables.current.forEach((disposable) => disposable.dispose());
+        disposables.current = [];
+      }
       if (editorRef.current) {
         editorRef.current.dispose();
         editorRef.current = null;
@@ -96,37 +110,53 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
       id: "pgsql",
       aliases: ["PostgreSQL", "postgres", "pg", "postgre"],
     });
-    monaco.languages.setLanguageConfiguration("pgsql", conf);
-    monaco.languages.registerCompletionItemProvider("pgsql", {
-      provideCompletionItems: async (model, position, context, token) => {
-        const word = model.getWordUntilPosition(position);
-        const suggestions = getDefaultSuggestions();
 
-        const filtered = word
-          ? suggestions.filter((suggestion) =>
-              suggestion.label
-                .toString()
-                .toLowerCase()
-                .includes(word.word.toLowerCase()),
-            )
-          : suggestions;
+    const configuration = monaco.languages.setLanguageConfiguration(
+      "pgsql",
+      conf,
+    );
+    disposables.current.push(configuration);
 
-        const final = filtered.map((suggestion) => ({
-          ...suggestion,
-          range: new monaco.Range(
-            position.lineNumber,
-            word.startColumn,
-            position.lineNumber,
-            word.endColumn,
-          ),
-        }));
+    const completions = monaco.languages.registerCompletionItemProvider(
+      "pgsql",
+      {
+        provideCompletionItems: async (model, position, context, token) => {
+          const word = model.getWordUntilPosition(position);
+          const suggestions = getDefaultSuggestions();
 
-        return {
-          suggestions: final,
-        };
+          const filtered = word
+            ? suggestions.filter((suggestion) =>
+                suggestion.label
+                  .toString()
+                  .toLowerCase()
+                  .includes(word.word.toLowerCase()),
+              )
+            : suggestions;
+
+          const final = filtered.map((suggestion) => ({
+            ...suggestion,
+            range: new monaco.Range(
+              position.lineNumber,
+              word.startColumn,
+              position.lineNumber,
+              word.endColumn,
+            ),
+          }));
+
+          return {
+            suggestions: final,
+          };
+        },
       },
-    });
-    monaco.languages.setMonarchTokensProvider("pgsql", language);
+    );
+
+    disposables.current.push(completions);
+
+    const tokensDisposable = monaco.languages.setMonarchTokensProvider(
+      "pgsql",
+      language,
+    );
+    disposables.current.push(tokensDisposable);
   };
 
   const handleEditorDidMount: OnMount = useCallback(
@@ -134,15 +164,32 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
       editorRef.current = editor;
 
       if (props.onFocus) {
-        editor.onDidFocusEditorText(props.onFocus);
+        const disposable = editor.onDidFocusEditorText(props.onFocus);
+        disposables.current.push(disposable);
       }
       if (props.onBlur) {
-        editor.onDidBlurEditorText(props.onBlur);
+        const disposable = editor.onDidBlurEditorText(props.onBlur);
+        disposables.current.push(disposable);
       }
 
-      editor.setValue(props.value);
+      const saveAction = editorRef.current.addAction({
+        id: "save-file",
+        label: "Save File",
+        keybindings: [KeyMod.CtrlCmd | KeyCode.KeyS],
+        contextMenuGroupId: "navigation",
+        contextMenuOrder: 1.5,
+        run: onSaveFile,
+      });
+
+      disposables.current.push(saveAction);
+
+      // editorRef.current.addAction({
+      //   id: "format-file",
+      //   label: "Format File",
+      //   keybindings: [KeyMod.CtrlCmd | KeyCode.KEY_F],
+      // })
     },
-    [props.onBlur, props.onFocus, props.value],
+    [onSaveFile, props.onBlur, props.onFocus],
   );
 
   useImperativeHandle(
@@ -174,14 +221,14 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         formatOnType: true,
         autoClosingBrackets: "always",
         automaticLayout: true,
-        renderLineHighlight: "none",
+        renderLineHighlight: "all",
         lineDecorationsWidth: 15,
         lineNumbersMinChars: 2,
         scrollbar: {
           verticalScrollbarSize: 10,
         },
 
-        folding: false,
+        folding: true,
         //scrollBeyondLastLine: false,
         minimap: {
           enabled: false,

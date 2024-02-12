@@ -1,13 +1,13 @@
 export type PanelFile = {
-  code: string;
-  language: "sql" | "json" | "csv" | "parquet";
-  fileName: string;
-  path: string[];
+  name: string;
+  handle: FileSystemFileHandle;
 };
 
 export type PanelState = {
+  currentFile: PanelFile | null;
   files: PanelFile[];
   openFiles: PanelFile[];
   currentFileIndex: number;
-  fileListIsCollapsed: boolean;
+  closeFile: (file: PanelFile) => void;
+  openFile: (file: PanelFile) => void;
 };

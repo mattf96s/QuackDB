@@ -1,7 +1,7 @@
 import type { Table, TypeMap } from "@apache-arrow/esnext-esm";
 import { type AsyncDuckDB, DuckDBDataProtocol } from "@duckdb/duckdb-wasm";
 import * as duckdb from "@duckdb/duckdb-wasm";
-import { getArrowTableSchema } from "@/utils/arrow/helpers";
+import { getArrowTableSchema, type ResultColumn } from "@/utils/arrow/helpers";
 import { getCompletions } from "@/utils/duckdb/autocomplete";
 import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
 
@@ -64,6 +64,11 @@ type DuckDBInstanceOptions = {
 const CACHE_KEYS = {
   queries: "queries",
   files: "files",
+};
+
+export type FetchResultsReturn = {
+  rows: Record<string, unknown>[];
+  schema: ResultColumn[];
 };
 
 /**
@@ -256,7 +261,13 @@ export class DuckDBInstance {
    * @example
    * const { rows, schema } = await DuckDBInstance.fetchResults({ query: "SELECT * FROM sales;" });
    */
-  async fetchResults({ query, noCache }: { query: string; noCache?: boolean }) {
+  async fetchResults({
+    query,
+    noCache,
+  }: {
+    query: string;
+    noCache?: boolean;
+  }): Promise<FetchResultsReturn> {
     const t1 = performance.now();
 
     const conn = await this.#connect();
@@ -292,7 +303,10 @@ export class DuckDBInstance {
       const schema = getArrowTableSchema(queryResults);
 
       // @ts-expect-error: depedency issue with arrowjs/esnext-esm
-      const rows = queryResults.toArray().map((row) => row.toJSON());
+      const rows = queryResults.toArray().map((row) => row.toJSON()) as Record<
+        string,
+        unknown
+      >[];
 
       const results = { rows, schema };
 
@@ -434,8 +448,6 @@ export class DuckDBInstance {
       const completions = await getCompletions(this);
       const flattened = completions.flatMap((completion) => completion.rows);
 
-      console.log("flattened", flattened);
-
       if (!query) return flattened;
 
       const queryLower = query.toLowerCase();
@@ -443,7 +455,8 @@ export class DuckDBInstance {
       const lastWord = queryWords[queryWords.length - 1];
 
       const filteredCompletions = flattened.filter((completion) =>
-        completion.label.toLowerCase().startsWith(lastWord),
+        // @ts-expect-error: #TODO: fix this
+        completion?.label.toLowerCase().startsWith(lastWord),
       );
 
       return filteredCompletions;

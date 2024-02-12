@@ -33,10 +33,28 @@ export function getArrowTableSchema(table: Table) {
   return table.schema.fields.map(getArrowFieldSchema);
 }
 
+type JavaScriptArrowType =
+  | "integer"
+  | "number"
+  | "buffer"
+  | "string"
+  | "boolean"
+  | "date"
+  | "array"
+  | "object"
+  | "other";
+
+export type ResultColumn = {
+  name: string;
+  type: JavaScriptArrowType;
+  nullable: boolean;
+  databaseType: string;
+};
+
 /**
  * Returns the schema of an Apache Arrow field as an object.
  */
-function getArrowFieldSchema(field: Field) {
+function getArrowFieldSchema(field: Field): ResultColumn {
   return {
     name: field.name,
     type: getArrowType(field.type),
@@ -50,7 +68,7 @@ function getArrowFieldSchema(field: Field) {
 /**
  * Returns the type of an Apache Arrow field as a string.
  */
-function getArrowType(type: DataType) {
+export function getArrowType(type: DataType): JavaScriptArrowType {
   switch (type.typeId) {
     case 2: // Int
       return "integer";

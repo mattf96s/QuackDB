@@ -22,6 +22,7 @@ import {
   RefreshCw,
   X,
 } from "lucide-react";
+import type { editor } from "monaco-editor";
 import { toast } from "sonner";
 import type { TreeNode, TreeNodeData } from "@/components/files/context/types";
 import Editor, { type EditorForwardedRef } from "@/components/monaco";
@@ -45,7 +46,6 @@ import { getRoute } from "../../route";
 import type { PanelFile } from "../-types";
 import TableView from "../table";
 import CodeActionMenu from "./-components/code-action-menu";
-import type { editor } from "monaco-editor";
 
 type CloseAction = { type: "close"; file: PanelFile };
 type OpenAction = { type: "open"; file: PanelFile };
@@ -129,9 +129,7 @@ type FilePanelsProps = {
   files: TreeNode<TreeNodeData>[];
 };
 
-export const useDispatch = () => {
-  
-}
+export const useDispatch = () => {};
 
 export default function FilePanels(props: FilePanelsProps) {
   const [state, dispatch] = useReducer(reducer, { ...initialState });
@@ -234,9 +232,6 @@ export default function FilePanels(props: FilePanelsProps) {
                       currentFile?.fileName === session.name || undefined
                     }
                     key={session.name}
-                    onClick={() => openFile({
-                      code: session.handle.
-                    })}
                     title={file.name}
                   >
                     <Database className="size-4" />
@@ -431,75 +426,65 @@ export default function FilePanels(props: FilePanelsProps) {
   );
 }
 
-function SessionSource(){
-  const [sessionState,setSessionState] = useState<editor.ICodeEditorViewState|null>(null)
+function SessionSource() {
+  const [sessionState, setSessionState] =
+    useState<editor.ICodeEditorViewState | null>(null);
   const route = getRoute();
   const { session, storage } = route.useLoaderData();
 
   useEffect(() => {
     const getSessionState = async () => {
-      const file = await session.handle.getFile()
+      const file = await session.handle.getFile();
 
       const content = await file.text();
       setSessionState(JSON.parse(content));
+    };
+    getSessionState();
+  }, []);
 
-
-    }
-    getSessionState()
-  },[])
-
-  
   return (
     <div className="flex w-full flex-col pt-2">
-            <div className="flex w-full items-center justify-between">
-
-                  <p className="text-sm font-semibold">Session</p>
-             
-            </div>
-            <div
-              className={cn(
-                "flex w-full flex-col gap-1 py-1",
-                
-              )}
+      <div className="flex w-full items-center justify-between">
+        <p className="text-sm font-semibold">Session</p>
+      </div>
+      <div className={cn("flex w-full flex-col gap-1 py-1")}>
+        <ContextMenu>
+          <ContextMenuTrigger className="data-[state=open]:bg-gray-100">
+            <Button
+              className="ml-5 flex h-6 w-48 items-center justify-start gap-2 p-2 pl-0"
+              variant="ghost"
+              data-current={true}
+              key={session.name}
+              onClick={() =>
+                openFile({
+                  code: sessionState,
+                })
+              }
+              title={file.name}
             >
-              <ContextMenu>
-                <ContextMenuTrigger className="data-[state=open]:bg-gray-100">
-                  <Button
-                    className="ml-5 flex h-6 w-48 items-center justify-start gap-2 p-2 pl-0"
-                    variant="ghost"
-                    data-current={
-                      true
-                    }
-                    key={session.name}
-                    onClick={() => openFile({
-                      code: sessionState,
-
-                    })}
-                    title={file.name}
-                  >
-                    <Database className="size-4" />
-                    <span className="truncate font-normal">{file.name}</span>
-                  </Button>
-                </ContextMenuTrigger>
-                <ContextMenuContent className="w-64">
-                  <ContextMenuItem inset>
-                    Open
-                    <ContextMenuShortcut>⌘O</ContextMenuShortcut>
-                  </ContextMenuItem>
-                  <ContextMenuItem inset>
-                    Rename
-                    <ContextMenuShortcut>⌘R</ContextMenuShortcut>
-                  </ContextMenuItem>
-                  <ContextMenuSeparator />
-                  <ContextMenuItem inset>
-                    Delete
-                    <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
-                  </ContextMenuItem>
-                </ContextMenuContent>
-              </ContextMenu>
-            </div>
-          </div>
-  )
+              <Database className="size-4" />
+              <span className="truncate font-normal">{file.name}</span>
+            </Button>
+          </ContextMenuTrigger>
+          <ContextMenuContent className="w-64">
+            <ContextMenuItem inset>
+              Open
+              <ContextMenuShortcut>⌘O</ContextMenuShortcut>
+            </ContextMenuItem>
+            <ContextMenuItem inset>
+              Rename
+              <ContextMenuShortcut>⌘R</ContextMenuShortcut>
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem inset>
+              Delete
+              <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+      </div>
+    </div>
+  );
 }
 
 type EditorPanelProps = {

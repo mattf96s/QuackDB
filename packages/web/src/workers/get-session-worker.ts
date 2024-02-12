@@ -47,7 +47,7 @@ async function getSessionWorker(sessionName: string) {
     name: string;
   };
 
-  const vscodeDirectoryEntries: FileEntry[] = [];
+  const editorEntries: FileEntry[] = [];
 
   for await (const [key, entry] of vscodeDirectory.entries()) {
     // ignore non-directory entries
@@ -62,7 +62,7 @@ async function getSessionWorker(sessionName: string) {
         create: false,
       });
 
-      vscodeDirectoryEntries.push({
+      editorEntries.push({
         handle,
         name: key,
       });
@@ -104,7 +104,7 @@ async function getSessionWorker(sessionName: string) {
 
   const results = {
     metadata: metadataHandle,
-    vscode: vscodeDirectoryEntries,
+    editors: editorEntries,
     datasets,
     session: {
       name: sessionName,

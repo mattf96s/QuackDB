@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -836,7 +837,6 @@ export const language = <languages.IMonarchLanguage>{
     numbers: [
       [/0[xX][0-9a-fA-F]*/, "number"],
       [/[$][+-]*\d*(\.\d*)?/, "number"],
-      // eslint-disable-next-line no-useless-escape
       [/((\d+(\.\d*)?)|(\.\d+))([eE][\-+]?\d+)?/, "number"],
     ],
     strings: [[/'/, { token: "string", next: "@string" }]],

@@ -8,26 +8,34 @@ type PanelProviderProps = {
 
 type CloseAction = { type: "close"; file: PanelFile };
 type OpenAction = { type: "open"; file: PanelFile };
-type ToggleCollapsedAction = { type: "toggleCollapsed"; collapsed: boolean };
 
-export type FilesAction = CloseAction | OpenAction | ToggleCollapsedAction;
+export type FilesAction = CloseAction | OpenAction;
 
 const initialState: PanelState = {
+  currentFile: null,
   currentFileIndex: 0,
-  fileListIsCollapsed: false,
   files: [],
   openFiles: [],
+  closeFile: () => {},
+  openFile: () => {},
 };
 
-function panelReducer(state: PanelState, action: FilesAction): PanelState {
+type PanelReducerState = Pick<
+  PanelState,
+  "currentFileIndex" | "files" | "openFiles"
+>;
+
+function panelReducer(
+  state: PanelReducerState,
+  action: FilesAction,
+): PanelReducerState {
   switch (action.type) {
     case "close": {
       const { file } = action;
       const { currentFileIndex, openFiles } = state;
 
-      const fileIndex = openFiles.findIndex(
-        ({ fileName }) => fileName === file.fileName,
-      );
+      const fileIndex = openFiles.findIndex(({ name }) => name === file.name);
+
       if (fileIndex === -1) {
         // File not open; this shouldn't happen.
         return state;
@@ -50,9 +58,7 @@ function panelReducer(state: PanelState, action: FilesAction): PanelState {
     case "open": {
       const { file } = action;
       const { openFiles } = state;
-      const fileIndex = openFiles.findIndex(
-        ({ fileName }) => fileName === file.fileName,
-      );
+      const fileIndex = openFiles.findIndex(({ name }) => name === file.name);
       if (fileIndex >= 0) {
         return {
           ...state,
@@ -68,9 +74,6 @@ function panelReducer(state: PanelState, action: FilesAction): PanelState {
         };
       }
     }
-    case "toggleCollapsed": {
-      return { ...state, fileListIsCollapsed: action.collapsed };
-    }
 
     default: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,7 +85,7 @@ function panelReducer(state: PanelState, action: FilesAction): PanelState {
 function PanelProvider({ children }: PanelProviderProps) {
   const [_state, _dispatch] = useReducer(panelReducer, { ...initialState });
 
-  const { currentFileIndex, fileListIsCollapsed, openFiles } = _state;
+  const { currentFileIndex, openFiles } = _state;
 
   const currentFile = useMemo(() => {
     return openFiles[currentFileIndex] ?? null;
@@ -96,36 +99,21 @@ function PanelProvider({ children }: PanelProviderProps) {
     _dispatch({ type: "open", file });
   }, []);
 
-  const onNewFile = useCallback(() => {}, []);
-
-  const onCollapse = useCallback(() => {
-    _dispatch({ type: "toggleCollapsed", collapsed: true });
-  }, []);
-
-  const onExpand = useCallback(() => {
-    _dispatch({ type: "toggleCollapsed", collapsed: false });
-  }, []);
-
   const value: PanelState = useMemo(
     () => ({
       currentFile,
-      fileListIsCollapsed,
       closeFile,
       openFile,
-      onCollapse,
-      onExpand,
       files: _state.files,
-      openFiles: [],
+      openFiles: _state.openFiles,
       currentFileIndex,
     }),
     [
       _state.files,
+      _state.openFiles,
       closeFile,
       currentFile,
       currentFileIndex,
-      fileListIsCollapsed,
-      onCollapse,
-      onExpand,
       openFile,
     ],
   );
