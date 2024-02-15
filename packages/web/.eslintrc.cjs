@@ -6,8 +6,14 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     "plugin:react-hooks/recommended",
-    "plugin:react/recommended"
+    "plugin:react/recommended",
+    "plugin:tailwindcss/recommended"
   ],
+  "plugins": ['react-refresh', 'unused-imports', 'simple-import-sort', 'react', 'react-hooks', "tailwindcss"],
+  "rules": {
+    "tailwindcss/no-custom-classname": "off",
+    "tailwindcss/classnames-order": "off"
+  },
   ignorePatterns: ['dist', '.eslintrc.cjs'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -27,7 +33,7 @@ module.exports = {
       },
     },
   ],
-  plugins: ['react-refresh', 'unused-imports', 'simple-import-sort', 'react', 'react-hooks'],
+
   settings: {
     react: {
       version: "detect",

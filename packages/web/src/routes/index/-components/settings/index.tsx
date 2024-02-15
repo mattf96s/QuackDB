@@ -30,7 +30,6 @@ export default function Settings() {
   }, [db]);
 
   const onToggleCache = (s: boolean) => {
-    console.log("news", s);
     db?.toggleCache(s);
   };
 

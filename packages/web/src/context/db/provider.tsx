@@ -12,16 +12,17 @@ type DBProviderProps = { children: React.ReactNode };
  * We want to create a single instance of DuckDB and share it across the app.
  * Rather create as many connections to the DB as needed.
  */
-function DbProvider({ children }: DBProviderProps) {
-  const db = useRef<DuckDBInstance | null>(new DuckDBInstance());
+function DbProvider(props: DBProviderProps) {
+  const db = useRef<DuckDBInstance | null>(null);
+
+  if (db.current === null) {
+    db.current = new DuckDBInstance();
+  }
 
   // initialization and cleanup
   useEffect(() => {
-    const instance = new DuckDBInstance();
-    // const instance = new DuckDBInstance();
-    // db.current = instance;
     return () => {
-      instance.dispose();
+      db?.current?.dispose();
     };
   }, []);
 
@@ -31,7 +32,9 @@ function DbProvider({ children }: DBProviderProps) {
     }),
     [],
   );
-  return <DBContext.Provider value={value}>{children}</DBContext.Provider>;
+  return (
+    <DBContext.Provider value={value}>{props.children}</DBContext.Provider>
+  );
 }
 
 export { DbProvider };

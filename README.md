@@ -4,8 +4,15 @@ AWS Login: <https://d-93675d34f6.awsapps.com/start#/>
 
 ## Editor improvements
 
+## Credits
+
+- [Malloy](https://github.com/malloydata/malloy)
+- [wa-sqlite](https://github.com/rhashimoto/wa-sqlite/blob/master/demo/demo-worker.js)
+
 ### SQL completion
 
+- [Harlequin](https://github.com/tconbeer/harlequin/blob/main/src/harlequin/autocomplete/completion.py)
+- <https://explain.dalibo.com/>
 - [Windmill](https://github.com/windmill-labs/windmill/blob/main/frontend/src/lib/components/Editor.svelte)
   <https://github.com/supabase/supabase/blob/master/apps/studio/components/interfaces/SQLEditor/SQLEditor.tsx>
   <https://github.com/cudbg/sqltutor/blob/main/src/pyodide.ts>

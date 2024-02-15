@@ -21,6 +21,7 @@
   "files.associations": {
     "*.css": "tailwindcss",
     "*.postcss": "tailwindcss",
+    "*.pcss": "tailwindcss",
   },
   "diffEditor.ignoreTrimWhitespace": false, // https://github.com/cpojer/dotfiles/blob/main/vscode/User/settings.json
   "editor.minimap.enabled": false,
@@ -30,14 +31,23 @@
     "ngClass",
     "\\w+ClassName"
   ],
-  "tailwindCSS.experimental.classRegex": [
-    "tv\\(([^)]*)\\)"
+  "eslint.workingDirectories": [
+    {
+      "pattern": "apps/*/"
+    },
+    {
+      "pattern": "packages/*/"
+    }
   ],
-  "tailwindCSS.files.exclude": [
-    "**/.git/**",
-    "**/node_modules/**",
-    "**/.hg/**",
-    "**/.svn/**"
+  "tailwindCSS.experimental.classRegex": [
+    [
+      "cva\\(([^)]*)\\)",
+      "[\"'`]([^\"'`]*).*?[\"'`]"
+    ],
+    [
+      "cn\\(([^)]*)\\)",
+      "[\"'`]([^\"'`]*).*?[\"'`]"
+    ]
   ],
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",

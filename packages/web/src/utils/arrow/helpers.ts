@@ -1,6 +1,11 @@
 // https://github.com/observablehq/stdlib/blob/main/src/arrow.js
 
-import type { DataType, Field, Table } from "@apache-arrow/esnext-esm";
+import type {
+  DataType,
+  Field,
+  RecordBatch,
+  Table,
+} from "@apache-arrow/esnext-esm";
 
 // Returns true if the vaue is an Apache Arrow table. This uses a “duck” test
 // (instead of strict instanceof) because we want it to work with a range of
@@ -29,7 +34,7 @@ export function isArrowTable(value: unknown): value is Table {
 /**
  * Returns the schema of an Apache Arrow table as an array of objects.
  */
-export function getArrowTableSchema(table: Table) {
+export function getArrowTableSchema(table: Table | RecordBatch) {
   return table.schema.fields.map(getArrowFieldSchema);
 }
 

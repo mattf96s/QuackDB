@@ -251,6 +251,7 @@ function Toolbar() {
   );
 
   const isLoading = useSpinDelay(status === "loading", {
+    delay: 0,
     minDuration: 200,
   });
 
@@ -260,7 +261,7 @@ function Toolbar() {
     return (
       <Button
         onClick={() => onCancelQuery("cancelled")}
-        className="h-7"
+        className="h-7 w-20"
         variant="destructive"
       >
         Cancel
@@ -273,7 +274,7 @@ function Toolbar() {
     return (
       <Button
         onClick={onRun}
-        className="h-7"
+        className="h-7 w-20"
       >
         Retry
       </Button>
@@ -285,6 +286,7 @@ function Toolbar() {
       onClick={onRun}
       variant="success"
       size="sm"
+      className="h-7 w-20"
     >
       Run
       <PlayIcon className="ml-2 size-4" />
