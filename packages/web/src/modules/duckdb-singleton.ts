@@ -1,32 +1,75 @@
-import type { Table, TypeMap } from "@apache-arrow/esnext-esm";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type {
+  AsyncRecordBatchStreamReader,
+  RecordBatch,
+  Table,
+  TypeMap,
+} from "@apache-arrow/esnext-esm";
 import { type AsyncDuckDB, DuckDBDataProtocol } from "@duckdb/duckdb-wasm";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import { getArrowTableSchema, type ResultColumn } from "@/utils/arrow/helpers";
 import { getCompletions } from "@/utils/duckdb/autocomplete";
 import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
 
-export const makeDB = async () => {
-  // Select a bundle based on browser checks
-  const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
+type MakeDBProps = {
+  logLevel?: duckdb.LogLevel;
+};
 
-  // Select a bundle based on browser checks
-  const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+export const makeDB = async ({
+  logLevel = duckdb.LogLevel.DEBUG,
+}: MakeDBProps) => {
+  // ensure we can properly dispose of the worker
+  let worker_url: string | undefined;
 
-  const worker_url = URL.createObjectURL(
-    new Blob([`importScripts("${bundle.mainWorker}");`], {
-      type: "text/javascript",
-    }),
-  );
+  try {
+    // Select a bundle based on browser checks
+    const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
 
-  // Instantiate the asynchronus version of DuckDB-wasm
-  const worker = new Worker(worker_url);
-  const logger = new duckdb.ConsoleLogger(duckdb.LogLevel.ERROR);
-  const db = new duckdb.AsyncDuckDB(logger, worker);
-  await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+    // Select a bundle based on browser checks
+    const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
 
-  URL.revokeObjectURL(worker_url);
+    worker_url = URL.createObjectURL(
+      new Blob([`importScripts("${bundle.mainWorker}");`], {
+        type: "text/javascript",
+      }),
+    );
 
-  return db;
+    // Instantiate the asynchronus version of DuckDB-wasm
+    const worker = new Worker(worker_url);
+    const logger = new duckdb.ConsoleLogger(logLevel);
+    const db = new duckdb.AsyncDuckDB(logger, worker);
+    await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+
+    URL.revokeObjectURL(worker_url);
+
+    // https://github.com/holdenmatt/duckdb-wasm-kit/blob/1dfa5ac9b2a49254dbf0f043963f432f4fe7e593/src/init/initializeDuckDb.ts#L51C3-L62C4
+    // if (config) {
+    //   if (config.path) {
+    //     const res = await fetch(config.path);
+    //     const buffer = await res.arrayBuffer();
+    //     const fileNameMatch = config.path.match(/[^/]*$/);
+    //     if (fileNameMatch) {
+    //       config.path = fileNameMatch[0];
+    //     }
+    //     await db.registerFileBuffer(config.path, new Uint8Array(buffer));
+    //   }
+    //   await db.open(config);
+    // }
+
+    // #TODO: add adjustable config as props
+    await db.open({
+      query: { castBigIntToDouble: true },
+    });
+
+    return db;
+  } catch (e) {
+    console.error("Failed to create DuckDB instance: ", e);
+    throw e;
+  } finally {
+    if (worker_url) {
+      URL.revokeObjectURL(worker_url);
+    }
+  }
 };
 
 /**
@@ -53,11 +96,27 @@ type DuckDBExtension =
   | "tpcds"
   | "tpch";
 
+type LocalFileSource = {
+  kind: "LOCAL_FILE";
+  name: string;
+  handle: FileSystemFileHandle; // cheaper than storing the file itself
+};
+
+type RemoteSource = {
+  kind: "REMOTE";
+  name: string;
+  url: string;
+};
+
+type DataSource = LocalFileSource | RemoteSource;
+
 type DuckDBInstanceOptions = {
+  sources: DataSource[];
   cache?: {
     noCache?: boolean; // if true, do not cache any connections
     cacheTimeout?: number; // how long to cache the results of a query
   };
+  logLevel?: duckdb.LogLevel; // log level for DuckDB internally (default is ERROR)
   extensions?: DuckDBExtension[]; // list of extensions to load
 };
 
@@ -95,6 +154,10 @@ export class DuckDBInstance {
 
   // config
 
+  // sources
+  #sources: DataSource[] = [];
+
+  #logLevel: duckdb.LogLevel = duckdb.LogLevel.ERROR;
   #extensions: DuckDBExtension[] = ["icu"]; // default is to load the icu extension
 
   // Cache settings
@@ -102,10 +165,6 @@ export class DuckDBInstance {
   #cacheTimeout: number = 60 * 60 * 1000; // default is to cache for 1 hour
   #queryCache: string = CACHE_KEYS.queries; // results from duckdb queries
   #fileCache: string = CACHE_KEYS.files; // downloaded files from S3.
-
-  // Promise lock
-
-  #lock: Promise<void> = Promise.resolve();
 
   static getInstance(): DuckDBInstance {
     if (!DuckDBInstance.instance) {
@@ -133,6 +192,15 @@ export class DuckDBInstance {
     if (props?.extensions) {
       this.#extensions = props.extensions;
     }
+
+    if (props?.logLevel) {
+      this.#logLevel = props.logLevel;
+    }
+
+    // register available file sources
+    if (props?.sources) {
+      this.#sources = props.sources;
+    }
   }
 
   // ----------- Config methods ----------------
@@ -141,6 +209,7 @@ export class DuckDBInstance {
     this.#shouldCache = shouldCache;
   }
 
+  // replace with Valtio
   getConfig() {
     return {
       shouldCache: this.#shouldCache,
@@ -165,10 +234,25 @@ export class DuckDBInstance {
       return this.#db;
     }
 
-    this.#db = await makeDB();
-    await this.#db.open({
-      query: { castBigIntToDouble: true },
+    this.#db = await makeDB({
+      logLevel: this.#logLevel,
     });
+
+    // register file sources
+    for (const source of this.#sources) {
+      if (source.kind === "LOCAL_FILE") {
+        const file = await source.handle.getFile();
+        await this.#db.dropFile(source.name).catch((e) => {
+          console.error("Failed to drop file: ", e);
+        });
+        await this.#db.registerFileHandle(
+          source.name,
+          file,
+          DuckDBDataProtocol.BROWSER_FILEREADER,
+          true,
+        );
+      }
+    }
 
     return this.#db;
   }
@@ -178,13 +262,21 @@ export class DuckDBInstance {
    * Should run in onDestroy lifecycle hook.
    */
   async dispose() {
-    try {
-      // close all connections
-      await Promise.all(this.#connPool.map((conn) => conn.close()));
-      await this.#db?.terminate();
-    } catch (e) {
-      console.error("Failed to dispose DuckDBInstance: ", e);
-    }
+    // close all connections
+    await Promise.all(this.#connPool.map((conn) => conn.close())).catch((e) => {
+      console.error("Failed to close connections in disposal: ", e);
+    });
+    await this.#db?.terminate().catch((e) => {
+      console.error("Failed to terminate DuckDBInstance: ", e);
+    });
+  }
+
+  /**
+   * Reset the DuckDB instance (but keep the connections).
+   */
+
+  async reset() {
+    await this.#db?.reset();
   }
 
   // ----------- Connection methods ----------------
@@ -207,7 +299,7 @@ export class DuckDBInstance {
     const db = await this._getDB();
     const conn = await db.connect();
 
-    // load ICU
+    // load ICU (DuckDB wasm has limited plugins compared to other distributions.)
     if (this.#extensions) {
       for (const extension of this.#extensions) {
         await conn.query(`LOAD ${extension};`);
@@ -215,7 +307,7 @@ export class DuckDBInstance {
     }
 
     // set errors as JSON (not in the release yet, but will be in the next release);
-    //await conn.query("SET errors_as_json = true;");
+    // await conn.query("SET errors_as_json = true;");
 
     // Note: extensions are automatically handled by DuckDB wasm; https://duckdb.org/docs/api/wasm/extensions
 
@@ -239,6 +331,9 @@ export class DuckDBInstance {
 
   async registerFileHandle(fileName: string, file: File) {
     const db = await this._getDB();
+    await db.dropFile(fileName).catch((e) => {
+      console.error("Failed to drop file: ", e);
+    });
     await db.registerFileHandle(
       fileName,
       file,
@@ -249,12 +344,53 @@ export class DuckDBInstance {
 
   // ------- Query methods ------- //
 
-  // // prepare query so we can cancel it on changes
-  // private async prepareQuery(query: string) {
-  //   const conn = await this.connect();
-  //   const stmt = await conn.prepare(query);
-  //   return stmt;
-  // }
+  /**
+   * Query a stream.
+   *
+   * @source [Excalichart](https://github.com/excalichart/excalichart/blob/c47a3665af936cb1bb33a8c91df098beb8060308/src/lib/io/DuckDBClient.ts#L20C2-L53C3)
+   * @source [Observable stdlib](https://github.com/observablehq/stdlib/blob/main/src/duckdb.js)
+   */
+  public async queryStream<T extends TypeMap = any>(
+    query: string,
+    params?: Array<unknown>,
+  ) {
+    if (this.#db) {
+      // #TODO: see if we can reuse connections as in the async generator we don't have access to parent this context.
+      const connection = await this.#connect();
+
+      const cleanup = this.#cleanupConnection.bind(this, connection);
+
+      let reader: AsyncRecordBatchStreamReader<T>;
+      let batch: IteratorResult<RecordBatch<T>, any>;
+      try {
+        if (params && params.length > 0) {
+          const statement = await connection.prepare(query);
+          reader = await statement.send(...params);
+        } else {
+          reader = await connection.send(query);
+        }
+        batch = await reader.next();
+        if (batch.done) throw new Error("missing first batch");
+      } catch (error) {
+        await cleanup();
+        throw error;
+      }
+      return {
+        schema: getArrowTableSchema(batch.value),
+        async *readRows() {
+          try {
+            while (!batch.done) {
+              yield batch.value.toArray();
+              batch = await reader.next();
+            }
+          } finally {
+            // todo: check this works.
+            await cleanup();
+          }
+        },
+      };
+    }
+  }
 
   /**
    * Fetch the results of a query.
@@ -276,8 +412,6 @@ export class DuckDBInstance {
     query: string;
     noCache?: boolean;
   }): Promise<FetchResultsReturn> {
-    const t1 = performance.now();
-
     const conn = await this.#connect();
 
     // Allow local override of caching
@@ -285,7 +419,6 @@ export class DuckDBInstance {
 
     try {
       if (shouldCache) {
-        console.debug("Caching is enabled.");
         // ensure all relevant query parameters are included in the cache key
         const cacheKey = await this.createHashKey(query);
 
@@ -294,19 +427,62 @@ export class DuckDBInstance {
         const cached = await queries.match(cacheKey);
 
         if (cached) {
-          console.debug("Cache hit");
           const response = await cached.json();
-          const t2 = performance.now();
-          console.debug(`Cache recall took ${t2 - t1} milliseconds.`);
           return response;
         }
       }
 
-      const t3 = performance.now();
-      const queryResults = await conn.query(query);
-      const t4 = performance.now();
+      // check cardinality incase the query is too large
+      try {
+        const cleanSQL = query.replace(/'/g, "''"); // escape single quotes
+        const explain = await conn.query(
+          `SELECT json_serialize_sql('${cleanSQL}', format:= true);`,
+        );
 
-      console.debug(`Query took ${t4 - t3} milliseconds.`);
+        // @ts-expect-error: depedency issue with arrowjs/esnext-esm
+        const asJson = explain.toArray().map((row) => row.toJSON()) as Record<
+          string,
+          string
+        >[];
+        const firstRow = asJson[0];
+        const value = firstRow ? Object.values(firstRow)[0] : null;
+
+        if (value) {
+          const parsed = JSON.parse(value);
+          console.log("parsed: ", parsed);
+          // const cardinality = parsed?.cardinality;
+          // if(cardinality && cardinality > 100000){
+          //   throw new Error("Query is too large to run in the browser. Please run in a local environment.");
+          // }
+        }
+      } catch (e) {
+        console.error("Error in explain: ", e);
+      }
+
+      const queryResults = await conn.query(query);
+
+      //  https://github.com/evidence-dev/evidence/blob/5603970a6c99acf00b9f04deaea5890766a08908/packages/duckdb/index.cjs#L139C3-L157C6
+
+      // const count_query = `WITH root as (${cleanQuery(queryString)}) SELECT COUNT(*) FROM root`;
+      // const expected_count = await db.all(count_query).catch(() => null);
+      // const expected_row_count = expected_count?.[0]["count_star()"];
+
+      // const column_query = `DESCRIBE ${cleanQuery(queryString)}`;
+      // const column_types = await db
+      //   .all(column_query)
+      //   .then(duckdbDescribeToEvidenceType)
+      //   .catch(() => null);
+
+      // const results = await asyncIterableToBatchedAsyncGenerator(
+      //   stream,
+      //   batchSize,
+      //   {
+      //     mapResultsToEvidenceColumnTypes:
+      //       column_types == null ? mapResultsToEvidenceColumnTypes : undefined,
+      //     standardizeRow,
+      //     closeConnection: () => db.close(),
+      //   },
+      // );
 
       const schema = getArrowTableSchema(queryResults);
 
@@ -336,7 +512,6 @@ export class DuckDBInstance {
       await queries.put(cacheKey, response);
 
       const t6 = performance.now();
-      console.debug(`Cache took ${t6 - t5} milliseconds.`);
 
       return results;
     } catch (e) {

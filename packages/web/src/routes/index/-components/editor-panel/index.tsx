@@ -11,6 +11,18 @@ import { usePanel } from "../../-context/panel/usePanel";
 import OpenFileTabs from "./components/open-files";
 import ResultsView from "./components/results-viewer";
 
+const defaultSQL = `
+  -- Query external JSON API and create a new table
+  CREATE TABLE new_tbl AS SELECT * FROM read_json_auto('https://api.datamuse.com/words?ml=sql');
+  SELECT * FROM new_tbl;
+
+  -- Query a parquet file
+  SELECT * FROM read_parquet('stores.parquet');
+
+  -- Query a CSV file
+  SELECT * FROM read_csv('stores.csv');
+`;
+
 const EditorPanel = memo(function EditorPanel() {
   const { status, error } = useQuery();
   const { editorRef } = useEditor();
@@ -19,17 +31,7 @@ const EditorPanel = memo(function EditorPanel() {
     `SELECT * FROM READ_PARQUET('stores.parquet');`,
   );
 
-  const [_, setIsFocused] = useState(false);
-
   const { currentFile } = usePanel();
-
-  const onFocus = useCallback(() => {
-    setIsFocused(true);
-  }, []);
-
-  const onBlur = useCallback(() => {
-    setIsFocused(false);
-  }, []);
 
   const onSave = useCallback((value: string) => {
     console.log("on save: ", value);
@@ -45,16 +47,15 @@ const EditorPanel = memo(function EditorPanel() {
         {currentFile ? (
           <Editor
             onSave={onSave}
-            onBlur={onBlur}
-            onFocus={onFocus}
             value={sql}
             ref={editorRef}
             onChange={(value) => setSql(value ?? "")}
-            className="h-full border-t-0 py-4"
+            className="h-full border-t-0"
             options={{
-              theme: "vs-light",
-              minimap: { enabled: false },
-              renderLineHighlight: "none",
+              padding: {
+                top: 16,
+                bottom: 16,
+              },
             }}
           />
         ) : (

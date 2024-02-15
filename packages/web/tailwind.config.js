@@ -10,7 +10,6 @@ import animate from "tailwindcss-animate"
 export default {
   darkMode: ["class"],
   future: {
-    respectDefaultRingColorOpacity: true,
   },
   content: [
     "./index.html",

@@ -15,7 +15,7 @@ function EditorProvider(props: EditorProviderProps) {
   // cleanup
   useEffect(() => {
     return () => {
-      editorRef.current = null;
+      editorRef.current?.getEditor()?.dispose();
     };
   }, []);
 

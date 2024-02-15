@@ -10,9 +10,11 @@ import NProgress from "nprogress";
 import NotFound from "@/components/NotFound";
 import Sidebar from "@/components/sidebar";
 import { SidebarProvider } from "@/components/sidebar/context";
-import { useSidebar } from "@/components/sidebar/hooks/useSidebar";
 import { Toaster } from "@/components/ui/sonner";
-import { cn } from "@/lib/utils";
+
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggler } from "@/components/theme-toggle";
+import { TerminalIcon } from "lucide-react";
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -62,11 +64,24 @@ function Layout(props: { children: ReactNode }) {
     <SidebarProvider>
       <LayoutContainer>
         <Sidebar />
-        <main className="size-full">
-          <div className="flex h-full flex-col">
-            <ContentShell>{props.children}</ContentShell>
+        <div className="w-full lg:pl-16">
+          {/* navbar */}
+          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border border-b bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-evenly gap-2">
+              <h1 className="text-lg font-semibold">QuackDB</h1>
+              <TerminalIcon className="size-5" />
+            </div>
+            <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
+              <ThemeToggler />
+            </div>
           </div>
-        </main>
+
+          <main className="size-full">
+            <div className="flex h-full flex-col">
+              <ContentShell>{props.children}</ContentShell>
+            </div>
+          </main>
+        </div>
 
         {/* Start rendering router matches */}
         {/* <TanStackRouterDevtools position="bottom-right" /> */}
@@ -85,11 +100,11 @@ function Layout(props: { children: ReactNode }) {
 
 function Shell(props: { children: ReactNode }) {
   return (
-    <>
+    <ThemeProvider>
       <Layout>{props.children}</Layout>
       <ProgressBar />
       <Analytics />
-    </>
+    </ThemeProvider>
   );
 }
 
@@ -114,8 +129,7 @@ const LayoutContainer = memo(function LayoutContainer(props: {
 }) {
   return (
     <div
-      className="relative flex h-screen min-h-screen flex-col bg-background font-sans antialiased lg:flex-row"
-      // eslint-disable-next-line react/no-unknown-property
+      className="relative flex h-screen min-h-screen w-full max-w-full flex-col bg-background lg:flex-row"
       vaul-drawer-wrapper=""
     >
       {props.children}
@@ -126,15 +140,5 @@ const LayoutContainer = memo(function LayoutContainer(props: {
 const ContentShell = memo(function ContentShell(props: {
   children: ReactNode;
 }) {
-  const { isOpen } = useSidebar();
-  return (
-    <div
-      className={cn(
-        "flex h-full min-h-0 flex-col transition-all lg:pl-20",
-        isOpen && "lg:pl-72",
-      )}
-    >
-      {props.children}
-    </div>
-  );
+  return <div className="flex h-full min-h-0 flex-col">{props.children}</div>;
 });
