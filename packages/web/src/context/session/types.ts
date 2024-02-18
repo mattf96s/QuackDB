@@ -19,4 +19,85 @@ export type SessionState = {
   directoryHandle: FileSystemDirectoryHandle | null;
   editors: CodeEditor[];
   sources: Source[];
+  dispatch: React.Dispatch<Action> | null;
 };
+
+// session reducer
+
+type AddSource = {
+  type: "ADD_SOURCE";
+  payload: Source;
+};
+
+type RemoveSource = {
+  type: "REMOVE_SOURCE";
+  payload: {
+    path: string;
+  };
+};
+
+type OpenEditor = {
+  type: "OPEN_EDITOR";
+  payload: {
+    path: string;
+  };
+};
+
+type FocusEditor = {
+  type: "FOCUS_EDITOR";
+  payload: {
+    path: string;
+  };
+};
+
+type CloseEditor = {
+  type: "CLOSE_EDITOR";
+  payload: {
+    path: string;
+  };
+};
+
+type AddEditor = {
+  type: "ADD_EDITOR";
+  payload: CodeEditor;
+};
+
+type DeleteEditor = {
+  type: "DELETE_EDITOR";
+  payload: {
+    name: string;
+  };
+};
+
+type UpdateEditor = {
+  type: "UPDATE_EDITOR";
+  payload: {
+    name: string;
+    content: string;
+  };
+};
+
+type OpenSession = {
+  type: "OPEN_SESSION";
+  payload: Pick<
+    SessionState,
+    "sessionId" | "directoryHandle" | "editors" | "sources"
+  >;
+};
+
+type SetStatus = {
+  type: "SET_STATUS";
+  payload: { status: SessionState["status"] };
+};
+
+export type Action =
+  | AddSource
+  | RemoveSource
+  | OpenEditor
+  | FocusEditor // tabs can be open without being focused
+  | CloseEditor
+  | AddEditor
+  | DeleteEditor
+  | UpdateEditor
+  | OpenSession
+  | SetStatus;

@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 import * as Comlink from "comlink";
 import { type Editor, type FileEntry, type Source } from "@/constants";
+import { newfileContents } from "./data/newfile-content";
 import type { CodeEditor, SessionState } from "./types";
 
 type SessionFiles = Pick<
@@ -87,6 +88,33 @@ const onInitialize = async (sessionId: string) => {
         default:
           break;
       }
+    }
+
+    // if there are no files, create a new editor with default comments and snippets.
+    if (editors.length === 0) {
+      const draftHandle = await directoryHandle.getFileHandle("new-query.sql", {
+        create: true,
+      });
+      const syncHandle = await draftHandle.createSyncAccessHandle();
+
+      const textEncoder = new TextEncoder();
+      syncHandle.write(textEncoder.encode(newfileContents));
+
+      syncHandle.flush();
+      syncHandle.close();
+
+      const entry: FileEntry<"EDITOR"> = {
+        path: "new-query.sql",
+        kind: "EDITOR",
+        ext: "sql",
+        mimeType: "text/sql",
+        handle: draftHandle,
+      };
+      editors.push(entry);
+      postMessage({
+        type: "INITIALIZE_EDITOR_FILE",
+        payload: entry,
+      });
     }
 
     const editorsWithContent: CodeEditor[] = editors.map((editor, i) => {

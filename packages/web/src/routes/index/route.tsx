@@ -1,17 +1,20 @@
-import { memo, Suspense, useCallback, useEffect } from "react";
+import { memo, Suspense, useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Panel, PanelGroup } from "react-resizable-panels";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import {
   createFileRoute,
   type ErrorComponentProps,
+  useRouter,
 } from "@tanstack/react-router";
 import { releaseProxy, type Remote, wrap } from "comlink";
-import { Loader2, PlayIcon, TerminalIcon } from "lucide-react";
+import { Loader2, PlayIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useSpinDelay } from "spin-delay";
 import PanelHandle from "@/components/panel-handle";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { DbProvider } from "@/context/db/provider";
 import { useDB } from "@/context/db/useDB";
 import { EditorProvider } from "@/context/editor/provider";
@@ -71,29 +74,26 @@ export const Route = createFileRoute("/")({
 });
 
 function ErrorComponent(props: ErrorComponentProps) {
+  const router = useRouter();
   const error = props.error;
+
+  const msg = error instanceof Error ? error.message : "Unknown error";
   return (
-    <div className="text-center">
-      <p className="text-base font-semibold text-indigo-600"></p>
-      <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-        Something went wrong
-      </h1>
-      <p className="mt-6 text-base leading-7 text-gray-600">
-        {`Sorry, we couldn't find the page you're looking for.`}
-      </p>
-      <div className="mt-10 flex items-center justify-center gap-x-6">
-        <a
-          href="#"
-          className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+    <div className="flex flex-col gap-10">
+      <Alert variant="destructive">
+        <ExclamationTriangleIcon className="size-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{msg}</AlertDescription>
+      </Alert>
+      <div>
+        <Button
+          onClick={() => {
+            router.cleanCache();
+            router.invalidate();
+          }}
         >
-          Go back home
-        </a>
-        <a
-          href="#"
-          className="text-sm font-semibold text-gray-900"
-        >
-          Contact support <span aria-hidden="true">&rarr;</span>
-        </a>
+          Reload
+        </Button>
       </div>
     </div>
   );
@@ -157,53 +157,62 @@ const DBInitializer = memo(function DBInitializer(props: {
 });
 
 const Playground = memo(function Playground() {
+  // we read this during render so we can't use a ref.
+  const [el, setEl] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    const toolbarEl = document.getElementById("toolbar-portal");
+    console.log("toolbarEl", toolbarEl);
+    if (toolbarEl) {
+      setEl(toolbarEl);
+    }
+  }, []);
   return (
-    <div className="h-full flex-col md:flex">
-      <div className="container flex max-w-none flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
-        <div className="flex items-center justify-evenly gap-2">
-          <h2 className="text-lg font-semibold">QuackDB</h2>
-          <TerminalIcon className="size-5" />
-        </div>
-        <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
-          {/* <PresetSelector presets={presets} /> */}
+    <>
+      {/* put into the top level toolbar */}
+      {el &&
+        createPortal(
+          <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
+            {/* <PresetSelector presets={presets} /> */}
 
-          <Toolbar />
-          <Settings />
+            <Toolbar />
+            <Settings />
 
-          {/* <SessionCombobox /> */}
+            {/* <SessionCombobox /> */}
+          </div>,
+          el,
+        )}
+
+      <div className="relative">
+        <div className="fixed bottom-0 left-16 right-0 top-[64px] flex flex-col">
+          {/* Panel provider is custom context while PanelGroup is unrelated component; poor naming. */}
+
+          <Suspense fallback={<p>Loading...</p>}>
+            <PanelGroup
+              className="rounded-none"
+              direction="horizontal"
+            >
+              <Panel
+                className="flex flex-col"
+                collapsedSize={5}
+                collapsible={true}
+                defaultSize={15}
+                maxSize={20}
+                minSize={15}
+              >
+                <Sidepanel />
+              </Panel>
+              <PanelHandle />
+              <Panel
+                className="flex flex-col"
+                minSize={50}
+              >
+                <EditorPanel />
+              </Panel>
+            </PanelGroup>
+          </Suspense>
         </div>
       </div>
-      <Separator />
-
-      {/* Panel provider is custom context while PanelGroup is unrelated component; poor naming. */}
-
-      <Suspense fallback={<p>Loading...</p>}>
-        <div className="h-full">
-          <PanelGroup
-            className="rounded-md"
-            direction="horizontal"
-          >
-            <Panel
-              className="flex flex-col"
-              collapsedSize={5}
-              collapsible={true}
-              defaultSize={15}
-              maxSize={20}
-              minSize={15}
-            >
-              <Sidepanel />
-            </Panel>
-            <PanelHandle />
-            <Panel
-              className="flex flex-col"
-              minSize={50}
-            >
-              <EditorPanel />
-            </Panel>
-          </PanelGroup>
-        </div>
-      </Suspense>
-    </div>
+    </>
   );
 });
 

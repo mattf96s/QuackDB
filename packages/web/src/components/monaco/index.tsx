@@ -1,14 +1,14 @@
 import "monaco-editor/esm/vs/basic-languages/pgsql/pgsql.contribution";
 import {
   forwardRef,
-  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
+  useState,
 } from "react";
 import MonacoEditor, {
-  type BeforeMount,
   type EditorProps as MonacoEditorProps,
+  type Monaco,
   type OnMount,
 } from "@monaco-editor/react";
 import {
@@ -17,217 +17,212 @@ import {
   KeyCode,
   KeyMod,
   languages,
+  Range,
 } from "monaco-editor";
-import { CACHE_KEYS } from "@/constants";
+import { useQuery } from "@/context/query/useQuery";
 import { cn } from "@/lib/utils";
-import { snippets } from "@/utils/duckdb/snippets";
-import { conf, language } from "./pgsql";
+import { useTheme } from "../theme-provider";
+import { autocompleter } from "./helpers/autocomplete";
+import { sqlConf, sqlDef } from "./syntax";
 
 type EditorProps = Exclude<MonacoEditorProps, "value"> & {
   value: string;
   onSave?: (value: string) => void;
+  language?: string;
 };
 
 export type EditorForwardedRef = {
   getEditor: () => editor.IStandaloneCodeEditor | null;
 };
 
-type PartialMonacoCompletionItem = Pick<
-  languages.CompletionItem,
-  "label" | "kind" | "insertText" | "detail"
->;
-
-const getDefaultSuggestions = (): PartialMonacoCompletionItem[] => {
-  const keywords: PartialMonacoCompletionItem[] = (
-    language.keywords as string[]
-  ).map((keyword) => ({
-    label: keyword,
-    kind: languages.CompletionItemKind.Keyword,
-    insertText: keyword,
-  }));
-
-  const fns: PartialMonacoCompletionItem[] = (
-    language.builtinFunctions as string[]
-  ).map((fn) => ({
-    label: fn,
-    kind: languages.CompletionItemKind.Function,
-    insertText: fn,
-  }));
-
-  const operators: PartialMonacoCompletionItem[] = (
-    language.operators as string[]
-  ).map((op) => ({
-    label: op,
-    kind: languages.CompletionItemKind.Operator,
-    insertText: op,
-  }));
-
-  const duckdbSnippets: PartialMonacoCompletionItem[] = snippets.map(
-    (snippet) => ({
-      label: snippet.name,
-      kind: languages.CompletionItemKind.Snippet,
-      insertText: snippet.code,
-      detail: snippet.description,
-    }),
-  );
-
-  return [...duckdbSnippets, ...keywords, ...fns, ...operators];
-};
-
 const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
+  const monacoRef = useRef<Monaco | null>(null);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const disposables = useRef<IDisposable[]>([]);
+  const [isReady, setIsReady] = useState(false);
 
-  const onSaveFile = useCallback(async () => {
-    if (!props.onSave) return;
+  const { onRunQuery } = useQuery();
 
-    const editor = editorRef.current;
-    if (!editor) return;
+  const { theme } = useTheme();
 
-    const model = editor.getModel();
-    if (!model) return;
-
-    const value = model.getValue();
-    props.onSave(value);
-  }, [props]);
-
-  // function disposals(items: IDisposable[]){
-  //   while (items.length > 0) {
-  //     const disposable = items.pop();
-  //     if (disposable) {
-  //       disposable.dispose();
-  //     }
-  //   }
-  // }
+  const language = props.language ?? "sql";
+  const isDark = theme === "dark";
 
   useEffect(() => {
     return () => {
-      if (disposables.current.length > 0) {
-        disposables.current.forEach((disposable) => disposable.dispose());
-        disposables.current = [];
-      }
-      if (editorRef.current) {
-        editorRef.current.dispose();
-        editorRef.current = null;
-      }
+      editorRef.current?.dispose();
     };
   }, []);
 
-  const handleEditorWillMount: BeforeMount = useCallback((monaco) => {
-    monaco.languages.register({
-      id: "pgsql",
-      aliases: ["Postgres", "PostgreSQL", "psql", "sql"],
-    });
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+    setIsReady(true);
 
-    const configuration = monaco.languages.setLanguageConfiguration(
-      "pgsql",
-      conf,
-    );
+    // ---------- save to local storage -------------- //
 
-    disposables.current.push(configuration);
+    // @source https://github.com/rhashimoto/preview/blob/master/demo/demo.js
 
-    // const completions = monaco.languages.registerCompletionItemProvider("sql", {
-    //   provideCompletionItems: async (model, position, context, token) => {
-    //     const word = model.getWordUntilPosition(position);
-    //     const suggestions = getDefaultSuggestions();
+    // let change: NodeJS.Timeout;
+    // const disposable = editor.onDidChangeModelContent(function () {
+    //   clearTimeout(change);
+    //   change = setTimeout(function () {
+    //     localStorage.setItem(
+    //       CACHE_KEYS.SQL_EDITOR_CONTENT,
+    //       editor.getValue(),
+    //     );
+    //   }, 1000);
+    // });
 
-    //     const filtered = word
-    //       ? suggestions.filter((suggestion) =>
-    //           suggestion.label
-    //             .toString()
-    //             .toLowerCase()
-    //             .includes(word.word.toLowerCase()),
-    //         )
-    //       : suggestions;
+    // disposables.current.push(disposable);
 
-    //     const final = filtered.map((suggestion) => ({
-    //       ...suggestion,
-    //       range: new monaco.Range(
-    //         position.lineNumber,
-    //         word.startColumn,
-    //         position.lineNumber,
-    //         word.endColumn,
-    //       ),
-    //     }));
+    // editor.setValue(
+    //   localStorage.getItem(CACHE_KEYS.SQL_EDITOR_CONTENT) ??
+    //     "MONACO_EDITOR_CONTENT",
+    // );
 
-    //     return {
-    //       suggestions: final,
-    //     };
+    // ---------- Actions  -------------- //
+
+    // add right-click menu run selection
+    // const runSelection = editorRef.current.addAction({
+    //   id: idLinkSelection,
+    //   label: "🔗 Link to selection",
+    //   contextMenuGroupId: "navigation_links",
+    //   // We use ctrl/cmd + K to create a link, which is standard for hyperlinks.
+    //   keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK],
+    //   run: () => {
+    //     if (
+    //       datasetViewStore == null ||
+    //       path == null ||
+    //       field == null ||
+    //       editor == null
+    //     )
+    //       return;
+
+    //     const selection = editor.getSelection();
+    //     if (selection == null) return;
+
+    //     datasetViewStore.setTextSelection(path, {
+    //       startLine: selection.startLineNumber,
+    //       endLine: selection.endLineNumber,
+    //       startCol: selection.startColumn,
+    //       endCol: selection.endColumn,
+    //     });
+    //     editor.setSelection(selection);
     //   },
     // });
 
-    // disposables.current.push(completions);
+    // disposables.current.push(runSelection);
 
-    const tokensDisposable = monaco.languages.setMonarchTokensProvider(
-      "pgsql",
-      language,
+    // editor.addAction({
+    //   id: "run-cell",
+    //   label: "Run Cell",
+    //   keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
+
+    //   contextMenuGroupId: "starboard",
+    //   contextMenuOrder: 0,
+    //   run: (_ed) => {
+    //     runtime.controls.runCell({ id: cellId });
+    //   },
+    // });
+  };
+
+  useEffect(() => {
+    const disposables: IDisposable[] = [];
+
+    if (!editorRef.current) return;
+    if (!monacoRef.current) return;
+    if (!isReady) return;
+
+    // SQL completion
+
+    // register Monaco languages
+    monacoRef.current.languages.register({
+      id: language,
+      extensions: [`.${language}`],
+      aliases: [`${language.toLowerCase()}`, `${language.toUpperCase()}`],
+    });
+
+    // set LanguageConfiguration
+    disposables.push(
+      monacoRef.current.languages.setLanguageConfiguration(language, sqlConf),
+    );
+    // register setMonarchTokens Provider
+    disposables.push(
+      monacoRef.current.languages.setMonarchTokensProvider(language, sqlDef),
     );
 
-    disposables.current.push(tokensDisposable);
-  }, []);
+    disposables.push(
+      monacoRef.current.languages.registerCompletionItemProvider(language, {
+        async provideCompletionItems(model, position, _context, _token) {
+          const input = model.getValue();
 
-  const handleEditorDidMount: OnMount = useCallback(
-    (editor, monaco) => {
-      editorRef.current = editor;
+          if (!input) {
+            return {
+              suggestions: [
+                {
+                  label: "SELECT",
+                  kind: languages.CompletionItemKind.Keyword,
+                  insertText: "SELECT",
+                  range: new Range(1, 1, 1, 1),
+                },
+                {
+                  label: "FROM",
+                  kind: languages.CompletionItemKind.Keyword,
+                  insertText: "FROM",
+                  range: new Range(1, 1, 1, 1),
+                },
+              ],
+              incomplete: true,
+            };
+          }
 
-      // ---------- save to local storage -------------- //
-
-      // @source https://github.com/rhashimoto/preview/blob/master/demo/demo.js
-
-      let change: NodeJS.Timeout;
-      const disposable = editor.onDidChangeModelContent(function () {
-        clearTimeout(change);
-        change = setTimeout(function () {
-          localStorage.setItem(
-            CACHE_KEYS.SQL_EDITOR_CONTENT,
-            editor.getValue(),
+          const word = model.getWordUntilPosition(position);
+          const range = new Range(
+            position.lineNumber,
+            word.startColumn,
+            position.lineNumber,
+            word.endColumn,
           );
-        }, 1000);
-      });
 
-      disposables.current.push(disposable);
+          const { suggestions } = autocompleter(word.word);
 
-      editor.setValue(
-        localStorage.getItem(CACHE_KEYS.SQL_EDITOR_CONTENT) ??
-          "MONACO_EDITOR_CONTENT",
-      );
+          const suggestionsWithRange = suggestions.map((suggestion) => ({
+            detail: suggestion.detail,
+            insertText: suggestion.insertText,
+            kind: suggestion.kind,
+            label: suggestion.label,
+            range,
+          }));
 
-      // ---------- Actions  -------------- //
+          return {
+            suggestions: suggestionsWithRange,
+            incomplete: true,
+          };
+        },
+      }),
+    );
 
-      const saveAction = editorRef.current.addAction({
+    // create Monaco model
+
+    disposables.push(monacoRef.current.editor.createModel("sql", language));
+
+    // context menu actions
+
+    disposables.push(
+      editorRef.current.addAction({
         id: "save-file",
         label: "Save File",
         keybindings: [KeyMod.CtrlCmd | KeyCode.KeyS],
         contextMenuGroupId: "navigation",
         contextMenuOrder: 1.5,
-        run: onSaveFile,
-      });
+        run: () => console.log("Save"),
+      }),
+    );
 
-      disposables.current.push(saveAction);
+    // validate selected text
 
-      // add right-click menu run selection
-
-      const runActionDisposable = editorRef.current.addAction({
-        id: "run-selection",
-        label: "Run Selection",
-        contextMenuGroupId: "navigation",
-        contextMenuOrder: 1.5,
-        run: (editor) => {
-          const selection = editor.getSelection();
-
-          const value =
-            selection?.isEmpty() || selection == null
-              ? editor.getValue()
-              : editor.getModel()?.getValueInRange(selection);
-          console.log("Selected value:", value);
-        },
-      });
-
-      disposables.current.push(runActionDisposable);
-
-      // validate selected text
-
-      const validateActionDisposable = editorRef.current.addAction({
+    disposables.push(
+      editorRef.current.addAction({
         id: "validate-selection",
         label: "Validate Selection",
         contextMenuGroupId: "navigation",
@@ -241,55 +236,73 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
               : editor.getModel()?.getValueInRange(selection);
           console.log("Selected value:", value);
         },
-      });
+      }),
+    );
 
-      disposables.current.push(validateActionDisposable);
+    return () => {
+      disposables.forEach((disposable) => disposable.dispose());
+    };
+  }, [isReady, language]);
 
-      // add right-click menu run selection
-      // const runSelection = editorRef.current.addAction({
-      //   id: idLinkSelection,
-      //   label: "🔗 Link to selection",
-      //   contextMenuGroupId: "navigation_links",
-      //   // We use ctrl/cmd + K to create a link, which is standard for hyperlinks.
-      //   keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK],
-      //   run: () => {
-      //     if (
-      //       datasetViewStore == null ||
-      //       path == null ||
-      //       field == null ||
-      //       editor == null
-      //     )
-      //       return;
+  // Add right-click menu run selection.
+  // I don't want to the run fn to trigger the other actions.
 
-      //     const selection = editor.getSelection();
-      //     if (selection == null) return;
+  useEffect(() => {
+    const disposables: IDisposable[] = [];
 
-      //     datasetViewStore.setTextSelection(path, {
-      //       startLine: selection.startLineNumber,
-      //       endLine: selection.endLineNumber,
-      //       startCol: selection.startColumn,
-      //       endCol: selection.endColumn,
-      //     });
-      //     editor.setSelection(selection);
-      //   },
-      // });
+    if (!editorRef.current) return;
+    if (!monacoRef.current) return;
+    if (!isReady) return;
 
-      // disposables.current.push(runSelection);
+    // right click context menu
+    disposables.push(
+      editorRef.current.addAction({
+        id: "run-selection",
+        label: "Run Selection",
+        contextMenuGroupId: "navigation",
+        contextMenuOrder: 1.5,
+        run: (editor) => {
+          const selection = editor.getSelection();
 
-      // editor.addAction({
-      //   id: "run-cell",
-      //   label: "Run Cell",
-      //   keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
+          const value =
+            selection?.isEmpty() || selection == null
+              ? editor.getValue()
+              : editor.getModel()?.getValueInRange(selection);
 
-      //   contextMenuGroupId: "starboard",
-      //   contextMenuOrder: 0,
-      //   run: (_ed) => {
-      //     runtime.controls.runCell({ id: cellId });
-      //   },
-      // });
-    },
-    [onSaveFile],
-  );
+          if (!value) return;
+
+          onRunQuery(value ?? "");
+        },
+      }),
+    );
+
+    // cmd + space
+    disposables.push(
+      editorRef.current.addAction({
+        id: "run-selection",
+        label: "Run Selection",
+        keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
+        contextMenuGroupId: "navigation",
+        contextMenuOrder: 1.5,
+        run: (editor) => {
+          const selection = editor.getSelection();
+
+          const value =
+            selection?.isEmpty() || selection == null
+              ? editor.getValue()
+              : editor.getModel()?.getValueInRange(selection);
+
+          if (!value) return;
+
+          onRunQuery(value ?? "");
+        },
+      }),
+    );
+
+    return () => {
+      disposables.forEach((disposable) => disposable.dispose());
+    };
+  }, [isReady, onRunQuery]);
 
   useImperativeHandle(
     ref,
@@ -322,49 +335,36 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
   return (
     <MonacoEditor
       className={cn(props.className)}
-      beforeMount={handleEditorWillMount}
       onMount={handleEditorDidMount}
       //height="90vh"
-      defaultLanguage="pgsql"
-      theme="vs"
+      defaultLanguage={language}
+      theme={isDark ? "vs-dark" : "vs-light"}
       options={{
-        "semanticHighlighting.enabled": true,
-        language: "pgsql",
-        fontSize: 16,
-        fontFamily: "jetbrains-mono",
-        //formatOnType: true,
-        autoClosingBrackets: "always",
+        fontFamily: "JetBrains Mono",
+        smoothScrolling: false,
         automaticLayout: true,
-        renderLineHighlight: "all",
-        lineDecorationsWidth: 15,
-        lineNumbersMinChars: 2,
-        scrollbar: {
-          useShadows: false,
-          vertical: "auto",
-          horizontal: "auto",
-          verticalScrollbarSize: 10,
-          horizontalScrollbarSize: 10,
-          alwaysConsumeMouseWheel: false,
-        },
-        renderLineHighlightOnlyWhenFocus: true,
+        fontSize: 16,
+        minimap: { enabled: false },
+        wordWrap: "on",
+        wrappingIndent: "same",
+        wrappingStrategy: "advanced",
+        scrollBeyondLastLine: false,
+        scrollbar: { vertical: "auto", horizontal: "auto" },
+        lineNumbers: "on",
+        lineDecorationsWidth: 10,
+        lineNumbersMinChars: 3,
 
+        glyphMargin: true,
         folding: true,
-        //scrollBeyondLastLine: false,
-        minimap: {
-          enabled: false,
-        },
+        foldingStrategy: "auto",
+        foldingHighlight: true,
 
-        // suggest: {
-        //   showFields: true,
-        //   showKeywords: true,
-        //   showValues: true,
-        //   showVariables: true,
-        //   showFiles: true,
-        //   showWords: true,
-        // },
-        bracketPairColorization: { enabled: true },
-        matchBrackets: "always" as const,
-        ...{ ...props.options },
+        renderLineHighlight: "all",
+        renderWhitespace: "none",
+
+        quickSuggestions: true,
+        quickSuggestionsDelay: 100,
+        language,
       }}
       {...props}
     />

@@ -1,24 +1,18 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, Database, History } from "lucide-react";
+import { get, set } from "idb-keyval";
+import { ChevronDown, CopyCheck, History } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuShortcut,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
 import { CACHE_KEYS } from "@/constants";
 import { useQuery } from "@/context/query/useQuery";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
 import { useWrapper } from "./wrapper/context/useWrapper";
 
 const querySchema = z.array(z.string());
 
-const onGetStoredQueries = () => {
-  const stored = localStorage.getItem(CACHE_KEYS.QUERY_HISTORY);
+const onGetStoredQueries = async () => {
+  const stored = await get(CACHE_KEYS.QUERY_HISTORY);
 
   if (stored) {
     try {
@@ -35,29 +29,37 @@ const onGetStoredQueries = () => {
   return [];
 };
 
+const onAddQuery = async (query: string) => {
+  const stored = await onGetStoredQueries();
+  stored.unshift(query);
+  const unique = Array.from(new Set(stored));
+  await set(CACHE_KEYS.QUERY_HISTORY, JSON.stringify(unique));
+  return unique;
+};
+
 export default function QueryHistory() {
   const [queries, setQueries] = useState<string[]>([]);
 
-  const { sql } = useQuery();
+  const { sql, status } = useQuery();
 
   useEffect(() => {
-    const refresh = () => {
-      const stored = onGetStoredQueries();
+    const refresh = async () => {
+      const stored = await onGetStoredQueries();
       setQueries(stored);
     };
 
     refresh();
   }, []);
 
+  const isRunning = status === "loading";
+
   useEffect(() => {
-    if (sql) {
-      const stored = onGetStoredQueries();
-      stored.unshift(sql);
-      const unique = Array.from(new Set(stored));
-      localStorage.setItem(CACHE_KEYS.QUERY_HISTORY, JSON.stringify(unique));
-      setQueries(unique);
+    if (isRunning && sql) {
+      onAddQuery(sql).then((unique) => {
+        setQueries(unique);
+      });
     }
-  }, [sql]);
+  }, [sql, isRunning]);
 
   const { isCollapsed, onToggleIsCollapse } = useWrapper();
 
@@ -67,6 +69,11 @@ export default function QueryHistory() {
 
   const onExpand = () => {
     onToggleIsCollapse(false);
+  };
+
+  const onClearHistory = async () => {
+    await set(CACHE_KEYS.QUERY_HISTORY, JSON.stringify([]));
+    setQueries([]);
   };
 
   return (
@@ -91,10 +98,7 @@ export default function QueryHistory() {
           <Button
             size="xs"
             variant="ghost"
-            onClick={() => {
-              localStorage.removeItem(CACHE_KEYS.QUERY_HISTORY);
-              setQueries([]);
-            }}
+            onClick={onClearHistory}
             disabled={queries.length === 0}
           >
             <History size={16} />
@@ -111,38 +115,49 @@ export default function QueryHistory() {
           No queries yet
         </div>
       )}
-      <div className={cn("flex w-full flex-col gap-1 py-1")}>
+      <div className={cn("flex w-full flex-col space-y-4 py-1 pl-4 pr-2")}>
         {queries.map((query) => {
           return (
-            <ContextMenu key={query}>
-              <ContextMenuTrigger className="data-[state=open]:bg-gray-100">
-                <Button
-                  className="ml-5 flex h-6 w-48 items-center justify-start gap-2 p-2 pl-0"
-                  variant="ghost"
-                >
-                  <Database className="size-4" />
-                  <span className="truncate font-normal">{query}</span>
-                </Button>
-              </ContextMenuTrigger>
-              <ContextMenuContent className="w-64">
-                <ContextMenuItem inset>
-                  Open
-                  <ContextMenuShortcut>⌘O</ContextMenuShortcut>
-                </ContextMenuItem>
-                <ContextMenuItem inset>
-                  Rename
-                  <ContextMenuShortcut>⌘R</ContextMenuShortcut>
-                </ContextMenuItem>
-                <ContextMenuSeparator />
-                <ContextMenuItem inset>
-                  Delete
-                  <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
-                </ContextMenuItem>
-              </ContextMenuContent>
-            </ContextMenu>
+            <HistoryItem
+              key={query}
+              query={query}
+            />
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function HistoryItem(props: { query: string }) {
+  const { isCopied, copyToClipboard } = useCopyToClipboard({
+    timeout: 1500,
+  });
+  const { query } = props;
+  return (
+    <div
+      onClick={async () => {
+        // copy to clipboard
+        await copyToClipboard(query);
+      }}
+      key={query}
+      className="relative flex w-full flex-row justify-between gap-4 rounded-sm p-1 hover:bg-gray-100 dark:hover:bg-gray-900"
+    >
+      <div>
+        <button>
+          <span className="line-clamp-3 truncate text-wrap break-all text-left font-mono text-xs text-gray-700 dark:text-gray-100">
+            {query}
+          </span>
+        </button>
+      </div>
+      {isCopied && (
+        <div className="absolute inset-y-1 right-1">
+          <CopyCheck
+            className="bg-white text-green-700 dark:bg-green-700 dark:text-white"
+            size={18}
+          />
+        </div>
+      )}
     </div>
   );
 }

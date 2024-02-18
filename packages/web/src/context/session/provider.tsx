@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { releaseProxy, type Remote, wrap } from "comlink";
 import { toast } from "sonner";
-import type { Source } from "@/constants";
 import { SessionContext } from "./context";
-import type { CodeEditor, SessionState } from "./types";
+import type { Action, SessionState } from "./types";
 import type { SessionWorker } from "./worker";
 
 // Split up the context files to appease react-refresh.
@@ -11,76 +10,6 @@ import type { SessionWorker } from "./worker";
 type SessionProviderProps = {
   children: React.ReactNode;
 };
-
-type AddSource = {
-  type: "ADD_SOURCE";
-  payload: Source;
-};
-
-type RemoveSource = {
-  type: "REMOVE_SOURCE";
-  payload: {
-    path: string;
-  };
-};
-
-type OpenEditor = {
-  type: "OPEN_EDITOR";
-  payload: {
-    path: string;
-  };
-};
-
-type CloseEditor = {
-  type: "CLOSE_EDITOR";
-  payload: {
-    path: string;
-  };
-};
-
-type AddEditor = {
-  type: "ADD_EDITOR";
-  payload: CodeEditor;
-};
-
-type DeleteEditor = {
-  type: "DELETE_EDITOR";
-  payload: {
-    name: string;
-  };
-};
-
-type UpdateEditor = {
-  type: "UPDATE_EDITOR";
-  payload: {
-    name: string;
-    content: string;
-  };
-};
-
-type OpenSession = {
-  type: "OPEN_SESSION";
-  payload: Pick<
-    SessionState,
-    "sessionId" | "directoryHandle" | "editors" | "sources"
-  >;
-};
-
-type SetStatus = {
-  type: "SET_STATUS";
-  payload: { status: SessionState["status"] };
-};
-
-type Action =
-  | AddSource
-  | RemoveSource
-  | OpenEditor
-  | CloseEditor
-  | AddEditor
-  | DeleteEditor
-  | UpdateEditor
-  | OpenSession
-  | SetStatus;
 
 function reducer(state: SessionState, action: Action): SessionState {
   switch (action.type) {
@@ -148,6 +77,7 @@ function reducer(state: SessionState, action: Action): SessionState {
           {
             ...editor,
             isOpen: false,
+            isFocused: false,
           },
           ...state.editors.slice(index + 1),
         ],
@@ -177,6 +107,17 @@ function reducer(state: SessionState, action: Action): SessionState {
         ],
       };
     }
+    case "FOCUS_EDITOR": {
+      const { path } = action.payload;
+      return {
+        ...state,
+        editors: state.editors.map((editor) => ({
+          ...editor,
+          isOpen: editor.path === path || editor.isOpen, // open the editor if it's not open
+          isFocused: editor.path === path,
+        })),
+      };
+    }
     // reset the editor state
     case "OPEN_SESSION": {
       const { sessionId, directoryHandle, editors, sources } = action.payload;
@@ -204,6 +145,7 @@ const initialFileState: SessionState = {
   directoryHandle: null,
   editors: [],
   sources: [],
+  dispatch: null,
 };
 
 /**
@@ -391,6 +333,7 @@ function SessionProvider({ children }: SessionProviderProps) {
     () => ({
       ...session,
       onSessionChange,
+      dispatch,
     }),
     [onSessionChange, session],
   );

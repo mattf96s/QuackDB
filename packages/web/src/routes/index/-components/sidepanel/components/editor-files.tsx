@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pencil2Icon } from "@radix-ui/react-icons";
-import { useLoaderData, useRouter } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { releaseProxy, type Remote, wrap } from "comlink";
 import { ChevronDown, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -15,12 +15,24 @@ import {
 } from "@/components/ui/context-menu";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
-import { usePanel } from "@/routes/index/-context/panel/usePanel";
 import type { AddEditorFileWorker } from "@/workers/add-editor-file-worker";
 
 export default function EditorSources() {
-  const { editors } = useLoaderData({ from: "/" });
-  const { openFile } = usePanel();
+  const { editors, dispatch } = useSession();
+
+  const onOpenFile = (path: string) => {
+    if (!dispatch) return;
+    const editor = editors.find((editor) => editor.path === path);
+
+    if (!editor) {
+      toast.error("Editor not found");
+      return;
+    }
+    dispatch({
+      type: "OPEN_EDITOR",
+      payload: editor,
+    });
+  };
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -62,15 +74,15 @@ export default function EditorSources() {
       >
         {editors.map((editor) => {
           return (
-            <ContextMenu key={editor.name}>
+            <ContextMenu key={editor.path}>
               <ContextMenuTrigger className="data-[state=open]:bg-gray-100">
                 <Button
                   className="ml-5 flex h-6 w-48 items-center justify-start gap-2 p-2 pl-0"
                   variant="ghost"
-                  onClick={() => openFile(editor)}
+                  onClick={() => onOpenFile(editor.path)}
                 >
                   <Pencil2Icon className="size-4" />
-                  <span className="truncate font-normal">{editor.name}</span>
+                  <span className="truncate font-normal">{editor.path}</span>
                 </Button>
               </ContextMenuTrigger>
               <ContextMenuContent className="w-64">
@@ -102,7 +114,7 @@ const useAddEditorFileWorker = () => {
   // set to promise so we can await it
   const [initPromise, setInitPromise] = useState(new Promise(() => {}));
 
-  const { session } = useSession();
+  const { sessionId } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -149,7 +161,7 @@ const useAddEditorFileWorker = () => {
 
     try {
       await wrapperRef.current({
-        session,
+        session: sessionId,
       });
 
       router.invalidate();
@@ -159,7 +171,7 @@ const useAddEditorFileWorker = () => {
         description: e instanceof Error ? e.message : "Unknown error",
       });
     }
-  }, [initPromise, router, session]);
+  }, [initPromise, router, sessionId]);
 
   return { onAddEditorFileWorkerFn };
 };

@@ -1,7 +1,5 @@
 import { useEffect, useRef } from "react";
-import { ChevronRightIcon, DashboardIcon } from "@radix-ui/react-icons";
-import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { useMatchRoute, useRouterState } from "@tanstack/react-router";
 import { Code2Icon, HistoryIcon, MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button/button";
 import { cn } from "@/lib/utils";
@@ -16,7 +14,6 @@ import {
   SheetTrigger,
 } from "../ui/sheet";
 import { useSidebar } from "./hooks/useSidebar";
-import { sidebarWidth } from "@/constants";
 
 const navigation = [
   {
@@ -53,7 +50,7 @@ function DesktopSidebar() {
   return (
     <div
       className={cn(
-        "hidden border-r bg-french-porcelain dark:bg-background lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-16 lg:overflow-y-auto lg:pb-4",
+        "hidden border-r bg-french-porcelain dark:bg-background lg:fixed lg:inset-y-0 lg:left-0 lg:block lg:w-16 lg:overflow-y-auto lg:pb-4",
         // "light:bg-french-porcelain hidden w-20 transition-transform dark:bg-background lg:fixed lg:inset-y-0 lg:flex lg:flex-col",
       )}
     >
@@ -133,7 +130,7 @@ function MobileMenu() {
               variant="ghost"
               className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 lg:hidden"
             >
-              <MenuIcon className="h-6 w-6" />
+              <MenuIcon className="size-6" />
               <span className="sr-only">Toggle Menu</span>
             </Button>
           </SheetTrigger>
