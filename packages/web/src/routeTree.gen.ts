@@ -14,6 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as TransformerImport } from './routes/transformer'
 import { Route as FilesImport } from './routes/files'
 import { Route as AboutImport } from './routes/about'
+import { Route as EditorRouteImport } from './routes/editor/route'
 import { Route as EcosystemRouteImport } from './routes/ecosystem/route'
 import { Route as IndexRouteImport } from './routes/index/route'
 import { Route as FilesIndexImport } from './routes/files.index'
@@ -33,6 +34,11 @@ const FilesRoute = FilesImport.update({
 
 const AboutRoute = AboutImport.update({
   path: '/about',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const EditorRouteRoute = EditorRouteImport.update({
+  path: '/editor',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -68,6 +74,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EcosystemRouteImport
       parentRoute: typeof rootRoute
     }
+    '/editor': {
+      preLoaderRoute: typeof EditorRouteImport
+      parentRoute: typeof rootRoute
+    }
     '/about': {
       preLoaderRoute: typeof AboutImport
       parentRoute: typeof rootRoute
@@ -96,6 +106,7 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren([
   IndexRouteRoute,
   EcosystemRouteRoute,
+  EditorRouteRoute,
   AboutRoute,
   FilesRoute.addChildren([FilesFileIdRoute, FilesIndexRoute]),
   TransformerRoute,

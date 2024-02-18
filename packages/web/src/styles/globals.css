@@ -70,69 +70,38 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-}
 
-@supports (font-variation-settings: normal) {
   @font-face {
     font-family: "geist-sans";
     font-weight: 300 900;
+    font-display: swap;
     font-style: normal;
     font-stretch: normal;
-    src: url("/fonts/Geist/GeistVariableVF.ttf")
-      format("woff2 supports variations");
+    src: url("/fonts/Geist/GeistVariableVF.woff2") format("woff2");
   }
   @font-face {
     font-family: "jetbrains-mono";
     font-weight: 300 900;
     font-style: normal;
+    font-display: swap;
     font-stretch: normal;
-    src: url("/fonts/JetBrainsMono/JetBrainsMono[wght].woff2")
-      format("woff2 supports variations");
+    src: url("/fonts/JetBrainsMono/JetBrainsMono[wght].woff2") format("woff2");
   }
 
   @font-face {
     font-family: "jetbrains-mono";
     font-weight: 300 900;
     font-style: italic;
+    font-display: swap;
     font-stretch: normal;
     src: url("/fonts/JetBrainsMono/JetBrainsMono-Italic[wght].woff2")
-      format("woff2 supports variations");
+      format("woff2");
   }
 }
 
-@supports not (font-variation-settings: normal) {
-  /* static fonts */
-  @font-face {
-    font-family: "geist-sans";
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url("/fonts/Geist/Geist-Regular.woff2") format("woff2");
-  }
-
-  @font-face {
-    font-family: "geist-sans";
-    font-style: normal;
-    font-weight: 500;
-    font-display: swap;
-    src: url("/fonts/Geist/Geist-Medium.woff2") format("woff2");
-  }
-
-  @font-face {
-    font-family: "geist-sans";
-    font-style: normal;
-    font-weight: 600;
-    font-display: swap;
-    src: url("/fonts/Geist/Geist-SemiBold.woff2") format("woff2");
-  }
-
-  @font-face {
-    font-family: "geist-sans";
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url("/fonts/Geist/Geist-Bold.woff2") format("woff2");
-  }
+code {
+  font-family: var(--font-jetbrains-mono);
+  font-size: 0.875rem;
 }
 
 @media (max-width: 640px) {

@@ -27,6 +27,7 @@ import { PanelProvider } from "./-context/panel/provider";
 
 export const Route = createFileRoute("/")({
   component: PlaygroundContainer,
+  errorComponent: ErrorComponent,
   //errorComponent: (props)=><ErrorComponent {...props} />,
   loader: async ({ abortController }) => {
     let worker: Worker | undefined;
@@ -58,18 +59,27 @@ export const Route = createFileRoute("/")({
       worker?.terminate();
     }
   },
+  headers: () => {
+    // add headers to allow shared array buffer and cors
+    return {
+      "Access-Control-Allow-Origin": "*",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Resource-Policy": "same-site",
+    };
+  },
 });
 
 function ErrorComponent(props: ErrorComponentProps) {
   const error = props.error;
   return (
     <div className="text-center">
-      <p className="text-base font-semibold text-indigo-600">404</p>
+      <p className="text-base font-semibold text-indigo-600"></p>
       <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">
         Something went wrong
       </h1>
       <p className="mt-6 text-base leading-7 text-gray-600">
-        Sorry, we couldn’t find the page you’re looking for.
+        {`Sorry, we couldn't find the page you're looking for.`}
       </p>
       <div className="mt-10 flex items-center justify-center gap-x-6">
         <a

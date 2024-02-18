@@ -2,7 +2,7 @@
 import type {
   AsyncRecordBatchStreamReader,
   RecordBatch,
-  Table,
+  StructRow,
   TypeMap,
 } from "@apache-arrow/esnext-esm";
 import { type AsyncDuckDB, DuckDBDataProtocol } from "@duckdb/duckdb-wasm";
@@ -111,7 +111,7 @@ type RemoteSource = {
 type DataSource = LocalFileSource | RemoteSource;
 
 type DuckDBInstanceOptions = {
-  sources: DataSource[];
+  session?: string;
   cache?: {
     noCache?: boolean; // if true, do not cache any connections
     cacheTimeout?: number; // how long to cache the results of a query
@@ -143,6 +143,7 @@ export type FetchResultsReturn = {
 export class DuckDBInstance {
   private static instance: DuckDBInstance;
 
+  #session: string | null = null; // should only be set once. If it changes, we should reset the DuckDB instance.
   #db: AsyncDuckDB | null = null;
 
   /**
@@ -175,6 +176,9 @@ export class DuckDBInstance {
   }
 
   constructor(props?: DuckDBInstanceOptions) {
+    if (props?.session) {
+      this.#session = props.session;
+    }
     // cache settings
     if (props?.cache) {
       const { noCache, cacheTimeout } = props.cache;
@@ -196,17 +200,20 @@ export class DuckDBInstance {
     if (props?.logLevel) {
       this.#logLevel = props.logLevel;
     }
-
-    // register available file sources
-    if (props?.sources) {
-      this.#sources = props.sources;
-    }
   }
 
   // ----------- Config methods ----------------
 
   toggleCache(shouldCache: boolean) {
     this.#shouldCache = shouldCache;
+  }
+
+  clearQueryCache() {
+    return caches.delete(this.#queryCache);
+  }
+
+  clearFileCache() {
+    return caches.delete(this.#fileCache);
   }
 
   // replace with Valtio
@@ -229,30 +236,14 @@ export class DuckDBInstance {
    * Discouraged to use this method directly.
    * @returns
    */
-  async _getDB() {
-    if (this.#db) {
-      return this.#db;
-    }
+  async _getDB(): Promise<AsyncDuckDB> {
+    if (this.#db) return this.#db;
 
+    // I think it'll assign the value to this.#db immediately ensuring another call to this method will not create a new instance.
+    // Alternatively, we could use a promise to ensure that the instance is only created once.
     this.#db = await makeDB({
       logLevel: this.#logLevel,
     });
-
-    // register file sources
-    for (const source of this.#sources) {
-      if (source.kind === "LOCAL_FILE") {
-        const file = await source.handle.getFile();
-        await this.#db.dropFile(source.name).catch((e) => {
-          console.error("Failed to drop file: ", e);
-        });
-        await this.#db.registerFileHandle(
-          source.name,
-          file,
-          DuckDBDataProtocol.BROWSER_FILEREADER,
-          true,
-        );
-      }
-    }
 
     return this.#db;
   }
@@ -262,21 +253,91 @@ export class DuckDBInstance {
    * Should run in onDestroy lifecycle hook.
    */
   async dispose() {
-    // close all connections
-    await Promise.all(this.#connPool.map((conn) => conn.close())).catch((e) => {
-      console.error("Failed to close connections in disposal: ", e);
-    });
-    await this.#db?.terminate().catch((e) => {
-      console.error("Failed to terminate DuckDBInstance: ", e);
-    });
+    console.log("Disposing DuckDBInstance");
+
+    type RejectedConn = {
+      status: "rejected";
+      value: duckdb.AsyncDuckDBConnection;
+      reason: Error;
+    };
+
+    const closeFuncPromise = (conn: duckdb.AsyncDuckDBConnection) => {
+      return new Promise<RejectedConn | void>((resolve, reject) => {
+        conn
+          .close()
+          .then(() => void resolve())
+          .catch((e) =>
+            reject({
+              status: "rejected",
+              value: conn,
+              reason: e,
+            }),
+          );
+      });
+    };
+
+    // Cleanup any other resources.
+    // See https://jakearchibald.com/2023/unhandled-rejections/ on unhandled promise rejections (we should handle them).
+
+    const connPromises = await Promise.allSettled(
+      this.#connPool.map((conn) => closeFuncPromise(conn)),
+    );
+
+    const newConnPool: duckdb.AsyncDuckDBConnection[] = [];
+
+    for await (const promise of connPromises) {
+      if (promise.status === "fulfilled") continue;
+
+      if (promise.status === "rejected") {
+        console.error(
+          "Failed to close connection in disposal: ",
+          promise.reason,
+        );
+      }
+    }
+
+    // clear files and caches
+
+    const queryCache = caches
+      .delete(this.#queryCache)
+      .catch((e) =>
+        console.error("Failed to delete query cache in disposal: ", e),
+      );
+    const fileCache = caches
+      .delete(this.#fileCache)
+      .catch((e) =>
+        console.error("Failed to delete file cache in disposal: ", e),
+      );
+
+    await Promise.all([queryCache, fileCache]);
+
+    if (this.#db) {
+      (await this.#db)
+        .terminate()
+        .catch((e) => console.error("Failed to terminate DuckDBInstance: ", e));
+    }
+
+    this.#db = null;
+    this.#session = null;
+
+    // clear caches
   }
 
   /**
-   * Reset the DuckDB instance (but keep the connections).
+   * Reset the DuckDB instance but keep the database open and the session.
    */
 
   async reset() {
-    await this.#db?.reset();
+    // close all connections
+    await Promise.all(this.#connPool.map((conn) => conn.close())).catch((e) => {
+      console.error("Failed to close connections on reset: ", e);
+    });
+    await this.#db?.dropFiles().catch((e) => {
+      console.error("Failed to drop files on reset: ", e);
+    });
+    await this.#db?.reset().catch((e) => {
+      console.error("Failed to reset DuckDBInstance: ", e);
+    });
   }
 
   // ----------- Connection methods ----------------
@@ -316,8 +377,9 @@ export class DuckDBInstance {
   }
 
   /**
-   * Close the connection and remove it from the map.
-   * @param conn
+   * Cancel any pending queries and add back to the connection pool.
+   *
+   * Don't close the connection as it will be reused.
    */
   async #cleanupConnection(conn: duckdb.AsyncDuckDBConnection) {
     // cleanup any prepared statements
@@ -354,42 +416,40 @@ export class DuckDBInstance {
     query: string,
     params?: Array<unknown>,
   ) {
-    if (this.#db) {
-      // #TODO: see if we can reuse connections as in the async generator we don't have access to parent this context.
-      const connection = await this.#connect();
+    // #TODO: see if we can reuse connections as in the async generator we don't have access to parent this context.
+    const connection = await this.#connect();
 
-      const cleanup = this.#cleanupConnection.bind(this, connection);
+    const cleanup = this.#cleanupConnection.bind(this, connection);
 
-      let reader: AsyncRecordBatchStreamReader<T>;
-      let batch: IteratorResult<RecordBatch<T>, any>;
-      try {
-        if (params && params.length > 0) {
-          const statement = await connection.prepare(query);
-          reader = await statement.send(...params);
-        } else {
-          reader = await connection.send(query);
-        }
-        batch = await reader.next();
-        if (batch.done) throw new Error("missing first batch");
-      } catch (error) {
-        await cleanup();
-        throw error;
+    let reader: AsyncRecordBatchStreamReader<T>;
+    let batch: IteratorResult<RecordBatch<T>, any>;
+    try {
+      if (params && params.length > 0) {
+        const statement = await connection.prepare(query);
+        reader = await statement.send(...params);
+      } else {
+        reader = await connection.send(query);
       }
-      return {
-        schema: getArrowTableSchema(batch.value),
-        async *readRows() {
-          try {
-            while (!batch.done) {
-              yield batch.value.toArray();
-              batch = await reader.next();
-            }
-          } finally {
-            // todo: check this works.
-            await cleanup();
-          }
-        },
-      };
+      batch = await reader.next();
+      if (batch.done) throw new Error("missing first batch");
+    } catch (error) {
+      await this.#cleanupConnection(connection);
+      throw error;
     }
+    return {
+      schema: getArrowTableSchema(batch.value),
+      async *readRows() {
+        try {
+          while (!batch.done) {
+            yield batch.value.toArray();
+            batch = await reader.next();
+          }
+        } finally {
+          // todo: check this works.
+          await cleanup();
+        }
+      },
+    };
   }
 
   /**
@@ -427,6 +487,40 @@ export class DuckDBInstance {
         const cached = await queries.match(cacheKey);
 
         if (cached) {
+          // check if response header is expired
+          const cacheControl = cached.headers.get("Cache-Control");
+
+          const allHeaders = [...cached.headers.entries()];
+
+          console.log("cacheControl: ", cacheControl);
+          console.log("cached.headers: ", allHeaders);
+          console.log("response url", {
+            url: cached.url,
+            status: cached.status,
+            statusText: cached.statusText,
+            type: cached.type,
+          });
+
+          // if (cacheControl) {
+          //   try {
+
+          //   const maxAge = cacheControl.split("=")[1];
+
+          //   const maxAgeInt = parseInt(maxAge, 10);
+          //   if (maxAgeInt && maxAgeInt > 0) {
+          //     const now = new Date();
+          //     const cacheDate = new Date(cached.headers.get("Date") || now);
+          //     const expiration = new Date(cacheDate.getTime() + maxAgeInt * 1000);
+          //     if (expiration > now) {
+          //       const response = await cached.json();
+          //       return response;
+          //     }
+          //   }
+          // } catch (error) {
+          //   console.error("Error in cacheControl: ", error);
+          // }
+          // }
+
           const response = await cached.json();
           return response;
         }
@@ -498,12 +592,16 @@ export class DuckDBInstance {
 
       // cache the results
 
-      const t5 = performance.now();
+      const headers = new Headers();
+      headers.append("Content-Type", "application/json");
+      headers.append("Cache-Control", `private,max-age=${this.#cacheTimeout}`);
 
       const response = new Response(JSON.stringify(results), {
+        status: 200,
+        statusText: "OK",
         headers: {
           "Content-Type": "application/json",
-          "Cache-Control": `max-age=${this.#cacheTimeout}`,
+          "Cache-Control": `private,max-age=${this.#cacheTimeout}`,
         },
       });
 
@@ -531,23 +629,26 @@ export class DuckDBInstance {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async query<T extends TypeMap = any>(query: string, params?: T[]) {
-    const t1 = performance.now();
+    const key = `Query ${query}`;
+    console.time(key);
 
     const conn = await this.#connect();
     try {
-      let result: Table<T>;
+      const result = await this.queryStream(query, params);
+      const results: StructRow[] = [];
 
-      if (params) {
-        const stmt = await conn.prepare(query);
-        result = await stmt.query(...params);
-      } else {
-        result = await conn.query(query);
+      for await (const rows of result.readRows()) {
+        for (const row of rows) {
+          results.push(row);
+        }
       }
 
-      const t2 = performance.now();
-      console.debug(`Query took ${t2 - t1} milliseconds.`);
+      // @ts-expect-error: #TODO: not sure which arrow type to use.
+      results.schema = result.schema;
 
-      return result;
+      console.timeEnd(key);
+
+      return results;
     } catch (e) {
       console.error("Error in query: ", e);
       throw e;
