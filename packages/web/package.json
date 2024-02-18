@@ -73,6 +73,7 @@
     "idle-task": "^4.3.0",
     "json-e": "^4.7.0",
     "lucide-react": "^0.331.0",
+    "match-sorter": "^6.3.4",
     "monaco-editor": "0.46.0",
     "nprogress": "^0.2.0",
     "radix-icons": "^1.0.0",

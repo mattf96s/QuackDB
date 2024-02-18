@@ -80,6 +80,8 @@ function Layout(props: { children: ReactNode }) {
               <TerminalIcon className="size-5" />
             </div>
             <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
+              {/* toolbar portal */}
+              <div id="toolbar-portal" />
               <ThemeToggler />
             </div>
           </div>

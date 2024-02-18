@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLoaderData, useRouter } from "@tanstack/react-router";
 import { releaseProxy, type Remote, wrap } from "comlink";
-import { ChevronDown, Database, Plus, RefreshCw } from "lucide-react";
+import {
+  ChevronDown,
+  CopyCheck,
+  Database,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +19,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { useSession } from "@/context/session/useSession";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
 import type { AddDatasetWorker } from "@/workers/add-dataset-worker";
 
@@ -23,7 +30,7 @@ const useSources = () => {
 };
 
 export default function DataSources() {
-  const datasets = useSources();
+  const { sources } = useSession();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -63,38 +70,86 @@ export default function DataSources() {
           isCollapsed && "hidden",
         )}
       >
-        {datasets.map((dataset) => {
-          return (
-            <ContextMenu key={dataset.name}>
-              <ContextMenuTrigger className="data-[state=open]:bg-gray-100">
-                <Button
-                  className="ml-5 flex h-6 w-48 items-center justify-start gap-2 p-2 pl-0"
-                  variant="ghost"
-                >
-                  <Database className="size-4" />
-                  <span className="truncate font-normal">{dataset.name}</span>
-                </Button>
-              </ContextMenuTrigger>
-              <ContextMenuContent className="w-64">
-                <ContextMenuItem inset>
-                  Open
-                  <ContextMenuShortcut>⌘O</ContextMenuShortcut>
-                </ContextMenuItem>
-                <ContextMenuItem inset>
-                  Rename
-                  <ContextMenuShortcut>⌘R</ContextMenuShortcut>
-                </ContextMenuItem>
-                <ContextMenuSeparator />
-                <ContextMenuItem inset>
-                  Delete
-                  <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
-                </ContextMenuItem>
-              </ContextMenuContent>
-            </ContextMenu>
-          );
-        })}
+        {sources.map((source) => (
+          <DatesetItem
+            key={source.path}
+            {...source}
+          />
+        ))}
       </div>
     </div>
+  );
+}
+
+type SourceEntry = ReturnType<typeof useSession>["sources"][number];
+
+function DatesetItem(props: SourceEntry) {
+  const { isCopied, copyToClipboard } = useCopyToClipboard();
+
+  const { ext, handle, kind, mimeType, path } = props;
+
+  const onCopy = async () => {
+    let snippet = "";
+
+    switch (mimeType) {
+      case "application/json": {
+        snippet = `CREATE OR REPLACE TABLE ${path} AS SELECT * FROM read_json_auto('${path}')`;
+        break;
+      }
+      case "application/parquet": {
+        snippet = `CREATE OR REPLACE VIEW '${path}' AS SELECT * FROM read_parquet('${path}')`;
+        break;
+      }
+      case "text/csv": {
+        snippet = `CREATE OR REPLACE TABLE ${path} AS SELECT * FROM read_csv_auto('${path}')`;
+        break;
+      }
+      default: {
+        toast.error(`Unknown file type: ${path}`, {
+          description: "More file types will be supported soon.",
+        });
+        return;
+      }
+    }
+
+    await copyToClipboard(snippet);
+  };
+  return (
+    <ContextMenu key={path}>
+      <ContextMenuTrigger className="data-[state=open]:bg-gray-100">
+        <Button
+          className="relative ml-5 flex h-6 w-48 items-center justify-start gap-2 p-2 pl-0"
+          variant="ghost"
+          onClick={onCopy}
+        >
+          <Database className="size-4" />
+          <span className="truncate font-normal">{path}</span>
+          {isCopied && (
+            <span className="absolute inset-y-0 right-0">
+              <CopyCheck
+                size={16}
+                className="bg-white text-green-700 shadow-sm"
+              />
+            </span>
+          )}
+        </Button>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-64">
+        <ContextMenuItem inset>
+          Open
+          <ContextMenuShortcut>⌘O</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuItem inset>
+          Rename
+          <ContextMenuShortcut>⌘R</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem inset>
+          Delete
+          <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }
 
@@ -104,7 +159,7 @@ const useAddDatasetWorker = () => {
   // set to promise so we can await it
   const [initPromise, setInitPromise] = useState(new Promise(() => {}));
 
-  const { session } = useSession();
+  const { sessionId } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -160,7 +215,7 @@ const useAddDatasetWorker = () => {
       try {
         const { error } = await wrapperRef.current({
           handles,
-          session,
+          session: sessionId,
         });
 
         if (error) {
@@ -175,7 +230,7 @@ const useAddDatasetWorker = () => {
         });
       }
     },
-    [initPromise, router, session],
+    [initPromise, router, sessionId],
   );
 
   return { onAddDatasetWorkerFn };

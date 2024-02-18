@@ -7,12 +7,12 @@ import QueryHistory from "./components/query-history";
 import ComponentWrapper from "./components/wrapper";
 
 export default function Sidepanel() {
-  const { session } = useSession();
+  const { sessionId } = useSession();
   return (
     <div className="h-full max-h-full overflow-y-auto">
       <PanelGroup
         direction="vertical"
-        autoSaveId={session} // will persist the panel sizes in local storage
+        autoSaveId={sessionId} // will persist the panel sizes in local storage
       >
         <ComponentWrapper id="wrapper-editor-sources">
           <EditorSources />

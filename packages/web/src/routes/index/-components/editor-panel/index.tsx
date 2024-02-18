@@ -3,27 +3,19 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
 import { AlertOctagon } from "lucide-react";
 import Editor from "@/components/monaco";
+import { useTheme } from "@/components/theme-provider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useEditor } from "@/context/editor/useEditor";
 import { useQuery } from "@/context/query/useQuery";
+import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
 import { usePanel } from "../../-context/panel/usePanel";
 import OpenFileTabs from "./components/open-files";
 import ResultsView from "./components/results-viewer";
 
-const defaultSQL = `
-  -- Query external JSON API and create a new table
-  CREATE TABLE new_tbl AS SELECT * FROM read_json_auto('https://api.datamuse.com/words?ml=sql');
-  SELECT * FROM new_tbl;
-
-  -- Query a parquet file
-  SELECT * FROM read_parquet('stores.parquet');
-
-  -- Query a CSV file
-  SELECT * FROM read_csv('stores.csv');
-`;
-
 const EditorPanel = memo(function EditorPanel() {
+  const { editors } = useSession();
+
   const { status, error } = useQuery();
   const { editorRef } = useEditor();
 
@@ -37,6 +29,8 @@ const EditorPanel = memo(function EditorPanel() {
     console.log("on save: ", value);
   }, []);
 
+  const currentEditor = editors.find((editor) => editor.isFocused);
+
   return (
     <PanelGroup
       className="flex flex-col"
@@ -44,7 +38,7 @@ const EditorPanel = memo(function EditorPanel() {
     >
       <Panel className="relative flex flex-col">
         <OpenFileTabs />
-        {currentFile ? (
+        {currentEditor ? (
           <Editor
             onSave={onSave}
             value={sql}
@@ -64,21 +58,10 @@ const EditorPanel = memo(function EditorPanel() {
           </div>
         )}
         {/* code actions */}
-        <div className="absolute -inset-x-2 bottom-3 flex w-full items-center gap-2 px-4">
-          <div className="flex flex-grow items-center justify-between gap-4 px-4">
+        <div className="absolute bottom-3 left-0 right-10 z-10 w-full px-4">
+          <div className="mx-auto max-w-fit">
             {status === "error" && (
-              <Alert
-                variant="destructive"
-                className="space-y-1 font-mono"
-              >
-                <AlertTitle>
-                  <span className="inline-flex items-center gap-2">
-                    <AlertOctagon className="size-4" />
-                    Error:
-                  </span>
-                </AlertTitle>
-                <AlertDescription className="text-xs">{error}</AlertDescription>
-              </Alert>
+              <ErrorNotification error={error ?? "Unknown error"} />
             )}
           </div>
         </div>
@@ -103,3 +86,24 @@ const EditorPanel = memo(function EditorPanel() {
 });
 
 export default EditorPanel;
+
+function ErrorNotification(props: { error: string }) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  return (
+    <Alert
+      variant={isDark ? "default" : "destructive"}
+      className="space-y-1 font-mono"
+    >
+      <AlertTitle>
+        <span className="inline-flex items-center gap-2">
+          <AlertOctagon className="size-4" />
+          Error:
+        </span>
+      </AlertTitle>
+      <AlertDescription className="whitespace-pre-wrap font-mono text-xs">
+        {props.error}
+      </AlertDescription>
+    </Alert>
+  );
+}
