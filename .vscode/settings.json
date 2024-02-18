@@ -94,5 +94,8 @@
   "typescript.updateImportsOnFileMove.enabled": "always",
   "editor.cursorBlinking": "phase",
   "editor.gotoLocation.multipleDefinitions": "goto",
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "[properties]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  }
 }

@@ -5,6 +5,8 @@ import { SessionContext } from "./context";
 
 /**
  * Hook to get the session context.
+ *
+ * Includes session information and accompanying file handles.
  */
 export function useSession() {
   const context = useContext(SessionContext);
