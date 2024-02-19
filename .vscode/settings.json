@@ -77,7 +77,7 @@
   "editor.formatOnSaveMode": "file",
   "editor.formatOnSave": true,
   "editor.wordWrapColumn": 100,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "biomejs.biome",
   "[typescript]": {
     "editor.tabSize": 2,
     "editor.defaultFormatter": "esbenp.prettier-vscode",

@@ -206,9 +206,9 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 
     disposables.push(monacoRef.current.editor.createModel("sql", language));
 
-    // context menu actions
+    // ----- context menu actions ------ //
 
-    // validate selected text
+    // #TODO: validate selected text (investigate serialize json function).
 
     disposables.push(
       editorRef.current.addAction({
@@ -219,11 +219,11 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         run: async (editor) => {
           const selection = editor.getSelection();
 
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
           const value =
             selection?.isEmpty() || selection == null
               ? editor.getValue()
               : editor.getModel()?.getValueInRange(selection);
-          console.log("Selected value:", value);
         },
       }),
     );

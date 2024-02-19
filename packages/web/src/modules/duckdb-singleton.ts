@@ -253,46 +253,17 @@ export class DuckDBInstance {
    * Should run in onDestroy lifecycle hook.
    */
   async dispose() {
-    type RejectedConn = {
-      status: "rejected";
-      value: duckdb.AsyncDuckDBConnection;
-      reason: Error;
-    };
+    const oldConnPool = this.#connPool;
+    this.#connPool = [];
 
-    const closeFuncPromise = (conn: duckdb.AsyncDuckDBConnection) => {
-      return new Promise<RejectedConn | void>((resolve, reject) => {
-        conn
-          .close()
-          .then(() => void resolve())
-          .catch((e) =>
-            reject({
-              status: "rejected",
-              value: conn,
-              reason: e,
-            }),
-          );
-      });
-    };
+    // close all connections.
 
-    // Cleanup any other resources.
-    // See https://jakearchibald.com/2023/unhandled-rejections/ on unhandled promise rejections (we should handle them).
+    // This isn't the most robust way to handle this, but it should work for now.
+    // See Jake Archibald's article on unhandled promise rejections: https://jakearchibald.com/2023/unhandled-rejections/
 
-    const connPromises = await Promise.allSettled(
-      this.#connPool.map((conn) => closeFuncPromise(conn)),
-    );
-
-    const newConnPool: duckdb.AsyncDuckDBConnection[] = [];
-
-    for await (const promise of connPromises) {
-      if (promise.status === "fulfilled") continue;
-
-      if (promise.status === "rejected") {
-        console.error(
-          "Failed to close connection in disposal: ",
-          promise.reason,
-        );
-      }
-    }
+    await Promise.all(oldConnPool.map((conn) => conn.close())).catch((e) => {
+      console.error("Failed to close connections in disposal: ", e);
+    });
 
     // clear files and caches
 
@@ -310,7 +281,7 @@ export class DuckDBInstance {
     await Promise.all([queryCache, fileCache]);
 
     if (this.#db) {
-      (await this.#db)
+      this.#db
         .terminate()
         .catch((e) => console.error("Failed to terminate DuckDBInstance: ", e));
     }
@@ -572,13 +543,11 @@ export class DuckDBInstance {
       const queries = await caches.open(this.#queryCache);
       await queries.put(cacheKey, response);
 
-      const t6 = performance.now();
-
       return results;
     } catch (e) {
       const isError = e instanceof Error;
       if (isError) {
-        console.log("%c", {
+        console.error("%c", {
           name: e.name,
           message: e.message,
           stack: e.stack,

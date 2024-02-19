@@ -177,8 +177,6 @@ type Suggestion = {
 // }
 
 async function completer(query: string, range: Range) {
-  console.log("syncComplete", { query, range });
-
   let db: AsyncDuckDB | undefined;
   let conn: AsyncDuckDBConnection | undefined;
   try {
@@ -197,11 +195,9 @@ async function completer(query: string, range: Range) {
     // @ts-expect-error: types are not correct
     const toArray = results.toArray().map((row) => row.toJSON());
 
-    console.log("toArray", toArray);
-
     const suggestions: Suggestion[] = [];
 
-    for await (const { suggestion, suggestion_start } of toArray) {
+    for await (const { suggestion, _suggestion_start } of toArray) {
       suggestions.push({
         label: suggestion,
         kind: 18,

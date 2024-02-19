@@ -11,4 +11,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
+  optimizeDeps: {
+    exclude: ["@duckdb/duckdb-wasm"],
+  },
+  build: {
+    cssMinify: import.meta.env?.MODE === "production",
+  },
 });

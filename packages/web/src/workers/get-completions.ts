@@ -121,7 +121,7 @@ class MyAutocompleter {
   }
 
   async getCompletions(sql: string, cancel: Promise<void>) {
-    let conn = await this.#connect();
+    const conn = await this.#connect();
     try {
       // escape single quotes
       const cleanSQL = sql.replace(/'/g, "''");
@@ -141,10 +141,9 @@ class MyAutocompleter {
         return [];
       }
 
-      // @ts-ignore
+      // @ts-expect-error: types are not correct
       const parsed = results.toArray().map((row) => row.toJSON());
 
-      console.log("parsed", parsed);
       return parsed;
     } catch (error) {
       console.error("Error with autocomplete: ", error);
@@ -155,7 +154,7 @@ class MyAutocompleter {
   }
 
   async validateQuery(sql: string, cancel: Promise<void>) {
-    let conn = await this.#connect();
+    const conn = await this.#connect();
     try {
       // escape single quotes
       const cleanSQL = sql.replace(/'/g, "''");
@@ -187,18 +186,16 @@ class MyAutocompleter {
 
       const [serializedRes, cardinalityRes, tokensRes] = await combined;
 
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const tokens = tokensRes.toArray().map((row) => row.toJSON());
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const serialized = serializedRes.toArray().map((row) => row.toJSON());
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const cardinality = cardinalityRes.toArray().map((row) => row.toJSON());
 
-      console.log("validateQuery", {
-        serialized,
-        cardinality,
-        tokens,
-      });
       return {
         serialized,
         cardinality,
@@ -220,6 +217,5 @@ class MyAutocompleter {
   }
 }
 
-self.addEventListener("message", (event) => {});
 export type GetCompletionsWorker = typeof MyAutocompleter;
 Comlink.expose(MyAutocompleter);

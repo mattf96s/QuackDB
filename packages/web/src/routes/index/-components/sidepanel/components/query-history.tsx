@@ -40,6 +40,16 @@ const onAddQuery = async (query: string) => {
 export default function QueryHistory() {
   const [queries, setQueries] = useState<string[]>([]);
 
+  const { isCollapsed, onToggleIsCollapse } = useWrapper();
+
+  const onCollapse = () => {
+    onToggleIsCollapse(true);
+  };
+
+  const onExpand = () => {
+    onToggleIsCollapse(false);
+  };
+
   const { sql, status } = useQuery();
 
   useEffect(() => {
@@ -61,23 +71,13 @@ export default function QueryHistory() {
     }
   }, [sql, isRunning]);
 
-  const { isCollapsed, onToggleIsCollapse } = useWrapper();
-
-  const onCollapse = () => {
-    onToggleIsCollapse(true);
-  };
-
-  const onExpand = () => {
-    onToggleIsCollapse(false);
-  };
-
   const onClearHistory = async () => {
     await set(CACHE_KEYS.QUERY_HISTORY, JSON.stringify([]));
     setQueries([]);
   };
 
   return (
-    <div className="flex h-full max-h-full flex-col overflow-y-auto pt-2">
+    <div className="flex flex-col pt-2">
       <div className="flex max-h-full w-full items-center justify-between">
         <div className="flex grow">
           <Button
@@ -106,18 +106,15 @@ export default function QueryHistory() {
         </div>
       </div>
       {queries.length === 0 && (
-        <div
-          className={cn(
-            "py-2 pl-6 text-sm text-gray-400",
-            isCollapsed && "hidden",
-          )}
-        >
+        <div className={cn("py-2 pl-6 text-sm text-gray-400")}>
           No queries yet
         </div>
       )}
       <div
-        className="relative flex size-full flex-col gap-1 overflow-y-auto px-4 py-1"
-        hidden={isCollapsed}
+        className={cn(
+          "flex w-full flex-col gap-1 overflow-y-auto px-6 py-1 transition-all",
+          isCollapsed && "hidden",
+        )}
       >
         {queries.map((query) => {
           return (

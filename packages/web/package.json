@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "sst bind 'vite'",
     "build": "sst bind 'vite build'",
+    "fix": "biome check . --apply",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "sst bind 'vite preview'",
     "set-node-v": "pnpm env use --global 20"
@@ -106,6 +107,7 @@
     "@typescript-eslint/parser": "^7.0.1",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
+    "cssnano": "^6.0.3",
     "eslint": "^8.56.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-react": "^7.33.2",
