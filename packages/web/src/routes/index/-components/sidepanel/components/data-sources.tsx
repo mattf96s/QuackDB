@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from "react";
+import { useCallback } from "react";
 import {
   ChevronDown,
   CopyCheck,
@@ -21,18 +21,18 @@ import { useEditor } from "@/context/editor/useEditor";
 import { useSession } from "@/context/session/useSession";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
+import { useWrapper } from "./wrapper/context/useWrapper";
 
-const DataSources = memo(function DataSources() {
+export default function DataSources() {
   const { sources } = useSession();
-
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isCollapsed, onToggleIsCollapse } = useWrapper();
 
   const onCollapse = () => {
-    setIsCollapsed(true);
+    onToggleIsCollapse(true);
   };
 
   const onExpand = () => {
-    setIsCollapsed(false);
+    onToggleIsCollapse(false);
   };
 
   return (
@@ -72,9 +72,7 @@ const DataSources = memo(function DataSources() {
       </div>
     </div>
   );
-});
-
-export default DataSources;
+}
 
 type SourceEntry = ReturnType<typeof useSession>["sources"][number];
 

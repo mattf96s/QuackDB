@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useQuery } from "@/context/query/useQuery";
+import { cn } from "@/lib/utils";
 
 export default function ResultsView() {
   const { error } = useQuery();
@@ -67,15 +68,18 @@ function ErrorNotification(props: { error: string }) {
   return (
     <Alert
       variant={isDark ? "default" : "destructive"}
-      className="space-y-1 font-mono"
+      className={cn(
+        "group flex flex-col gap-3 hover:shadow hover:dark:border-card-foreground/30",
+        "space-y-1 font-mono dark:bg-accent dark:text-accent-foreground",
+      )}
     >
       <AlertTitle>
         <span className="inline-flex items-center gap-2">
           <AlertOctagon className="size-4" />
-          Error:
+          <p className="text-base">Error</p>
         </span>
       </AlertTitle>
-      <AlertDescription className="whitespace-pre-wrap font-mono text-xs">
+      <AlertDescription className="whitespace-pre-wrap font-mono text-sm">
         {props.error}
       </AlertDescription>
     </Alert>

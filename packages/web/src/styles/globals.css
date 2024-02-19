@@ -64,7 +64,6 @@
     @apply bg-background text-foreground;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
-    min-height: 100vw;
     font-family: var(--font-geist-sans);
     /* anti-aliasing */
     -webkit-font-smoothing: antialiased;

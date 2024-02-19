@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Pencil2Icon } from "@radix-ui/react-icons";
 import { ChevronDown, DotIcon, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/context-menu";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
+import { useWrapper } from "./wrapper/context/useWrapper";
 
 export default function EditorSources() {
   const { editors, dispatch } = useSession();
@@ -31,14 +31,14 @@ export default function EditorSources() {
     });
   };
 
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isCollapsed, onToggleIsCollapse } = useWrapper();
 
   const onCollapse = () => {
-    setIsCollapsed(true);
+    onToggleIsCollapse(true);
   };
 
   const onExpand = () => {
-    setIsCollapsed(false);
+    onToggleIsCollapse(false);
   };
 
   return (
@@ -142,9 +142,8 @@ function SourcesToolbar() {
         disabled
         size="xs"
         variant="ghost"
-        onClick={() => {
-          console.log("#TODO");
-        }}
+        // #TODO: implement refresh
+        onClick={() => null}
       >
         <RefreshCw size={16} />
       </Button>

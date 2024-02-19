@@ -4,6 +4,8 @@
 
 - [VsCode Async](https://github.com/microsoft/vscode/blob/main/src/vs/base/common/async.ts#L24)
   - phenomenal async patterns
+- [React useSyncExternalStore](https://github.com/jacob-ebey/remix-electron-llamafile/blob/main/app/stores/latest-messages.ts)
+  - first proper usage of i've seen. Might be useful for syncing with web workers.
 
 ## Interesting Projects
 

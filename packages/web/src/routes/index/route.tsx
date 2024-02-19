@@ -168,6 +168,10 @@ const Playground = memo(function Playground() {
     if (toolbarEl) {
       setEl(toolbarEl);
     }
+
+    return () => {
+      setEl(null);
+    };
   }, []);
 
   const isSmallerScreen = useBreakpoint("md");
@@ -192,6 +196,7 @@ const Playground = memo(function Playground() {
         <PanelGroup
           className="rounded-none"
           direction="vertical"
+          id="_mobile-layout-panel-group"
         >
           <EditorPanel />
         </PanelGroup>
@@ -206,45 +211,43 @@ const Playground = memo(function Playground() {
   }
   return (
     <>
-      {/* put into the top level toolbar */}
-      {el &&
-        createPortal(
-          <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
-            {/* <PresetSelector presets={presets} /> */}
-
-            <Toolbar />
-            <Settings />
-
-            {/* <SessionCombobox /> */}
-          </div>,
-          el,
-        )}
-
       {/* Panel provider is custom context while PanelGroup is unrelated component; poor naming. */}
 
       <Suspense fallback={<p>Loading...</p>}>
         <PanelGroup
-          className="rounded-none"
-          direction={isSmallerScreen ? "vertical" : "horizontal"}
+          className="h-[calc(100vh-64px)] rounded-none"
+          direction="horizontal"
+          autoSaveId="_desktop-layout-panel-group"
         >
           <Panel
-            className="flex flex-col"
             collapsedSize={5}
-            collapsible={true}
             defaultSize={15}
-            maxSize={50}
-            minSize={15}
+            minSize={5}
+            className="max-h-full"
           >
             <Sidepanel />
           </Panel>
           <PanelHandle />
           <Panel
-            className="flex flex-col"
-            minSize={50}
+            minSize={15}
+            className="max-h-full"
           >
             <EditorPanel />
           </Panel>
         </PanelGroup>
+        {/* put into the top level toolbar */}
+        {el &&
+          createPortal(
+            <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
+              {/* <PresetSelector presets={presets} /> */}
+
+              <Toolbar />
+              <Settings />
+
+              {/* <SessionCombobox /> */}
+            </div>,
+            el,
+          )}
       </Suspense>
     </>
   );

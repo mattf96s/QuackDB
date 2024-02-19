@@ -1,5 +1,4 @@
 import { memo, type ReactNode, useEffect } from "react";
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import {
   createRootRoute,
   Outlet,
@@ -87,13 +86,6 @@ function Layout(props: { children: ReactNode }) {
               {/* toolbar portal */}
               <div id="toolbar-portal" />
               <ThemeToggler />
-              <a
-                href={`https://github.com/mattf96s/quackdb`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <GitHubLogoIcon className="size-5" />
-              </a>
             </div>
           </div>
 

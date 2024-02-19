@@ -359,6 +359,11 @@ function SessionProvider({ children }: SessionProviderProps) {
     };
   }, []);
 
+  /**
+   * Update your session (i.e. open a new project).
+   *
+   * #TODO: Not implemented yet.
+   */
   const onSessionChange = useCallback((session: string) => {
     console.log("Session change: ", session);
   }, []);

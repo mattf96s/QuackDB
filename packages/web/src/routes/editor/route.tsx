@@ -91,16 +91,8 @@ function MyMonacoEditor({ language }: EditorProps) {
 
     disposables.push(
       monacoRef.current.languages.registerCompletionItemProvider(language, {
-        async provideCompletionItems(model, position, context, token) {
+        async provideCompletionItems(model, position, _context, _token) {
           const input = model.getValue();
-
-          console.log("provideCompletions", {
-            model,
-            position,
-            context,
-            token,
-            input,
-          });
 
           if (!input) return;
 
@@ -115,7 +107,7 @@ function MyMonacoEditor({ language }: EditorProps) {
           const instance = workerRef.current;
 
           if (!instance) {
-            console.log("worker not initialized");
+            console.error("Worker not initialized");
             throw new Error("worker not initialized");
           }
 
@@ -124,8 +116,6 @@ function MyMonacoEditor({ language }: EditorProps) {
             // @ts-expect-error: types are not correct
             range,
           )) as unknown as languages.CompletionItem[];
-
-          console.log("got suggestions", suggestions);
 
           return {
             suggestions,
@@ -142,7 +132,6 @@ function MyMonacoEditor({ language }: EditorProps) {
     // editorRef.current?.setModel(model);
 
     // const m = editorRef.current?.getModel();
-    // console.log("M", m);
 
     // add the error markers and underline
     //   model.onDidChangeContent(function () {

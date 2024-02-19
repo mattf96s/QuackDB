@@ -1,12 +1,12 @@
 import { Panel, type PanelProps } from "react-resizable-panels";
+import { cn } from "@/lib/utils";
 import { WrapperProvider } from "./context/provider";
-import { useWrapper } from "./context/useWrapper";
 
 type ComponentWrapperProps = PanelProps & {
   children: React.ReactNode;
 };
 
-function ComponentWrapper(props: ComponentWrapperProps) {
+export default function ComponentWrapper(props: ComponentWrapperProps) {
   const { children, ...rest } = props;
   return (
     <WrapperProvider>
@@ -18,24 +18,24 @@ function ComponentWrapper(props: ComponentWrapperProps) {
 /**
  * A wrapper component for the sidepanel components.
  *
- * Memoized to avoid jank when resizing the panels.
+ * onToggle and onExpand don't work as I expected. But don't delete yet.
+ *
  */
 function Content(props: ComponentWrapperProps) {
-  const { onToggleIsCollapse } = useWrapper();
   const { children, ...rest } = props;
+
   return (
     <Panel
-      minSize={15}
-      collapsedSize={15}
-      collapsible={true}
-      onCollapse={() => onToggleIsCollapse(true)}
-      onExpand={() => onToggleIsCollapse(false)}
+      minSize={10}
+      collapsedSize={10}
+      collapsible
+      // onCollapse={() => onToggleIsCollapse(true)}
+      // onExpand={() => onToggleIsCollapse(false)}
       {...rest}
+      className={cn("my-4 max-h-full", props.className)}
     >
       {/* From the docs: Panels clip their content by default, to avoid showing scrollbars while resizing. Content can still be configured to overflow within a panel though.*/}
-      <div className="overflow-y-auto">{children}</div>
+      <div className="max-h-full overflow-y-auto">{children}</div>
     </Panel>
   );
 }
-
-export default ComponentWrapper;
