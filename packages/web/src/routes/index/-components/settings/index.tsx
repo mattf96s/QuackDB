@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Popover,
@@ -11,29 +10,21 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useDB } from "@/context/db/useDB";
 
-interface Config {
-  cache: boolean;
-}
-
 export default function Settings() {
   const { db } = useDB();
-  const [config, setConfig] = useState<Config | null>({
-    cache: false,
-  });
+  const [isCacheEnabled, setIsCacheEnabled] = useState(true);
 
   useEffect(() => {
+    if (!db) return;
     const config = db?.getConfig();
-    console.log("config", config);
-    setConfig({
-      cache: config?.shouldCache ?? false,
-    });
+    setIsCacheEnabled(config?.shouldCache ?? false);
   }, [db]);
 
   const onToggleCache = (s: boolean) => {
     db?.toggleCache(s);
+    setIsCacheEnabled(s);
   };
 
-  const isCacheEnabled = config?.cache;
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -62,30 +53,6 @@ export default function Settings() {
                   id="cache"
                 />
               </div>
-            </div>
-            <div className="grid grid-cols-3 items-center gap-4">
-              <Label htmlFor="maxWidth">Max. width</Label>
-              <Input
-                id="maxWidth"
-                defaultValue="300px"
-                className="col-span-2 h-8"
-              />
-            </div>
-            <div className="grid grid-cols-3 items-center gap-4">
-              <Label htmlFor="height">Height</Label>
-              <Input
-                id="height"
-                defaultValue="25px"
-                className="col-span-2 h-8"
-              />
-            </div>
-            <div className="grid grid-cols-3 items-center gap-4">
-              <Label htmlFor="maxHeight">Max. height</Label>
-              <Input
-                id="maxHeight"
-                defaultValue="none"
-                className="col-span-2 h-8"
-              />
             </div>
           </div>
         </div>

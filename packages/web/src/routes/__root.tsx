@@ -14,6 +14,8 @@ import { SidebarProvider } from "@/components/sidebar/context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggler } from "@/components/theme-toggle";
 import { Toaster } from "@/components/ui/sonner";
+import useBreakpoint from "@/hooks/use-breakpoints";
+import { cn } from "@/lib/utils";
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -68,13 +70,14 @@ const Analytics = memo(function Analytics() {
 });
 
 function Layout(props: { children: ReactNode }) {
+  const isSmallerScreen = useBreakpoint("md");
   return (
     <SidebarProvider>
       <LayoutContainer>
         <Sidebar />
-        <div className="w-full lg:pl-16">
+        <div className="w-full pl-0 lg:pl-16">
           {/* navbar */}
-          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+          <div className="fixed left-16 right-0 top-0 z-40 hidden h-16 shrink-0 items-center gap-x-4 border bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:flex lg:px-8">
             <div className="flex items-center justify-evenly gap-2">
               <h1 className="text-lg font-semibold">QuackDB</h1>
               <TerminalIcon className="size-5" />
@@ -86,7 +89,12 @@ function Layout(props: { children: ReactNode }) {
             </div>
           </div>
 
-          <main className="size-full">
+          <main
+            className={cn(
+              "fixed inset-x-0 bottom-0 top-16 w-full lg:left-16",
+              isSmallerScreen && "left-0 top-0",
+            )}
+          >
             <div className="flex h-full flex-col">
               <ContentShell>{props.children}</ContentShell>
             </div>
@@ -139,7 +147,7 @@ const LayoutContainer = memo(function LayoutContainer(props: {
 }) {
   return (
     <div
-      className="relative flex h-screen min-h-screen w-full max-w-full flex-col bg-background lg:flex-row"
+      className="relative flex h-screen max-h-screen min-h-screen w-full max-w-full flex-col bg-background lg:flex-row"
       // eslint-disable-next-line react/no-unknown-property
       vaul-drawer-wrapper=""
     >

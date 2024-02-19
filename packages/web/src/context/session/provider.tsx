@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { releaseProxy, type Remote, wrap } from "comlink";
 import { toast } from "sonner";
+import type { FileEntry } from "@/constants";
 import { SessionContext } from "./context";
 import type { Action, SessionState } from "./types";
 import type { SessionWorker } from "./worker";
@@ -48,12 +49,13 @@ function reducer(state: SessionState, action: Action): SessionState {
         }),
       };
     }
-    case "ADD_SOURCE": {
+    case "ADD_SOURCES": {
       return {
         ...state,
-        sources: [...state.sources, action.payload],
+        sources: [...state.sources, ...action.payload],
       };
     }
+
     case "REMOVE_SOURCE": {
       const { path } = action.payload;
 
@@ -70,6 +72,9 @@ function reducer(state: SessionState, action: Action): SessionState {
       if (index === -1) return { ...state };
       const editor = state.editors[index];
       if (!editor) return { ...state };
+
+      // #TODO: focus the next editor
+
       return {
         ...state,
         editors: [
@@ -130,6 +135,32 @@ function reducer(state: SessionState, action: Action): SessionState {
         sessionId,
       };
     }
+
+    case "REFRESH_EDITOR": {
+      const { path, handle } = action.payload;
+
+      const index = state.editors.findIndex((editor) => editor.path === path);
+
+      if (index === -1) return { ...state };
+
+      const editor = state.editors[index];
+
+      if (!editor) return { ...state };
+
+      return {
+        ...state,
+        editors: [
+          ...state.editors.slice(0, index),
+          {
+            ...editor,
+            isDirty: false,
+            isSaved: true,
+            handle,
+          },
+          ...state.editors.slice(index + 1),
+        ],
+      };
+    }
     default: {
       console.warn(`Unhandled file action type: ${action}`);
       return { ...state };
@@ -146,6 +177,8 @@ const initialFileState: SessionState = {
   editors: [],
   sources: [],
   dispatch: null,
+  onAddSources: async () => {},
+  onAddEditor: async () => {},
 };
 
 /**
@@ -246,9 +279,9 @@ function SessionProvider({ children }: SessionProviderProps) {
 
         // ------- data sources ------- //
 
-        case "SOURCE_FILE": {
+        case "ADD_SOURCES": {
           dispatch({
-            type: "ADD_SOURCE",
+            type: "ADD_SOURCES",
             payload,
           });
           break;
@@ -329,13 +362,86 @@ function SessionProvider({ children }: SessionProviderProps) {
     console.log("Session change: ", session);
   }, []);
 
+  const onAddSources = useCallback(
+    async (handles: FileSystemFileHandle[]) => {
+      if (!proxyRef.current) return;
+
+      if (handles.length === 0) {
+        toast.error("No files selected", {});
+        return;
+      }
+
+      const sources: FileEntry<"SOURCE">[] = [];
+
+      // #TODO: adjust worker to handle multiple files
+      for (const handle of handles) {
+        const res = await proxyRef.current.onAddSource({
+          handle,
+          name: handle.name,
+          sessionId: session.sessionId,
+          type: "FILE",
+        });
+
+        if (!res) {
+          toast.error("Error adding source", {});
+          return;
+        }
+
+        sources.push(res);
+      }
+
+      dispatch({
+        type: "ADD_SOURCES",
+        payload: sources,
+      });
+    },
+    [session.sessionId],
+  );
+
+  const onAddEditor = useCallback(async () => {
+    if (!proxyRef.current) return;
+
+    try {
+      const newEditor = await proxyRef.current.onAddEditor(session.sessionId);
+
+      if (!newEditor) throw new Error("Failed to add editor");
+
+      dispatch({
+        type: "ADD_EDITOR",
+        payload: {
+          ...newEditor,
+          isFocused: false,
+          isOpen: false,
+          isDirty: false,
+          isSaved: false,
+          content: "",
+        },
+      });
+
+      dispatch({
+        type: "FOCUS_EDITOR",
+        payload: {
+          path: newEditor.path,
+        },
+      });
+    } catch (e) {
+      console.error("Failed to add editor: ", e);
+      toast.error("Failed to add editor", {
+        description: e instanceof Error ? e.message : undefined,
+      });
+      return;
+    }
+  }, [session.sessionId]);
+
   const value = useMemo(
     () => ({
       ...session,
       onSessionChange,
       dispatch,
+      onAddSources,
+      onAddEditor,
     }),
-    [onSessionChange, session],
+    [onSessionChange, session, onAddSources, onAddEditor],
   );
 
   return (

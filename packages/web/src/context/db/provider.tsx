@@ -29,11 +29,11 @@ function DbProvider(props: DBProviderProps) {
    */
 
   const db = useRef<DuckDBInstance | null>(null);
-  const { session } = useSession();
+  const { sessionId, sources } = useSession();
 
   if (db.current === null) {
     db.current = new DuckDBInstance({
-      session,
+      session: sessionId,
     });
   }
 
@@ -42,9 +42,7 @@ function DbProvider(props: DBProviderProps) {
     return () => {
       db?.current
         ?.dispose()
-        .then(() => {
-          console.log("DB disposed");
-        })
+
         .catch((e) => console.error("Error disposing db: ", e));
     };
   }, []);
@@ -55,23 +53,30 @@ function DbProvider(props: DBProviderProps) {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const resetSession = async (session: string) => {
+    const resetSession = async (_session: string) => {
       try {
         await Promise.all([db.current?.reset(), signal.throwIfAborted()]);
+
+        for await (const source of sources) {
+          await db.current?.registerFileHandle(
+            source.path,
+            await source.handle.getFile(),
+          );
+        }
       } catch (e) {
         if (e instanceof DOMException && e.name === "AbortError") return;
         console.error("Error resetting session: ", e);
       }
     };
 
-    if (session) {
-      resetSession(session);
+    if (sessionId) {
+      resetSession(sessionId);
     }
 
     return () => {
       abortController.abort();
     };
-  }, [session]);
+  }, [sessionId, sources]);
 
   const value = useMemo(
     () => ({

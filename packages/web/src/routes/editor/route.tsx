@@ -1,6 +1,7 @@
 import "monaco-editor/esm/vs/basic-languages/pgsql/pgsql.contribution";
 import "monaco-editor/esm/vs/basic-languages/sql/sql.contribution";
 import React, { Suspense, useEffect, useRef, useState } from "react";
+import { Panel, PanelGroup } from "react-resizable-panels";
 import { Editor, type OnMount } from "@monaco-editor/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { releaseProxy, type Remote, wrap } from "comlink";
@@ -10,6 +11,7 @@ import {
   type languages,
   Range,
 } from "monaco-editor";
+import PanelHandle from "@/components/panel-handle";
 import { sqlConf, sqlDef } from "./-syntax/index";
 import type { AutocompleterWorker } from "./-worker";
 
@@ -25,9 +27,17 @@ function EditorPage() {
   return (
     <div className="flex size-full flex-1 flex-col gap-10 p-10">
       <h1>Editor</h1>
-      <Suspense fallback={<p>loading...</p>}>
-        <MyMonacoEditor language="sql" />
-      </Suspense>
+      <PanelGroup direction="vertical">
+        <Panel maxSize={50}>
+          <p>This is a panel</p>
+        </Panel>
+        <PanelHandle />
+        <Panel maxSize={50}>
+          <Suspense fallback={<p>loading...</p>}>
+            <MyMonacoEditor language="sql" />
+          </Suspense>
+        </Panel>
+      </PanelGroup>
     </div>
   );
 }

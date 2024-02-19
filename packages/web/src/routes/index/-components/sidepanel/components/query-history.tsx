@@ -77,8 +77,8 @@ export default function QueryHistory() {
   };
 
   return (
-    <div className="flex w-full flex-col pt-2">
-      <div className="flex w-full items-center justify-between">
+    <div className="flex h-full max-h-full flex-col overflow-y-auto pt-2">
+      <div className="flex max-h-full w-full items-center justify-between">
         <div className="flex grow">
           <Button
             onClick={isCollapsed ? onExpand : onCollapse}
@@ -115,7 +115,10 @@ export default function QueryHistory() {
           No queries yet
         </div>
       )}
-      <div className={cn("flex w-full flex-col space-y-4 py-1 pl-4 pr-2")}>
+      <div
+        className="relative flex size-full flex-col gap-1 overflow-y-auto px-4 py-1"
+        hidden={isCollapsed}
+      >
         {queries.map((query) => {
           return (
             <HistoryItem

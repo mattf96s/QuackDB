@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Pencil2Icon } from "@radix-ui/react-icons";
-import { useRouter } from "@tanstack/react-router";
-import { releaseProxy, type Remote, wrap } from "comlink";
-import { ChevronDown, Plus, RefreshCw } from "lucide-react";
+import { ChevronDown, DotIcon, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +13,6 @@ import {
 } from "@/components/ui/context-menu";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
-import type { AddEditorFileWorker } from "@/workers/add-editor-file-worker";
 
 export default function EditorSources() {
   const { editors, dispatch } = useSession();
@@ -29,7 +26,7 @@ export default function EditorSources() {
       return;
     }
     dispatch({
-      type: "OPEN_EDITOR",
+      type: "FOCUS_EDITOR",
       payload: editor,
     });
   };
@@ -68,21 +65,35 @@ export default function EditorSources() {
       </div>
       <div
         className={cn(
-          "flex w-full flex-col gap-1 py-1",
+          "flex w-full flex-col gap-1 py-1 pr-8",
           isCollapsed && "hidden",
         )}
       >
         {editors.map((editor) => {
+          const { isFocused } = editor;
           return (
             <ContextMenu key={editor.path}>
-              <ContextMenuTrigger className="data-[state=open]:bg-gray-100">
+              <ContextMenuTrigger className="w-full">
                 <Button
-                  className="ml-5 flex h-6 w-48 items-center justify-start gap-2 p-2 pl-0"
+                  className={cn(
+                    "mx-5 flex h-6 w-full items-center justify-between gap-2 p-2 pl-0",
+                    isFocused && "bg-secondary",
+                  )}
                   variant="ghost"
                   onClick={() => onOpenFile(editor.path)}
                 >
-                  <Pencil2Icon className="size-4" />
-                  <span className="truncate font-normal">{editor.path}</span>
+                  <div className="inline-flex items-center gap-1">
+                    <Pencil2Icon className="size-4" />
+                    <span
+                      className={cn(
+                        "truncate font-normal",
+                        // editor.isDirty && "text-yellow-700",
+                      )}
+                    >
+                      {editor.path}
+                    </span>
+                  </div>
+                  {editor.isOpen && <DotIcon className="size-4" />}
                 </Button>
               </ContextMenuTrigger>
               <ContextMenuContent className="w-64">
@@ -108,74 +119,6 @@ export default function EditorSources() {
   );
 }
 
-const useAddEditorFileWorker = () => {
-  const workerRef = useRef<Worker | null>(null);
-  const wrapperRef = useRef<Remote<AddEditorFileWorker> | null>(null);
-  // set to promise so we can await it
-  const [initPromise, setInitPromise] = useState(new Promise(() => {}));
-
-  const { sessionId } = useSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    const w = new Worker(
-      new URL("@/workers/add-editor-file-worker.ts", import.meta.url),
-      {
-        name: "add-editor-file-worker",
-        type: "module",
-      },
-    );
-
-    workerRef.current = w;
-
-    const fn: Remote<AddEditorFileWorker> = wrap<AddEditorFileWorker>(w);
-
-    wrapperRef.current = fn;
-
-    signal.addEventListener("abort", () => {
-      fn[releaseProxy]();
-      w.terminate();
-
-      workerRef.current = null;
-      wrapperRef.current = null;
-
-      setInitPromise(new Promise(() => {}));
-    });
-
-    setInitPromise(Promise.resolve());
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
-
-  const onAddEditorFileWorkerFn = useCallback(async () => {
-    await initPromise;
-
-    if (!wrapperRef.current) {
-      throw new Error("Worker not initialized");
-    }
-
-    try {
-      await wrapperRef.current({
-        session: sessionId,
-      });
-
-      router.invalidate();
-    } catch (e) {
-      console.error("Error adding new editor file: ", e);
-      toast.error("Error opening file", {
-        description: e instanceof Error ? e.message : "Unknown error",
-      });
-    }
-  }, [initPromise, router, sessionId]);
-
-  return { onAddEditorFileWorkerFn };
-};
-
 /**
  * Manage datasets.
  *
@@ -184,41 +127,24 @@ const useAddEditorFileWorker = () => {
  * @component
  */
 function SourcesToolbar() {
-  const router = useRouter();
-
-  const { onAddEditorFileWorkerFn } = useAddEditorFileWorker();
-
-  const onAddEditorFile = useCallback(async () => {
-    try {
-      await onAddEditorFileWorkerFn();
-      router.invalidate();
-    } catch (e) {
-      // ignore aborted request
-      if (e instanceof Error && e.name === "AbortError") return;
-      console.error("Failed to add filehandles: ", e);
-      toast.error("Failed to add files", {
-        description: e instanceof Error ? e.message : undefined,
-      });
-    }
-  }, [onAddEditorFileWorkerFn, router]);
-
-  const onRefresh = () => {
-    router.invalidate();
-  };
+  const { onAddEditor } = useSession();
 
   return (
     <>
       <Button
         size="xs"
         variant="ghost"
-        onClick={onAddEditorFile}
+        onClick={onAddEditor}
       >
         <Plus size={16} />
       </Button>
       <Button
+        disabled
         size="xs"
         variant="ghost"
-        onClick={onRefresh}
+        onClick={() => {
+          console.log("#TODO");
+        }}
       >
         <RefreshCw size={16} />
       </Button>

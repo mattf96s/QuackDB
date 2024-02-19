@@ -270,8 +270,10 @@ const onAddSource = async <T extends NewSourceType>(
       .catch(() => null);
     if (!exists) break;
     counter++;
-    path = `${path}-${counter}.${ext}`;
+    path = `${path}-${counter}`;
   }
+
+  const filename = `${path}.${ext}`;
 
   try {
     switch (type) {
@@ -279,7 +281,7 @@ const onAddSource = async <T extends NewSourceType>(
         const { handle } = props;
         const file = await handle.getFile();
 
-        const draftHandle = await directory.getFileHandle(path, {
+        const draftHandle = await directory.getFileHandle(filename, {
           create: true,
         });
         const accessHandle = await draftHandle.createSyncAccessHandle();
@@ -292,7 +294,7 @@ const onAddSource = async <T extends NewSourceType>(
         accessHandle.close();
 
         const source: FileEntry<"SOURCE"> = {
-          path: name,
+          path: filename,
           kind: meta.kind,
           mimeType: meta.mimeType,
           ext: meta.ext,
@@ -349,11 +351,78 @@ const onAddSource = async <T extends NewSourceType>(
   }
 };
 
+// --- Add new editor file -- //
+
+const onAddEditor = async (sessionId: string) => {
+  postMessage({
+    type: "ADD_EDITOR_START",
+    payload: {
+      sessionId,
+    },
+  });
+
+  try {
+    const directory = await getSessionDirectory(sessionId);
+
+    // find a unique name for the new file
+    let counter = 0;
+    let path = "new-query";
+    let filename = "new-query.sql";
+
+    while (true) {
+      const exists = await directory
+        .getFileHandle(filename, { create: false })
+        .catch(() => null);
+      if (!exists) break;
+      counter++;
+      path = `${path}-${counter}`;
+      filename = `${path}.sql`;
+    }
+
+    const draftHandle = await directory.getFileHandle(filename, {
+      create: true,
+    });
+
+    const syncHandle = await draftHandle.createSyncAccessHandle();
+
+    const textEncoder = new TextEncoder();
+    syncHandle.write(textEncoder.encode(newfileContents));
+
+    syncHandle.flush();
+    syncHandle.close();
+
+    const entry: FileEntry<"EDITOR"> = {
+      path: filename,
+      kind: "EDITOR",
+      ext: "sql",
+      mimeType: "text/sql",
+      handle: draftHandle,
+    };
+
+    postMessage({
+      type: "ADD_EDITOR_COMPLETE",
+      payload: entry,
+    });
+
+    return entry;
+  } catch (e) {
+    console.error("Error adding editor file: ", e);
+    postMessage({
+      type: "ADD_EDITOR_ERROR",
+      payload: {
+        error: e instanceof Error ? e.message : "Unknown error",
+      },
+    });
+    return null;
+  }
+};
+
 // ----------------------------//
 
 const methods = {
   onInitialize,
   onAddSource,
+  onAddEditor,
 };
 
 export type SessionWorker = typeof methods;

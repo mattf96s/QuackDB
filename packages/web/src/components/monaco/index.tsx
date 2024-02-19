@@ -208,17 +208,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 
     // context menu actions
 
-    disposables.push(
-      editorRef.current.addAction({
-        id: "save-file",
-        label: "Save File",
-        keybindings: [KeyMod.CtrlCmd | KeyCode.KeyS],
-        contextMenuGroupId: "navigation",
-        contextMenuOrder: 1.5,
-        run: () => console.log("Save"),
-      }),
-    );
-
     // validate selected text
 
     disposables.push(
@@ -304,6 +293,32 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     };
   }, [isReady, onRunQuery]);
 
+  // save
+  useEffect(() => {
+    const disposables: IDisposable[] = [];
+    if (!isReady) return;
+    if (!editorRef.current) return;
+
+    disposables.push(
+      editorRef.current.addAction({
+        id: "save-file",
+        label: "Save File",
+        keybindings: [KeyMod.CtrlCmd | KeyCode.KeyS],
+        contextMenuGroupId: "navigation",
+        contextMenuOrder: 1.5,
+        run: () => {
+          if (props.onSave) {
+            props.onSave(editorRef.current?.getValue() ?? "");
+          }
+        },
+      }),
+    );
+
+    return () => {
+      disposables.forEach((disposable) => disposable.dispose());
+    };
+  }, [props, isReady]);
+
   useImperativeHandle(
     ref,
     () => {
@@ -349,11 +364,14 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         wrappingIndent: "same",
         wrappingStrategy: "advanced",
         scrollBeyondLastLine: false,
-        scrollbar: { vertical: "auto", horizontal: "auto" },
+        "semanticHighlighting.enabled": true,
+        renderLineHighlightOnlyWhenFocus: true,
+        tabCompletion: "on",
+
+        // scrollbar: { vertical: "auto", horizontal: "auto" },
         lineNumbers: "on",
         lineDecorationsWidth: 10,
         lineNumbersMinChars: 3,
-
         glyphMargin: true,
         folding: true,
         foldingStrategy: "auto",

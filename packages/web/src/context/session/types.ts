@@ -20,13 +20,15 @@ export type SessionState = {
   editors: CodeEditor[];
   sources: Source[];
   dispatch: React.Dispatch<Action> | null;
+  onAddSources: (handles: FileSystemFileHandle[]) => Promise<void>;
+  onAddEditor: () => Promise<void>;
 };
 
 // session reducer
 
-type AddSource = {
-  type: "ADD_SOURCE";
-  payload: Source;
+type AddSources = {
+  type: "ADD_SOURCES";
+  payload: Source[];
 };
 
 type RemoveSource = {
@@ -90,8 +92,16 @@ type SetStatus = {
   payload: { status: SessionState["status"] };
 };
 
+type RefreshEditor = {
+  type: "REFRESH_EDITOR";
+  payload: {
+    path: string;
+    handle: FileSystemFileHandle;
+  };
+};
+
 export type Action =
-  | AddSource
+  | AddSources
   | RemoveSource
   | OpenEditor
   | FocusEditor // tabs can be open without being focused
@@ -100,4 +110,5 @@ export type Action =
   | DeleteEditor
   | UpdateEditor
   | OpenSession
-  | SetStatus;
+  | SetStatus
+  | RefreshEditor;

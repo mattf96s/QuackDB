@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Code2, X } from "lucide-react";
+import { Code2, PlusIcon, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
@@ -39,9 +39,8 @@ const OpenFileTabs = memo(function OpenFileTabs() {
             return (
               <div
                 className={cn(
-                  "flex h-8 flex-[0_0_auto] cursor-pointer flex-row flex-nowrap items-center gap-[1ch] border bg-gray-100 p-[0.5rem_1ch] transition-colors hover:bg-gray-200",
-                  isCurrent &&
-                    "bg-primary text-primary-foreground hover:bg-primary/90",
+                  "flex h-8 flex-[0_0_auto] cursor-pointer flex-row flex-nowrap items-center gap-[1ch] bg-secondary p-[0.5rem_1ch] text-foreground transition-colors",
+                  isCurrent && "bg-foreground text-secondary",
                 )}
                 data-current={isCurrent || undefined}
                 key={editor.path}
@@ -68,10 +67,27 @@ const OpenFileTabs = memo(function OpenFileTabs() {
               </div>
             );
           })}
+
+        <div className="flex h-8 items-center">
+          <AddNewFileButton />
+        </div>
       </div>
       <Separator orientation="vertical" />
     </div>
   );
 });
+
+function AddNewFileButton() {
+  const { onAddEditor } = useSession();
+
+  return (
+    <button
+      onClick={onAddEditor}
+      className="flex size-8 items-center justify-center hover:bg-gray-200"
+    >
+      <PlusIcon className="size-5" />
+    </button>
+  );
+}
 
 export default OpenFileTabs;

@@ -11,55 +11,19 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as TransformerImport } from './routes/transformer'
-import { Route as FilesImport } from './routes/files'
-import { Route as AboutImport } from './routes/about'
 import { Route as EditorRouteImport } from './routes/editor/route'
-import { Route as EcosystemRouteImport } from './routes/ecosystem/route'
 import { Route as IndexRouteImport } from './routes/index/route'
-import { Route as FilesIndexImport } from './routes/files.index'
-import { Route as FilesFileIdImport } from './routes/files.$fileId'
 
 // Create/Update Routes
-
-const TransformerRoute = TransformerImport.update({
-  path: '/transformer',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const FilesRoute = FilesImport.update({
-  path: '/files',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const AboutRoute = AboutImport.update({
-  path: '/about',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const EditorRouteRoute = EditorRouteImport.update({
   path: '/editor',
   getParentRoute: () => rootRoute,
 } as any)
 
-const EcosystemRouteRoute = EcosystemRouteImport.update({
-  path: '/ecosystem',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const IndexRouteRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
-} as any)
-
-const FilesIndexRoute = FilesIndexImport.update({
-  path: '/',
-  getParentRoute: () => FilesRoute,
-} as any)
-
-const FilesFileIdRoute = FilesFileIdImport.update({
-  path: '/$fileId',
-  getParentRoute: () => FilesRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -70,33 +34,9 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRoute
     }
-    '/ecosystem': {
-      preLoaderRoute: typeof EcosystemRouteImport
-      parentRoute: typeof rootRoute
-    }
     '/editor': {
       preLoaderRoute: typeof EditorRouteImport
       parentRoute: typeof rootRoute
-    }
-    '/about': {
-      preLoaderRoute: typeof AboutImport
-      parentRoute: typeof rootRoute
-    }
-    '/files': {
-      preLoaderRoute: typeof FilesImport
-      parentRoute: typeof rootRoute
-    }
-    '/transformer': {
-      preLoaderRoute: typeof TransformerImport
-      parentRoute: typeof rootRoute
-    }
-    '/files/$fileId': {
-      preLoaderRoute: typeof FilesFileIdImport
-      parentRoute: typeof FilesImport
-    }
-    '/files/': {
-      preLoaderRoute: typeof FilesIndexImport
-      parentRoute: typeof FilesImport
     }
   }
 }
@@ -105,11 +45,7 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRouteRoute,
-  EcosystemRouteRoute,
   EditorRouteRoute,
-  AboutRoute,
-  FilesRoute.addChildren([FilesFileIdRoute, FilesIndexRoute]),
-  TransformerRoute,
 ])
 
 /* prettier-ignore-end */
