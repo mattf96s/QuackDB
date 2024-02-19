@@ -16,6 +16,7 @@ export default function Sidepanel() {
       >
         <ComponentWrapper
           minSize={5}
+          collapsedSize={5}
           id="wrapper-editor-sources"
         >
           <EditorSources />
@@ -23,6 +24,7 @@ export default function Sidepanel() {
         <PanelHandle />
         <ComponentWrapper
           minSize={5}
+          collapsedSize={5}
           id="wrapper-data-sources"
         >
           <DataSources />
@@ -30,6 +32,7 @@ export default function Sidepanel() {
         <PanelHandle />
         <ComponentWrapper
           minSize={5}
+          collapsedSize={5}
           id="wrapper-query-sources"
         >
           <QueryHistory />
