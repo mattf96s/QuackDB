@@ -153,6 +153,7 @@ function reducer(state: SessionState, action: Action): SessionState {
           ...state.editors.slice(0, index),
           {
             ...editor,
+            isFocused: true,
             isDirty: false,
             isSaved: true,
             handle,
@@ -411,8 +412,8 @@ function SessionProvider({ children }: SessionProviderProps) {
         payload: {
           ...newEditor,
           isFocused: false,
-          isOpen: false,
-          isDirty: false,
+          isOpen: true,
+          isDirty: true,
           isSaved: false,
           content: "",
         },

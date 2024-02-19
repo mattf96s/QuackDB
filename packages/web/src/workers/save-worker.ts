@@ -10,7 +10,11 @@ async function saveWorker({ content, handle, path }: SaveWorkerProps) {
   try {
     const syncHandle = await handle.createSyncAccessHandle();
     const encoder = new TextEncoder();
-    syncHandle.write(encoder.encode(content));
+
+    syncHandle.write(encoder.encode(content), {
+      at: 0,
+    });
+
     syncHandle.flush();
     syncHandle.close();
 

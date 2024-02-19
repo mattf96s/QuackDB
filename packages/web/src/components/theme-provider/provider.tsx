@@ -1,7 +1,7 @@
-import { memo, useEffect, useMemo, useState } from "react";
-import type { Theme } from "./types";
-import { ThemeContext } from "./context";
+import { memo, useEffect, useState } from "react";
 import { CACHE_KEYS } from "@/constants";
+import { ThemeContext } from "./context";
+import type { Theme } from "./types";
 
 type ThemeProviderProps = {
   children: React.ReactNode;

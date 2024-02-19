@@ -27,7 +27,7 @@ import { sqlConf, sqlDef } from "./syntax";
 
 type EditorProps = Exclude<MonacoEditorProps, "value"> & {
   value: string;
-  onSave?: (value: string) => void;
+  onSave?: (editor: editor.ICodeEditor) => Promise<void>;
   language?: string;
 };
 
@@ -273,7 +273,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
         contextMenuGroupId: "navigation",
         contextMenuOrder: 1.5,
-        run: (editor) => {
+        run: async (editor) => {
           const selection = editor.getSelection();
 
           const value =
@@ -283,7 +283,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 
           if (!value) return;
 
-          onRunQuery(value ?? "");
+          await onRunQuery(value ?? "");
         },
       }),
     );
@@ -296,8 +296,9 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
   // save
   useEffect(() => {
     const disposables: IDisposable[] = [];
-    if (!isReady) return;
     if (!editorRef.current) return;
+    if (!monacoRef.current) return;
+    if (!isReady) return;
 
     disposables.push(
       editorRef.current.addAction({
@@ -306,9 +307,17 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         keybindings: [KeyMod.CtrlCmd | KeyCode.KeyS],
         contextMenuGroupId: "navigation",
         contextMenuOrder: 1.5,
-        run: () => {
+        run: async (editor) => {
           if (props.onSave) {
-            props.onSave(editorRef.current?.getValue() ?? "");
+            const selection = editor.getSelection();
+
+            const value =
+              selection?.isEmpty() || selection == null
+                ? editor.getValue()
+                : editor.getModel()?.getValueInRange(selection);
+
+            if (!value) return;
+            props.onSave(editor);
           }
         },
       }),

@@ -11,6 +11,7 @@ import type { OnChange } from "@monaco-editor/react";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
 import { type Remote, wrap } from "comlink";
 import { Loader2 } from "lucide-react";
+import type { editor } from "monaco-editor";
 import { useSpinDelay } from "spin-delay";
 import Editor from "@/components/monaco";
 import { useEditor } from "@/context/editor/useEditor";
@@ -86,13 +87,13 @@ function CurrentEditor() {
   }, [currentEditor]);
 
   const onSave = useCallback(
-    async (value: string) => {
-      if (!currentEditor) {
-        return;
-      }
-      onSaveHandler({
+    async (editor: editor.ICodeEditor) => {
+      if (!currentEditor) return;
+      const content = editor.getValue();
+
+      await onSaveHandler({
         handle: currentEditor.handle,
-        content: value,
+        content,
         path: currentEditor.path,
       });
     },
@@ -198,13 +199,7 @@ const useSaveWorker = () => {
           throw new Error(`No dispatch found`);
         }
 
-        dispatch({
-          type: "REFRESH_EDITOR",
-          payload: {
-            path,
-            handle: result.handle,
-          },
-        });
+        return result;
       } catch (error) {
         console.error("error", error);
       } finally {
