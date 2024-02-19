@@ -1,4 +1,3 @@
-import { memo } from "react";
 import { Panel, type PanelProps } from "react-resizable-panels";
 import { WrapperProvider } from "./context/provider";
 import { useWrapper } from "./context/useWrapper";
@@ -7,23 +6,21 @@ type ComponentWrapperProps = PanelProps & {
   children: React.ReactNode;
 };
 
-const ComponentWrapper = memo(function ComponentWrapper(
-  props: ComponentWrapperProps,
-) {
+function ComponentWrapper(props: ComponentWrapperProps) {
   const { children, ...rest } = props;
   return (
     <WrapperProvider>
       <Content {...rest}>{children}</Content>
     </WrapperProvider>
   );
-});
+}
 
 /**
  * A wrapper component for the sidepanel components.
  *
  * Memoized to avoid jank when resizing the panels.
  */
-const Content = memo(function ComponentWrapper(props: ComponentWrapperProps) {
+function Content(props: ComponentWrapperProps) {
   const { onToggleIsCollapse } = useWrapper();
   const { children, ...rest } = props;
   return (
@@ -39,6 +36,6 @@ const Content = memo(function ComponentWrapper(props: ComponentWrapperProps) {
       <div className="overflow-y-auto">{children}</div>
     </Panel>
   );
-});
+}
 
 export default ComponentWrapper;

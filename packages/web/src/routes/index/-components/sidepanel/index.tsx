@@ -9,23 +9,32 @@ import ComponentWrapper from "./components/wrapper";
 export default function Sidepanel() {
   const { sessionId } = useSession();
   return (
-    <div className="h-full max-h-full overflow-y-auto">
+    <>
       <PanelGroup
         direction="vertical"
-        autoSaveId={sessionId} // will persist the panel sizes in local storage
+        autoSaveId={`${sessionId}_sidebar_panel`} // will persist the panel sizes in local storage
       >
-        <ComponentWrapper id="wrapper-editor-sources">
+        <ComponentWrapper
+          minSize={5}
+          id="wrapper-editor-sources"
+        >
           <EditorSources />
         </ComponentWrapper>
         <PanelHandle />
-        <ComponentWrapper id="wrapper-data-sources">
+        <ComponentWrapper
+          minSize={5}
+          id="wrapper-data-sources"
+        >
           <DataSources />
         </ComponentWrapper>
         <PanelHandle />
-        <ComponentWrapper id="wrapper-query-sources">
+        <ComponentWrapper
+          minSize={5}
+          id="wrapper-query-sources"
+        >
           <QueryHistory />
         </ComponentWrapper>
       </PanelGroup>
-    </div>
+    </>
   );
 }

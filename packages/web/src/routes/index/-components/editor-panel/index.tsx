@@ -1,70 +1,37 @@
-import { memo, Suspense, useCallback, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import type { OnChange } from "@monaco-editor/react";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
-import { AlertOctagon } from "lucide-react";
+import { type Remote, wrap } from "comlink";
+import { Loader2 } from "lucide-react";
+import { useSpinDelay } from "spin-delay";
 import Editor from "@/components/monaco";
-import { useTheme } from "@/components/theme-provider";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useEditor } from "@/context/editor/useEditor";
-import { useQuery } from "@/context/query/useQuery";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
-import { usePanel } from "../../-context/panel/usePanel";
+import type { SaveWorker } from "@/workers/save-worker";
 import OpenFileTabs from "./components/open-files";
 import ResultsView from "./components/results-viewer";
 
-const EditorPanel = memo(function EditorPanel() {
-  const { editors } = useSession();
-
-  const { status, error } = useQuery();
-  const { editorRef } = useEditor();
-
-  const [sql, setSql] = useState(
-    `SELECT * FROM READ_PARQUET('stores.parquet');`,
-  );
-
-  const { currentFile } = usePanel();
-
-  const onSave = useCallback((value: string) => {
-    console.log("on save: ", value);
-  }, []);
-
-  const currentEditor = editors.find((editor) => editor.isFocused);
-
+function EditorPanel() {
   return (
     <PanelGroup
       className="flex flex-col"
       direction="vertical"
     >
-      <Panel className="relative flex flex-col">
+      <Panel
+        minSize={10}
+        className="flex flex-col"
+      >
         <OpenFileTabs />
-        {currentEditor ? (
-          <Editor
-            onSave={onSave}
-            value={sql}
-            ref={editorRef}
-            onChange={(value) => setSql(value ?? "")}
-            className="h-full border-t-0"
-            options={{
-              padding: {
-                top: 16,
-                bottom: 16,
-              },
-            }}
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-gray-400">
-            No file selected
-          </div>
-        )}
-        {/* code actions */}
-        <div className="absolute bottom-3 left-0 right-10 z-10 w-full px-4">
-          <div className="mx-auto max-w-fit">
-            {status === "error" && (
-              <ErrorNotification error={error ?? "Unknown error"} />
-            )}
-          </div>
-        </div>
+        <CurrentEditor />
       </Panel>
 
       <PanelResizeHandle
@@ -76,34 +43,179 @@ const EditorPanel = memo(function EditorPanel() {
           <DragHandleDots2Icon className="size-2.5" />
         </div>
       </PanelResizeHandle>
-      <Panel>
+      <Panel minSize={10}>
         <Suspense fallback={<p>Loading...</p>}>
           <ResultsView />
         </Suspense>
       </Panel>
     </PanelGroup>
   );
-});
+}
 
 export default EditorPanel;
 
-function ErrorNotification(props: { error: string }) {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+function CurrentEditor() {
+  const { editors } = useSession();
+  const { editorRef } = useEditor();
+  const [sql, setSql] = useState("");
+  const [isReady, setIsReady] = useState(false);
+
+  const { onSaveHandler, isSaving } = useSaveWorker();
+
+  const currentEditor = useMemo(
+    () => editors.find((editor) => editor.isFocused),
+    [editors],
+  );
+
+  const onChangeHandler: OnChange = useCallback((value, _ev) => {
+    setSql(value ?? "");
+  }, []);
+
+  // get content of current editor
+  useEffect(() => {
+    const parseFileHandler = async (handle: FileSystemFileHandle) => {
+      const file = await handle.getFile();
+      const content = await file.text();
+      setSql(content);
+      setIsReady(true);
+    };
+
+    if (currentEditor) {
+      parseFileHandler(currentEditor.handle);
+    }
+  }, [currentEditor]);
+
+  const onSave = useCallback(
+    async (value: string) => {
+      if (!currentEditor) {
+        return;
+      }
+      onSaveHandler({
+        handle: currentEditor.handle,
+        content: value,
+        path: currentEditor.path,
+      });
+    },
+    [currentEditor, onSaveHandler],
+  );
+
+  const showLoader = useSpinDelay(isSaving, {
+    delay: 0,
+    minDuration: 120,
+  });
+
+  if (!currentEditor) {
+    return (
+      <div className="flex h-full items-center justify-center text-gray-400">
+        No file selected
+      </div>
+    );
+  }
+
+  if (!isReady) {
+    return (
+      <div className="flex h-full items-center justify-center text-gray-400">
+        Loading...
+      </div>
+    );
+  }
+
   return (
-    <Alert
-      variant={isDark ? "default" : "destructive"}
-      className="space-y-1 font-mono"
-    >
-      <AlertTitle>
-        <span className="inline-flex items-center gap-2">
-          <AlertOctagon className="size-4" />
-          Error:
-        </span>
-      </AlertTitle>
-      <AlertDescription className="whitespace-pre-wrap font-mono text-xs">
-        {props.error}
-      </AlertDescription>
-    </Alert>
+    <>
+      <Editor
+        onSave={onSave}
+        value={sql}
+        ref={editorRef}
+        onChange={onChangeHandler}
+        className="h-full border-t-0"
+        options={{
+          padding: {
+            top: 16,
+            bottom: 16,
+          },
+        }}
+      />
+      {showLoader && (
+        <div className="absolute right-4 top-2 z-10">
+          <Loader2 className="size-4 animate-spin text-primary" />
+        </div>
+      )}
+    </>
   );
 }
+
+const useSaveWorker = () => {
+  const workerRef = useRef<Remote<SaveWorker> | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const { dispatch } = useSession();
+
+  useEffect(() => {
+    const worker = new Worker(
+      new URL("@/workers/save-worker.ts", import.meta.url),
+      {
+        type: "module",
+        name: "save-worker",
+      },
+    );
+
+    workerRef.current = wrap<SaveWorker>(worker);
+
+    return () => {
+      worker.terminate();
+    };
+  }, []);
+
+  const onSaveHandler = useCallback(
+    async ({
+      handle,
+      content,
+      path,
+    }: {
+      handle: FileSystemFileHandle;
+      content: string;
+      path: string;
+    }) => {
+      if (!workerRef.current) {
+        return;
+      }
+      setIsSaving(true);
+      try {
+        const result = await workerRef.current({
+          handle,
+          content,
+          path,
+        });
+
+        if (result.error) {
+          throw new Error(`${result.error}`);
+        }
+
+        if (!result.handle) {
+          throw new Error(`No handle returned`);
+        }
+
+        if (!dispatch) {
+          throw new Error(`No dispatch found`);
+        }
+
+        dispatch({
+          type: "REFRESH_EDITOR",
+          payload: {
+            path,
+            handle: result.handle,
+          },
+        });
+      } catch (error) {
+        console.error("error", error);
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [dispatch],
+  );
+
+  return {
+    onSaveHandler,
+    isSaving,
+  };
+};

@@ -1,6 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useLoaderData, useRouter } from "@tanstack/react-router";
-import { releaseProxy, type Remote, wrap } from "comlink";
+import { memo, useCallback, useState } from "react";
 import {
   ChevronDown,
   CopyCheck,
@@ -18,18 +16,13 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { useDB } from "@/context/db/useDB";
+import { useEditor } from "@/context/editor/useEditor";
 import { useSession } from "@/context/session/useSession";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
-import type { AddDatasetWorker } from "@/workers/add-dataset-worker";
 
-const useSources = () => {
-  const { datasets } = useLoaderData({ from: "/" });
-
-  return datasets;
-};
-
-export default function DataSources() {
+const DataSources = memo(function DataSources() {
   const { sources } = useSession();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -79,29 +72,34 @@ export default function DataSources() {
       </div>
     </div>
   );
-}
+});
+
+export default DataSources;
 
 type SourceEntry = ReturnType<typeof useSession>["sources"][number];
 
 function DatesetItem(props: SourceEntry) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
+  const { editorRef } = useEditor();
 
-  const { ext, handle, kind, mimeType, path } = props;
+  const { ext, mimeType, path } = props;
+
+  const pathWithoutExt = path.slice(0, path.length - ext.length - 1); // remove the dot too
 
   const onCopy = async () => {
     let snippet = "";
 
     switch (mimeType) {
       case "application/json": {
-        snippet = `CREATE OR REPLACE TABLE ${path} AS SELECT * FROM read_json_auto('${path}')`;
+        snippet = `CREATE OR REPLACE TABLE ${pathWithoutExt} AS SELECT * FROM read_json_auto('${path}');\nSUMMARIZE ${pathWithoutExt};`;
         break;
       }
       case "application/parquet": {
-        snippet = `CREATE OR REPLACE VIEW '${path}' AS SELECT * FROM read_parquet('${path}')`;
+        snippet = `CREATE OR REPLACE VIEW '${pathWithoutExt}' AS SELECT * FROM read_parquet('${path}');\nSUMMARIZE ${pathWithoutExt};`;
         break;
       }
       case "text/csv": {
-        snippet = `CREATE OR REPLACE TABLE ${path} AS SELECT * FROM read_csv_auto('${path}')`;
+        snippet = `CREATE OR REPLACE TABLE ${pathWithoutExt} AS SELECT * FROM read_csv_auto('${path}');\nSUMMARIZE ${pathWithoutExt};`;
         break;
       }
       default: {
@@ -112,7 +110,26 @@ function DatesetItem(props: SourceEntry) {
       }
     }
 
-    await copyToClipboard(snippet);
+    await copyToClipboard(snippet.trim());
+
+    // insert into editor
+    const editor = editorRef.current?.getEditor();
+    if (editor) {
+      const selection = editor.getSelection();
+
+      editor.executeEdits("my-source", [
+        {
+          text: snippet,
+          forceMoveMarkers: false,
+          range: {
+            startLineNumber: selection?.selectionStartLineNumber || 1,
+            startColumn: selection?.selectionStartColumn || 1,
+            endLineNumber: selection?.endLineNumber || 1,
+            endColumn: selection?.endColumn || 1,
+          },
+        },
+      ]);
+    }
   };
   return (
     <ContextMenu key={path}>
@@ -153,89 +170,6 @@ function DatesetItem(props: SourceEntry) {
   );
 }
 
-const useAddDatasetWorker = () => {
-  const workerRef = useRef<Worker | null>(null);
-  const wrapperRef = useRef<Remote<AddDatasetWorker> | null>(null);
-  // set to promise so we can await it
-  const [initPromise, setInitPromise] = useState(new Promise(() => {}));
-
-  const { sessionId } = useSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    const w = new Worker(
-      new URL("@/workers/add-dataset-worker.ts", import.meta.url),
-      {
-        name: "add-dataset-worker",
-        type: "module",
-      },
-    );
-
-    workerRef.current = w;
-
-    const fn: Remote<AddDatasetWorker> = wrap<AddDatasetWorker>(w);
-
-    wrapperRef.current = fn;
-
-    signal.addEventListener("abort", () => {
-      fn[releaseProxy]();
-      w.terminate();
-
-      workerRef.current = null;
-      wrapperRef.current = null;
-
-      setInitPromise(new Promise(() => {}));
-    });
-
-    setInitPromise(Promise.resolve());
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
-
-  const onAddDatasetWorkerFn = useCallback(
-    async (fileHandles: FileSystemFileHandle[]) => {
-      await initPromise;
-
-      if (!wrapperRef.current) {
-        throw new Error("Worker not initialized");
-      }
-
-      const handles = fileHandles.map((fileHandle) => {
-        return {
-          fileHandle,
-          filename: fileHandle.name,
-        };
-      });
-
-      try {
-        const { error } = await wrapperRef.current({
-          handles,
-          session: sessionId,
-        });
-
-        if (error) {
-          throw new Error(error);
-        }
-
-        router.invalidate();
-      } catch (e) {
-        console.error("Error adding dataset: ", e);
-        toast.error("Error adding datasets", {
-          description: e instanceof Error ? e.message : "Unknown error",
-        });
-      }
-    },
-    [initPromise, router, sessionId],
-  );
-
-  return { onAddDatasetWorkerFn };
-};
-
 /**
  * Manage datasets.
  *
@@ -244,9 +178,8 @@ const useAddDatasetWorker = () => {
  * @component
  */
 function SourcesToolbar() {
-  const router = useRouter();
-
-  const { onAddDatasetWorkerFn } = useAddDatasetWorker();
+  const { onAddSources } = useSession();
+  const { db } = useDB();
 
   const onAddDataset = useCallback(async () => {
     const hasShowPicker = "showOpenFilePicker" in window;
@@ -284,7 +217,12 @@ function SourcesToolbar() {
 
       if (!fileHandles || fileHandles.length === 0) return;
 
-      await onAddDatasetWorkerFn(fileHandles);
+      await onAddSources(fileHandles);
+
+      for (const handle of fileHandles) {
+        const file = await handle.getFile();
+        await db?.registerFileHandle(file.name, file);
+      }
     } catch (e) {
       // ignore aborted request
       if (e instanceof Error && e.name === "AbortError") return;
@@ -293,11 +231,7 @@ function SourcesToolbar() {
         description: e instanceof Error ? e.message : undefined,
       });
     }
-  }, [onAddDatasetWorkerFn]);
-
-  const onRefresh = () => {
-    router.invalidate();
-  };
+  }, [db, onAddSources]);
 
   return (
     <>
@@ -309,9 +243,11 @@ function SourcesToolbar() {
         <Plus size={16} />
       </Button>
       <Button
+        disabled
         size="xs"
         variant="ghost"
-        onClick={onRefresh}
+        // #TODO: refresh sources
+        onClick={() => null}
       >
         <RefreshCw size={16} />
       </Button>

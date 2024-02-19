@@ -253,8 +253,6 @@ export class DuckDBInstance {
    * Should run in onDestroy lifecycle hook.
    */
   async dispose() {
-    console.log("Disposing DuckDBInstance");
-
     type RejectedConn = {
       status: "rejected";
       value: duckdb.AsyncDuckDBConnection;
@@ -487,71 +485,36 @@ export class DuckDBInstance {
         const cached = await queries.match(cacheKey);
 
         if (cached) {
-          // check if response header is expired
-          const cacheControl = cached.headers.get("Cache-Control");
-
-          const allHeaders = [...cached.headers.entries()];
-
-          console.log("cacheControl: ", cacheControl);
-          console.log("cached.headers: ", allHeaders);
-          console.log("response url", {
-            url: cached.url,
-            status: cached.status,
-            statusText: cached.statusText,
-            type: cached.type,
-          });
-
-          // if (cacheControl) {
-          //   try {
-
-          //   const maxAge = cacheControl.split("=")[1];
-
-          //   const maxAgeInt = parseInt(maxAge, 10);
-          //   if (maxAgeInt && maxAgeInt > 0) {
-          //     const now = new Date();
-          //     const cacheDate = new Date(cached.headers.get("Date") || now);
-          //     const expiration = new Date(cacheDate.getTime() + maxAgeInt * 1000);
-          //     if (expiration > now) {
-          //       const response = await cached.json();
-          //       return response;
-          //     }
-          //   }
-          // } catch (error) {
-          //   console.error("Error in cacheControl: ", error);
-          // }
-          // }
-
           const response = await cached.json();
           return response;
         }
       }
 
       // check cardinality incase the query is too large
-      try {
-        const cleanSQL = query.replace(/'/g, "''"); // escape single quotes
-        const explain = await conn.query(
-          `SELECT json_serialize_sql('${cleanSQL}', format:= true);`,
-        );
+      // try {
+      //   const cleanSQL = query.replace(/'/g, "''"); // escape single quotes
+      //   const explain = await conn.query(
+      //     `SELECT json_serialize_sql('${cleanSQL}', format:= true);`,
+      //   );
 
-        // @ts-expect-error: depedency issue with arrowjs/esnext-esm
-        const asJson = explain.toArray().map((row) => row.toJSON()) as Record<
-          string,
-          string
-        >[];
-        const firstRow = asJson[0];
-        const value = firstRow ? Object.values(firstRow)[0] : null;
+      //   // @ts-expect-error: depedency issue with arrowjs/esnext-esm
+      //   const asJson = explain.toArray().map((row) => row.toJSON()) as Record<
+      //     string,
+      //     string
+      //   >[];
+      //   const firstRow = asJson[0];
+      //   const value = firstRow ? Object.values(firstRow)[0] : null;
 
-        if (value) {
-          const parsed = JSON.parse(value);
-          console.log("parsed: ", parsed);
-          // const cardinality = parsed?.cardinality;
-          // if(cardinality && cardinality > 100000){
-          //   throw new Error("Query is too large to run in the browser. Please run in a local environment.");
-          // }
-        }
-      } catch (e) {
-        console.error("Error in explain: ", e);
-      }
+      //   if (value) {
+      //     const parsed = JSON.parse(value);
+      //     // const cardinality = parsed?.cardinality;
+      //     // if(cardinality && cardinality > 100000){
+      //     //   throw new Error("Query is too large to run in the browser. Please run in a local environment.");
+      //     // }
+      //   }
+      // } catch (e) {
+      //   console.error("Error in explain: ", e);
+      // }
 
       const queryResults = await conn.query(query);
 

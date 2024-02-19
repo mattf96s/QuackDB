@@ -9,12 +9,14 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { releaseProxy, type Remote, wrap } from "comlink";
-import { Loader2, PlayIcon } from "lucide-react";
+import { Loader2, MenuIcon, PlayIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useSpinDelay } from "spin-delay";
 import PanelHandle from "@/components/panel-handle";
+import { ThemeToggler } from "@/components/theme-toggle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DbProvider } from "@/context/db/provider";
 import { useDB } from "@/context/db/useDB";
 import { EditorProvider } from "@/context/editor/provider";
@@ -22,12 +24,12 @@ import { useEditor } from "@/context/editor/useEditor";
 import { QueryProvider } from "@/context/query/provider";
 import { useQuery } from "@/context/query/useQuery";
 import { SessionProvider } from "@/context/session/provider";
+import useBreakpoint from "@/hooks/use-breakpoints";
 import type { GetSessionWorker } from "@/workers/get-session-worker";
 import EditorPanel from "./-components/editor-panel";
 import Settings from "./-components/settings";
 import Sidepanel from "./-components/sidepanel";
 import { PanelProvider } from "./-context/panel/provider";
-
 export const Route = createFileRoute("/")({
   component: PlaygroundContainer,
   errorComponent: ErrorComponent,
@@ -157,15 +159,51 @@ const DBInitializer = memo(function DBInitializer(props: {
 });
 
 const Playground = memo(function Playground() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // we read this during render so we can't use a ref.
   const [el, setEl] = useState<HTMLElement | null>(null);
   useEffect(() => {
     const toolbarEl = document.getElementById("toolbar-portal");
-    console.log("toolbarEl", toolbarEl);
+
     if (toolbarEl) {
       setEl(toolbarEl);
     }
   }, []);
+
+  const isSmallerScreen = useBreakpoint("md");
+
+  if (isSmallerScreen) {
+    return (
+      <>
+        <div className="inline-flex h-16 w-full items-center justify-between px-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setMobileMenuOpen((s) => !s)}
+          >
+            <MenuIcon className="size-5" />
+          </Button>
+          <div className="inline-flex items-center gap-2">
+            <Toolbar />
+            <Settings />
+            <ThemeToggler />
+          </div>
+        </div>
+        <PanelGroup
+          className="rounded-none"
+          direction="vertical"
+        >
+          <EditorPanel />
+        </PanelGroup>
+        <MobileSidePanel
+          isOpen={mobileMenuOpen}
+          onOpenChange={(open) => setMobileMenuOpen(open)}
+        >
+          <Sidepanel />
+        </MobileSidePanel>
+      </>
+    );
+  }
   return (
     <>
       {/* put into the top level toolbar */}
@@ -182,39 +220,56 @@ const Playground = memo(function Playground() {
           el,
         )}
 
-      <div className="relative">
-        <div className="fixed bottom-0 left-16 right-0 top-[64px] flex flex-col">
-          {/* Panel provider is custom context while PanelGroup is unrelated component; poor naming. */}
+      {/* Panel provider is custom context while PanelGroup is unrelated component; poor naming. */}
 
-          <Suspense fallback={<p>Loading...</p>}>
-            <PanelGroup
-              className="rounded-none"
-              direction="horizontal"
-            >
-              <Panel
-                className="flex flex-col"
-                collapsedSize={5}
-                collapsible={true}
-                defaultSize={15}
-                maxSize={20}
-                minSize={15}
-              >
-                <Sidepanel />
-              </Panel>
-              <PanelHandle />
-              <Panel
-                className="flex flex-col"
-                minSize={50}
-              >
-                <EditorPanel />
-              </Panel>
-            </PanelGroup>
-          </Suspense>
-        </div>
-      </div>
+      <Suspense fallback={<p>Loading...</p>}>
+        <PanelGroup
+          className="rounded-none"
+          direction={isSmallerScreen ? "vertical" : "horizontal"}
+        >
+          <Panel
+            className="flex flex-col"
+            collapsedSize={5}
+            collapsible={true}
+            defaultSize={15}
+            maxSize={50}
+            minSize={15}
+          >
+            <Sidepanel />
+          </Panel>
+          <PanelHandle />
+          <Panel
+            className="flex flex-col"
+            minSize={50}
+          >
+            <EditorPanel />
+          </Panel>
+        </PanelGroup>
+      </Suspense>
     </>
   );
 });
+
+function MobileSidePanel(props: {
+  children: React.ReactNode;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { isOpen, onOpenChange } = props;
+  return (
+    <Sheet
+      open={isOpen}
+      onOpenChange={onOpenChange}
+    >
+      <SheetContent
+        forceMount
+        side="right"
+      >
+        {props.children}
+      </SheetContent>
+    </Sheet>
+  );
+}
 
 function Toolbar() {
   const { status, onCancelQuery, onRunQuery } = useQuery();

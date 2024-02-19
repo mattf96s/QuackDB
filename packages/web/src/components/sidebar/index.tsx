@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useMatchRoute, useRouterState } from "@tanstack/react-router";
-import { Code2Icon, HistoryIcon, MenuIcon } from "lucide-react";
+import { Code2Icon, MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button/button";
 import { cn } from "@/lib/utils";
 import { StyledLink } from "../ui/link/link";
@@ -21,27 +21,17 @@ const navigation = [
     href: "/",
     icon: Code2Icon,
   },
-  {
-    name: "Files",
-    href: "/files",
-    icon: HistoryIcon,
-  },
-  // {
-  //   name: "About",
-  //   href: "/about",
-  //   icon: InfoCircledIcon,
-  // },
 ] as const;
 
 export default function Sidebar() {
   return (
     <>
       <DesktopSidebar />
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:hidden">
+      {/* <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:hidden">
         <div className="container flex h-14 max-w-screen-2xl items-center px-0">
           <MobileMenu />
         </div>
-      </header>
+      </header> */}
     </>
   );
 }
