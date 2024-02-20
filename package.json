@@ -1,0 +1,36 @@
+{
+  "name": "quackdb",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@8.14.0",
+  "repository": {
+    "url": "https://github.com/mattf96s/quackdb"
+  },
+  "author": {
+    "name": "Matt Fainman"
+  },
+  "description": "QuackDB - An online DuckDB playground",
+  "scripts": {
+    "dev": "sst dev",
+    "build": "sst build",
+    "deploy": "sst deploy",
+    "remove": "sst remove",
+    "console": "sst console",
+    "typecheck": "tsc --noEmit",
+    "sso": "aws sso login --sso-session=d-93675d34f6",
+    "set-node-v": "pnpm env use --global 20",
+    "deploy-prod": "NODE_ENV=production sst deploy --stage production --profile quackdb"
+  },
+  "devDependencies": {
+    "sst": "2.40.3",
+    "aws-cdk-lib": "2.124.0",
+    "constructs": "10.3.0",
+    "typescript": "^5.3.3",
+    "@tsconfig/node20": "^20.1.2"
+  },
+  "workspaces": [
+    "packages/*",
+    "packages/web/*"
+  ]
+}
