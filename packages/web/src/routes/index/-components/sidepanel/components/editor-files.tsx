@@ -1,6 +1,17 @@
+import { useState } from "react";
 import { Pencil2Icon } from "@radix-ui/react-icons";
 import { ChevronDown, DotIcon, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
@@ -10,26 +21,13 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import type { CodeEditor } from "@/context/session/types";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
 import { useWrapper } from "./wrapper/context/useWrapper";
 
 export default function EditorSources() {
-  const { editors, dispatch } = useSession();
-
-  const onOpenFile = (path: string) => {
-    if (!dispatch) return;
-    const editor = editors.find((editor) => editor.path === path);
-
-    if (!editor) {
-      toast.error("Editor not found");
-      return;
-    }
-    dispatch({
-      type: "FOCUS_EDITOR",
-      payload: editor,
-    });
-  };
+  const { editors } = useSession();
 
   const { isCollapsed, onToggleIsCollapse } = useWrapper();
 
@@ -69,53 +67,132 @@ export default function EditorSources() {
           isCollapsed && "hidden",
         )}
       >
-        {editors.map((editor) => {
-          const { isFocused } = editor;
-          return (
-            <ContextMenu key={editor.path}>
-              <ContextMenuTrigger className="w-full">
-                <Button
-                  className={cn(
-                    "mx-5 flex h-6 w-full items-center justify-between gap-2 p-2 pl-0",
-                    isFocused && "bg-secondary",
-                  )}
-                  variant="ghost"
-                  onClick={() => onOpenFile(editor.path)}
-                >
-                  <div className="inline-flex items-center gap-1">
-                    <Pencil2Icon className="size-4" />
-                    <span
-                      className={cn(
-                        "truncate font-normal",
-                        // editor.isDirty && "text-yellow-700",
-                      )}
-                    >
-                      {editor.path}
-                    </span>
-                  </div>
-                  {editor.isOpen && <DotIcon className="size-4" />}
-                </Button>
-              </ContextMenuTrigger>
-              <ContextMenuContent className="w-64">
-                <ContextMenuItem inset>
-                  Open
-                  <ContextMenuShortcut>⌘O</ContextMenuShortcut>
-                </ContextMenuItem>
-                <ContextMenuItem inset>
-                  Rename
-                  <ContextMenuShortcut>⌘R</ContextMenuShortcut>
-                </ContextMenuItem>
-                <ContextMenuSeparator />
-                <ContextMenuItem inset>
-                  Delete
-                  <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
-                </ContextMenuItem>
-              </ContextMenuContent>
-            </ContextMenu>
-          );
-        })}
+        {editors.map((editor) => (
+          <CodeEditorItem
+            key={editor.path}
+            {...editor}
+          />
+        ))}
       </div>
     </div>
+  );
+}
+
+type DeleteModalProps = {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  path: string;
+};
+
+/**
+ * Delete the editor (not close the file).
+ */
+function DeleteEditorModal(props: DeleteModalProps) {
+  const { isOpen, onOpenChange, path } = props;
+
+  const { onDeleteEditor } = useSession();
+
+  return (
+    <AlertDialog
+      open={isOpen}
+      onOpenChange={onOpenChange}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the file.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={async () => await onDeleteEditor(path)}>
+            Continue
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+function CodeEditorItem(editor: CodeEditor) {
+  const { dispatch } = useSession();
+  const [showDelete, setShowDelete] = useState(false);
+
+  const onOpenFile = () => {
+    if (!dispatch) return;
+
+    if (!editor) {
+      toast.error("Editor not found");
+      return;
+    }
+    dispatch({
+      type: "FOCUS_EDITOR",
+      payload: editor,
+    });
+  };
+
+  const { isFocused } = editor;
+  return (
+    <>
+      <ContextMenu key={editor.path}>
+        <ContextMenuTrigger className="w-full">
+          <Button
+            className={cn(
+              "mx-5 flex h-6 w-full items-center justify-between gap-2 p-2 pl-0",
+              isFocused && "bg-secondary",
+            )}
+            variant="ghost"
+            onClick={onOpenFile}
+          >
+            <div className="inline-flex items-center gap-1">
+              <Pencil2Icon className="size-4" />
+              <span
+                className={cn(
+                  "truncate font-normal",
+                  // editor.isDirty && "text-yellow-700",
+                )}
+              >
+                {editor.path}
+              </span>
+            </div>
+            {editor.isOpen && <DotIcon className="size-4" />}
+          </Button>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-64">
+          <ContextMenuItem
+            inset
+            onClick={() => setShowDelete(true)}
+          >
+            Open
+            <ContextMenuShortcut>⌘O</ContextMenuShortcut>
+          </ContextMenuItem>
+          {/* #TODO */}
+          <ContextMenuItem
+            disabled
+            inset
+          >
+            Rename
+            <ContextMenuShortcut>⌘R</ContextMenuShortcut>
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem
+            onClick={() => setShowDelete(true)}
+            inset
+          >
+            Delete
+            <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+
+      {/* delete editor modal */}
+      <DeleteEditorModal
+        isOpen={showDelete}
+        onOpenChange={(open) => setShowDelete(open)}
+        path={editor.path}
+      />
+    </>
   );
 }
 

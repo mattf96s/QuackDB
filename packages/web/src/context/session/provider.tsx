@@ -3,7 +3,7 @@ import { releaseProxy, type Remote, wrap } from "comlink";
 import { toast } from "sonner";
 import type { FileEntry } from "@/constants";
 import { SessionContext } from "./context";
-import type { Action, SessionState } from "./types";
+import type { Action, SaveEditorProps, SessionState } from "./types";
 import type { SessionWorker } from "./worker";
 
 // Split up the context files to appease react-refresh.
@@ -31,22 +31,28 @@ function reducer(state: SessionState, action: Action): SessionState {
       return {
         ...state,
         editors: state.editors.filter(
-          (editor) => editor.path !== action.payload.name,
+          (editor) => editor.path !== action.payload.path,
         ),
       };
     }
     case "UPDATE_EDITOR": {
+      const { path, content } = action.payload;
+      const index = state.editors.findIndex((editor) => editor.path === path);
+      if (index === -1) return { ...state };
+      const editor = state.editors[index];
+      if (!editor) return { ...state };
       return {
         ...state,
-        editors: state.editors.map((editor) => {
-          if (editor.path === action.payload.name) {
-            return {
-              ...editor,
-              content: action.payload.content,
-            };
-          }
-          return editor;
-        }),
+        editors: [
+          ...state.editors.slice(0, index),
+          {
+            ...editor,
+            content,
+            isDirty: true,
+            isSaved: false,
+          },
+          ...state.editors.slice(index + 1),
+        ],
       };
     }
     case "ADD_SOURCES": {
@@ -107,6 +113,29 @@ function reducer(state: SessionState, action: Action): SessionState {
           {
             ...editor,
             isOpen: true,
+          },
+          ...state.editors.slice(index + 1),
+        ],
+      };
+    }
+    case "SAVE_EDITOR": {
+      const { path, content, handle } = action.payload;
+      const index = state.editors.findIndex((editor) => editor.path === path);
+      if (index === -1) return { ...state };
+      const editor = state.editors[index];
+      if (!editor) return { ...state };
+      return {
+        ...state,
+        editors: [
+          ...state.editors.slice(0, index),
+          {
+            ...editor,
+            content,
+            isFocused: true,
+            isDirty: false,
+            isSaved: true,
+            isNew: false, // if it was new, it's not new anymore (so we don't delete it when we close it).
+            handle,
           },
           ...state.editors.slice(index + 1),
         ],
@@ -180,6 +209,9 @@ const initialFileState: SessionState = {
   dispatch: null,
   onAddSources: async () => {},
   onAddEditor: async () => {},
+  onDeleteEditor: async () => {},
+  onSaveEditor: async () => {},
+  onCloseEditor: async () => {},
 };
 
 /**
@@ -412,15 +444,27 @@ function SessionProvider({ children }: SessionProviderProps) {
 
       if (!newEditor) throw new Error("Failed to add editor");
 
+      let content = "";
+
+      if (newEditor.handle) {
+        try {
+          const file = await newEditor.handle.getFile();
+          content = await file.text();
+        } catch (e) {
+          console.error("Failed to read file: ", e);
+        }
+      }
+
       dispatch({
         type: "ADD_EDITOR",
         payload: {
           ...newEditor,
+          content,
           isFocused: false,
           isOpen: true,
-          isDirty: true,
+          isDirty: false, // if it's new, it's not dirty. If we close it without saving, we should delete it.
           isSaved: false,
-          content: "",
+          isNew: true,
         },
       });
 
@@ -439,6 +483,131 @@ function SessionProvider({ children }: SessionProviderProps) {
     }
   }, [session.sessionId]);
 
+  /**
+   * Permanently delete the editor from the session.
+   *
+   * #TODO: maybe archive the editor instead of deleting it.
+   */
+  const onDeleteEditor = useCallback(
+    async (path: string) => {
+      if (!proxyRef.current) return;
+
+      try {
+        const result = await proxyRef.current.onDeleteEditor({
+          sessionId: session.sessionId,
+          path,
+        });
+
+        if (result.error) throw new Error(result.error);
+
+        dispatch({
+          type: "DELETE_EDITOR",
+          payload: {
+            path,
+          },
+        });
+      } catch (e) {
+        console.error("Failed to delete editor: ", e);
+        toast.error("Failed to delete editor", {
+          description: e instanceof Error ? e.message : undefined,
+        });
+        return;
+      }
+    },
+    [session.sessionId],
+  );
+
+  /**
+   * Permanently delete the editor from the session.
+   *
+   * #TODO: maybe archive the editor instead of deleting it.
+   */
+  const onSaveEditor = useCallback(
+    async (props: Pick<SaveEditorProps, "content" | "path">) => {
+      if (!proxyRef.current) return;
+
+      try {
+        const result = await proxyRef.current.onSaveEditor({
+          ...props,
+          sessionId: session.sessionId,
+        });
+
+        if (result.error) throw result.error;
+
+        if (!result.handle) throw new Error("Failed to save editor");
+
+        dispatch({
+          type: "SAVE_EDITOR",
+          payload: {
+            path: result.path,
+            content: result.content,
+            handle: result.handle,
+          },
+        });
+      } catch (e) {
+        console.error("Failed to save editor: ", e);
+        toast.error("Failed to save editor", {
+          description: e instanceof Error ? e.message : undefined,
+        });
+      }
+    },
+    [session.sessionId],
+  );
+
+  /**
+   * When we close the editor, we need to save the content to the handle.
+   *
+   * If the handle is new and not dirty, we need to delete the handle.
+   */
+  const onCloseEditor = useCallback(
+    async (path: string) => {
+      if (!proxyRef.current) return;
+
+      // find editor
+      const editor = session.editors.find((editor) => editor.path === path);
+
+      if (!editor) return;
+
+      // if it's new and not dirty, we should delete it when we close it.
+      // Otherwise, we end up with a bunch of empty / boiletplate files.
+      const shouldDelete = editor.isNew && !editor.isDirty;
+
+      if (shouldDelete) {
+        try {
+          const result = await proxyRef.current.onDeleteEditor({
+            path,
+            sessionId: session.sessionId,
+          });
+
+          if (result.error) throw result.error;
+
+          dispatch({
+            type: "DELETE_EDITOR",
+            payload: {
+              path,
+            },
+          });
+
+          return;
+        } catch (e) {
+          console.error("Failed to save editor: ", e);
+          toast.error("Failed to save editor", {
+            description: e instanceof Error ? e.message : undefined,
+          });
+          return;
+        }
+      }
+
+      dispatch({
+        type: "CLOSE_EDITOR",
+        payload: {
+          path,
+        },
+      });
+    },
+    [session.editors, session.sessionId],
+  );
+
   const value = useMemo(
     () => ({
       ...session,
@@ -446,8 +615,19 @@ function SessionProvider({ children }: SessionProviderProps) {
       dispatch,
       onAddSources,
       onAddEditor,
+      onDeleteEditor,
+      onSaveEditor,
+      onCloseEditor,
     }),
-    [onSessionChange, session, onAddSources, onAddEditor],
+    [
+      onSessionChange,
+      session,
+      onAddSources,
+      onAddEditor,
+      onDeleteEditor,
+      onSaveEditor,
+      onCloseEditor,
+    ],
   );
 
   return (

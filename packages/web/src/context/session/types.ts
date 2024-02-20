@@ -10,6 +10,8 @@ export type CodeEditor = Editor & {
   isDirty: boolean;
   handle: FileSystemFileHandle;
   content: string;
+  // when adding a new file, we should delete it if it's not saved
+  isNew: boolean;
 };
 
 export type SessionState = {
@@ -22,6 +24,20 @@ export type SessionState = {
   dispatch: React.Dispatch<Action> | null;
   onAddSources: (handles: FileSystemFileHandle[]) => Promise<void>;
   onAddEditor: () => Promise<void>;
+  onDeleteEditor: (path: string) => Promise<void>;
+  onSaveEditor: (props: SaveEditorProps) => Promise<void>;
+  onCloseEditor: (path: string) => Promise<void>;
+};
+
+// saving file
+export type SaveEditorProps = {
+  content: string;
+  path: string;
+};
+
+export type SaveEditorResponse = SaveEditorProps & {
+  handle: FileSystemFileHandle | undefined;
+  error: Error | null;
 };
 
 // session reducer
@@ -42,6 +58,15 @@ type OpenEditor = {
   type: "OPEN_EDITOR";
   payload: {
     path: string;
+  };
+};
+
+type SaveEditor = {
+  type: "SAVE_EDITOR";
+  payload: {
+    path: string;
+    content: string;
+    handle: FileSystemFileHandle;
   };
 };
 
@@ -67,14 +92,14 @@ type AddEditor = {
 type DeleteEditor = {
   type: "DELETE_EDITOR";
   payload: {
-    name: string;
+    path: string;
   };
 };
 
 type UpdateEditor = {
   type: "UPDATE_EDITOR";
   payload: {
-    name: string;
+    path: string;
     content: string;
   };
 };
@@ -104,6 +129,7 @@ export type Action =
   | AddSources
   | RemoveSource
   | OpenEditor
+  | SaveEditor
   | FocusEditor // tabs can be open without being focused
   | CloseEditor
   | AddEditor

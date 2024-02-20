@@ -1,4 +1,5 @@
 import "monaco-editor/esm/vs/basic-languages/pgsql/pgsql.contribution";
+import "monaco-editor/esm/vs/basic-languages/sql/sql.contribution";
 import {
   forwardRef,
   useEffect,
@@ -229,6 +230,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     );
 
     return () => {
+      // biome-ignore lint/complexity/noForEach: <explanation>
       disposables.forEach((disposable) => disposable.dispose());
     };
   }, [isReady, language]);
@@ -307,19 +309,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         keybindings: [KeyMod.CtrlCmd | KeyCode.KeyS],
         contextMenuGroupId: "navigation",
         contextMenuOrder: 1.5,
-        run: async (editor) => {
-          if (props.onSave) {
-            const selection = editor.getSelection();
-
-            const value =
-              selection?.isEmpty() || selection == null
-                ? editor.getValue()
-                : editor.getModel()?.getValueInRange(selection);
-
-            if (!value) return;
-            props.onSave(editor);
-          }
-        },
+        run: props.onSave ?? (() => {}),
       }),
     );
 
@@ -364,7 +354,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
       defaultLanguage={language}
       theme={isDark ? "vs-dark" : "vs-light"}
       options={{
-        fontFamily: "JetBrains Mono",
+        fontFamily: "'jetbrains-mono'",
         smoothScrolling: false,
         automaticLayout: true,
         fontSize: 16,

@@ -1,27 +1,16 @@
-import { memo } from "react";
 import { Code2, PlusIcon, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
 
-const OpenFileTabs = memo(function OpenFileTabs() {
-  const { editors, dispatch } = useSession();
+export default function OpenFileTabs() {
+  const { editors, dispatch, onCloseEditor } = useSession();
 
   const onOpenEditor = (path: string) => {
     if (!dispatch) return;
 
     dispatch({
       type: "FOCUS_EDITOR",
-      payload: {
-        path,
-      },
-    });
-  };
-
-  const closeFile = (path: string) => {
-    if (!dispatch) return;
-    dispatch({
-      type: "CLOSE_EDITOR",
       payload: {
         path,
       },
@@ -37,7 +26,9 @@ const OpenFileTabs = memo(function OpenFileTabs() {
             const isCurrent = editor.isFocused;
 
             return (
+              // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
               <div
+                role="button"
                 className={cn(
                   "flex h-8 flex-[0_0_auto] cursor-pointer flex-row flex-nowrap items-center gap-[1ch] bg-secondary p-[0.5rem_1ch] text-foreground transition-colors",
                   isCurrent && "bg-foreground text-secondary",
@@ -50,13 +41,15 @@ const OpenFileTabs = memo(function OpenFileTabs() {
                 <span className="text-sm">{editor.path}</span>
 
                 <button
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    closeFile(editor.path);
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCloseEditor(editor.path);
                   }}
                   className={cn(
-                    "bg-inherit px-0.5 py-0 hover:bg-gray-300",
-                    isCurrent && "hover:bg-gray-100/50",
+                    "rounded-sm bg-inherit px-0.5 py-0 hover:bg-gray-200 dark:hover:bg-gray-200/10",
+                    isCurrent &&
+                      "hover:bg-background/30 dark:hover:bg-gray-200",
                   )}
                 >
                   <X
@@ -75,7 +68,7 @@ const OpenFileTabs = memo(function OpenFileTabs() {
       <Separator orientation="vertical" />
     </div>
   );
-});
+}
 
 function AddNewFileButton() {
   const { onAddEditor } = useSession();
@@ -84,10 +77,9 @@ function AddNewFileButton() {
     <button
       onClick={onAddEditor}
       className="flex size-8 items-center justify-center hover:bg-gray-200"
+      type="button"
     >
       <PlusIcon className="size-5" />
     </button>
   );
 }
-
-export default OpenFileTabs;

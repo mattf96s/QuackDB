@@ -1,4 +1,4 @@
-# Bookmarks for ideas
+# Bookmarks of ideas / inspiration
 
 ## Code Patterns
 
@@ -60,17 +60,33 @@
   - snippet ideas
 
 - [Diagnostics](https://stackoverflow.com/questions/76792125/set-up-listeners-when-a-model-is-created-or-disposed-for-monaco-editor-react)
+- [PRQL](https://github.com/PRQL/prql/blob/main/web/playground/src/workbench/Workbench.jsx)
 
 ## Other DuckDB Projects
 
 - [Harlequin](https://github.com/tconbeer/harlequin)
 - [DuckDB Wasm Kit](https://github.com/holdenmatt/duckdb-wasm-kit/blob/main/src/files/exportFile.ts)
   - useful utilities
+- [Falcon vis](https://github.com/cmudig/falcon-vis/blob/main/falcon-vis/src/db/arrow.ts)
+
+## Other bookmarks I made a long time ago
+
+- [Harlequin](https://github.com/tconbeer/harlequin/blob/main/src/harlequin/autocomplete/completion.py)
+- <https://explain.dalibo.com/>
+- [Windmill](https://github.com/windmill-labs/windmill/blob/main/frontend/src/lib/components/Editor.svelte)
+- [Supbase Monaco Editor](https://github.com/supabase/supabase/blob/master/apps/studio/components/interfaces/SQLEditor/SQLEditor.tsx)
+- [Pyodid](https://github.com/cudbg/sqltutor/blob/main/src/pyodide.ts)
+  - run python typechecker in webworker
+  - [e.g.](https://github.com/xhluca/react-pyodide-template/blob/main/src/App.js)
+  - [Vite](https://github.com/vitejs/vite/discussions/12052)
 
 ## Utilities
 
 - [SQLFluff](https://github.com/sqlfluff/sqlfluff/blob/main/src/sqlfluff/dialects/dialect_duckdb.py)
 - [SQLParser-rs](https://github.com/search?q=duckdb+grammar&type=code&p=1#:~:text=1%20more%20match-,sqlparser%2Drs/sqlparser%2Drs,-%C2%B7%C2%A0src/dialect)
+- [Delta sharing browser](https://github.com/stikkireddy/delta-sharing-browser/blob/main/src/components/store/SqlStore.tsx)
+  - haven't looked too closely but interesting
+  - [completion](https://github.com/stikkireddy/delta-sharing-browser/blob/main/src/components/sql-editor/CodeEditor.tsx)
 
 ## LLM
 
@@ -78,8 +94,87 @@
 
 ## Unexplored Projects (need to look at)
 
+- [Huey](https://github.com/rpbouman/huey)
 - [ducklab](https://github.com/HassaanAkbar/ducklab/blob/main/src/core/data/duckdb_wasm/DuckdbDataSource.ts)
 - [duckling](https://github.com/l1xnan/duckling/blob/main/src/languages/duckdb/duckdb.ts)
   - has seemingly custom syntax highlighting
+- [CasualBI](https://github.com/copypastedeveloper/CasualBI/blob/main/casual.BI.ui/src/duckDb/useDuckDb.tsx)
+- [react-duckdb-table](https://github.com/shaunstoltz/duckdb-wasm/tree/master/packages/react-duckdb-table/src)
+- [pyodide](https://github.com/letterfowl/Platyrhynchos/blob/main/app/src/index.js)
+- [SimpleDB](https://github.com/nshiab/simple-data-analysis/blob/main/src/class/SimpleDB.ts)
 
+## Useful snippets
+
+Get a row from an arrow table
+
+```ts
 const row = arrow.get(rowIndex);
+```
+
+[Streaming implementation](https://github.com/runoshun/kysely-duckdb/blob/main/src/driver-wasm.ts)
+
+- I don't fully understand the implementation--> something to look into.
+
+```ts
+class DuckDBConnection implements DatabaseConnection {
+  readonly #conn: duckdb.AsyncDuckDBConnection;
+
+  constructor(conn: duckdb.AsyncDuckDBConnection) {
+    this.#conn = conn;
+  }
+
+  async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+    const { sql, parameters } = compiledQuery;
+    const stmt = await this.#conn.prepare(sql);
+
+    const result = await stmt.query(...parameters);
+    return this.formatToResult(result, sql);
+  }
+
+  async *streamQuery<R>(
+    compiledQuery: CompiledQuery
+  ): AsyncIterableIterator<QueryResult<R>> {
+    const { sql, parameters } = compiledQuery;
+    const stmt = await this.#conn.prepare(sql);
+
+    const iter = await stmt.send(...parameters);
+    const self = this;
+
+    const gen = async function* () {
+      for await (const result of iter) {
+        yield self.formatToResult(result, sql);
+      }
+    };
+    return gen();
+  }
+
+  private formatToResult<O>(
+    result: arrow.Table | arrow.RecordBatch,
+    sql: string
+  ): QueryResult<O> {
+    const isSelect =
+      result.schema.fields.length == 1 &&
+      result.schema.fields[0].name == "Count" &&
+      result.numRows == 1 &&
+      sql.toLowerCase().includes("select");
+
+    if (isSelect) {
+      return { rows: result.toArray() as O[] };
+    } else {
+      const row = result.get(0);
+      const numAffectedRows = row == null ? undefined : BigInt(row["Count"]);
+
+      return {
+        numUpdatedOrDeletedRows: numAffectedRows,
+        numAffectedRows,
+        insertId: undefined,
+        rows: [],
+      };
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    return this.#conn.close();
+  }
+}
+```

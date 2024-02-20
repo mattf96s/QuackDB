@@ -51,7 +51,8 @@
   ],
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "explicit",
+    "quickfix.biome": "explicit"
   },
   "eslint.codeAction.showDocumentation": {
     "enable": true,

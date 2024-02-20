@@ -95,6 +95,7 @@
     "zustand": "^4.5.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.5.3",
     "@tanstack/router-vite-plugin": "^1.16.5",
     "@types/eslint": "^8.56.2",
     "@types/node": "^20.11.19",

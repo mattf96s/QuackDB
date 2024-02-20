@@ -1,49 +1,56 @@
-# Vite DuckDB
+# QuackDB - _Online DuckDB SQL Playground (WIP)_
 
-AWS Login: <https://d-93675d34f6.awsapps.com/start#/>
+QuackDB is a privacy-preserving DuckDB SQL playground leveraging the Origin Private File System (OPFS) and Web Workers.
 
-## Editor improvements
+Online demo available at [app.quackdb.com](https://app.quackdb.com).
+
+Note: This project is a work in progress.
+
+## Features
+
+- Privacy-preserving SQL playground with no screen recording, or error monitoring. Fathom Analytics is used for basic page view tracking (but honor Do Not Track).
+
+## Tech Stack
+
+- [@DuckDB/Wasm](https://duckdb.org/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [@tanstack/router](https://tanstack.com/router/latest)
+- [Observable Plot](https://observablehq.com/plot/)
+- [OPFS](https://web.dev/file-system-access/)
+- [Comlink](https://github.com/GoogleChromeLabs/comlink)
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/)
+
+## TODO
+
+- [ ] Autocompletion and syntax highlighting
+- [ ] PWA / Offline support
+- [ ] Safari support 😁
+- [ ] Chart builder
+- [ ] Improved UI / charts / tables / etc.
+- [ ] Data import/export
+- [ ] Responsive design improvements
+- [ ] Performance improvements with Arrow
+- [ ] Different sessions / projects
+- [ ] Snippets / examples
+
+## Maybe
+
+- [ ] [NSQL](https://motherduck.com/blog/duckdb-text2sql-llm/) integration for natural language queries.
+- [ ] CoPilot integration for code suggestions.
+- [ ] JS / TS / Python / etc. support
 
 ## Credits
 
+- [CMU Data Interaction Group](https://github.com/cmudig)
+- [SQL Workbench](https://sql-workbench.com/)
+- [Evidence](https://github.com/evidence-dev/evidence)
 - [Malloy](https://github.com/malloydata/malloy)
 - [wa-sqlite](https://github.com/rhashimoto/wa-sqlite/blob/master/demo/demo-worker.js)
+- [Rill](https://github.com/rilldata/rill)
+- [Observable](https://github.com/observablehq)
 
-### SQL completion
+See [bookmarks.md](./bookmarks.md) for more interesting projects and references.
 
-- [Harlequin](https://github.com/tconbeer/harlequin/blob/main/src/harlequin/autocomplete/completion.py)
-- <https://explain.dalibo.com/>
-- [Windmill](https://github.com/windmill-labs/windmill/blob/main/frontend/src/lib/components/Editor.svelte)
-  <https://github.com/supabase/supabase/blob/master/apps/studio/components/interfaces/SQLEditor/SQLEditor.tsx>
-  <https://github.com/cudbg/sqltutor/blob/main/src/pyodide.ts>
-  <https://github.com/xhluca/react-pyodide-template/blob/main/src/App.js>
-  <https://dev.to/franciscomendes10866/how-to-use-service-workers-with-react-17p2>
-  <https://github.com/vitejs/vite/discussions/12052>
-  <https://github.com/nshiab/simple-data-analysis/blob/main/src/class/SimpleDB.ts>
-  <https://github.com/chartbrew/chartbrew/blob/master/client/src/containers/EmbeddedChart.js>
+## Feedback
 
-## Setup
-
-### Oddities
-
-We need to add `@types/wicg-file-system-access` to tsconfig to get types for the OPFS (Origin Private File System).
-
-## File Directory Structure
-
-```plaintext
-root
-  sessions
-    [session-id]
-      metadata.txt
-      datasets
-        stores.csv
-        sales.json
-        logs.parquet
-      editors
-        [editor-id]
-          editor-state.json (latest state of the editor; can be restored to this state)
-          versions
-            -- 2021-07-01.json (previous states of the editor)
-            -- 2021-07-02.json
-            -- 2021-07-03.json
-```
+If you have any feedback or questions about the DuckDB SQL Playground, feel free to reach out (especially since there are no error monitoring tools in place 😅).

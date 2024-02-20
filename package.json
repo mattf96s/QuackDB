@@ -10,7 +10,7 @@
   "author": {
     "name": "Matt Fainman"
   },
-  "description": "QuackDB is an local-first DuckDB playground",
+  "description": "QuackDB - An online DuckDB playground",
   "scripts": {
     "dev": "sst dev",
     "build": "sst build",

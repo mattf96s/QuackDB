@@ -17,17 +17,17 @@ export default function Chart(props: ChartProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const controller = new AbortController();
-    const { signal } = controller;
-
     if (containerRef.current === null) return;
 
+    if (!props.data) return;
+
     const { rows, columns } = props.data;
-    if (rows.length === 0) return;
-    if (columns.length === 0) return; // must have one column at least
+
+    if (rows.length === 0 && columns.length === 0) return;
 
     // find most likely x column
     let xColumn = columns.find((column) => column.type === "date");
+
     if (!xColumn && columns.length > 0) {
       // find first number column
       xColumn = columns.find(
@@ -60,26 +60,34 @@ export default function Chart(props: ChartProps) {
       });
     }
 
-    const plot = Plot.auto(rows, {
-      ...(xColumn ? { x: xColumn?.name } : {}),
-      ...(yColumn ? { y: yColumn?.name } : {}),
-      ...props.chartProps,
-    }).plot();
+    let plot: ((SVGSVGElement | HTMLElement) & Plot.Plot) | undefined;
 
-    signal.addEventListener("abort", () => {
-      plot.remove();
-    });
+    // #TODO: investigate and improve.
+    try {
+      plot = Plot.auto(rows, {
+        ...(xColumn ? { x: xColumn?.name } : {}),
+        ...(yColumn ? { y: yColumn?.name } : {}),
+        ...props.chartProps,
+      }).plot();
 
-    containerRef.current.append(plot);
+      containerRef.current.append(plot);
+    } catch (e) {
+      console.error("Error creating plot: ", e);
+      toast.error("Error creating plot", {
+        description: e instanceof Error ? e.message : "Unknown error",
+      });
+    }
+
     return () => {
-      controller.abort();
-      plot.remove();
+      if (plot) {
+        plot.remove();
+      }
     };
-  }, [props.chartProps, props.data]);
+  }, [props]);
 
   return (
     <div
-      className={cn("h-full w-full", props.containerClassName)}
+      className={cn("size-full", props.containerClassName)}
       ref={containerRef}
     />
   );

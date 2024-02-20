@@ -5,9 +5,7 @@ import DataGrid from "@/components/data-grid";
 import Chart from "@/components/plot";
 import { useTheme } from "@/components/theme-provider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { useQuery } from "@/context/query/useQuery";
 import { cn } from "@/lib/utils";
 
@@ -102,10 +100,13 @@ const TableViewer = memo(function TableViewer() {
   );
 });
 
+/**
+ * WIP
+ */
 const ChartViewer = memo(function ChartViewer() {
   const { rows, schema } = useQuery();
 
-  const [options, setOptions] = useState<AutoOptions>({});
+  const [options, _setOptions] = useState<AutoOptions>({});
 
   if (!rows.length || !schema.length) {
     return <EmptyResults />;
@@ -113,20 +114,11 @@ const ChartViewer = memo(function ChartViewer() {
 
   return (
     <div className="relative flex size-full flex-row gap-2 overflow-y-auto p-2">
-      <div>
+      <div className="w-full">
         <Chart
           data={{ rows, columns: schema }}
           containerClassName="px-10 py-4"
           chartProps={options}
-        />
-      </div>
-      <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold">Config</h3>
-        <Separator />
-        <Textarea
-          disabled
-          value={JSON.stringify(options, null, 2)}
-          onChange={(e) => setOptions(JSON.parse(e.target.value))}
         />
       </div>
     </div>

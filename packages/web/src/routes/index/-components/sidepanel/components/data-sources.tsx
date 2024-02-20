@@ -17,7 +17,6 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { useDB } from "@/context/db/useDB";
-import { useEditor } from "@/context/editor/useEditor";
 import { useSession } from "@/context/session/useSession";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
@@ -78,7 +77,6 @@ type SourceEntry = ReturnType<typeof useSession>["sources"][number];
 
 function DatesetItem(props: SourceEntry) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
-  const { editorRef } = useEditor();
 
   const { ext, mimeType, path } = props;
 
@@ -111,29 +109,29 @@ function DatesetItem(props: SourceEntry) {
     await copyToClipboard(snippet.trim());
 
     // insert into editor
-    const editor = editorRef.current?.getEditor();
-    if (editor) {
-      const selection = editor.getSelection();
+    // const editor = editorRef.current?.getEditor();
+    // if (editor) {
+    //   const selection = editor.getSelection();
 
-      editor.executeEdits("my-source", [
-        {
-          text: snippet,
-          forceMoveMarkers: false,
-          range: {
-            startLineNumber: selection?.selectionStartLineNumber || 1,
-            startColumn: selection?.selectionStartColumn || 1,
-            endLineNumber: selection?.endLineNumber || 1,
-            endColumn: selection?.endColumn || 1,
-          },
-        },
-      ]);
-    }
+    //   editor.executeEdits("my-source", [
+    //     {
+    //       text: snippet,
+    //       forceMoveMarkers: false,
+    //       range: {
+    //         startLineNumber: selection?.selectionStartLineNumber || 1,
+    //         startColumn: selection?.selectionStartColumn || 1,
+    //         endLineNumber: selection?.endLineNumber || 1,
+    //         endColumn: selection?.endColumn || 1,
+    //       },
+    //     },
+    //   ]);
+    // }
   };
   return (
     <ContextMenu key={path}>
-      <ContextMenuTrigger className="data-[state=open]:bg-gray-100">
+      <ContextMenuTrigger className="px-8 data-[state=open]:bg-gray-100">
         <Button
-          className="relative ml-5 flex h-6 w-48 items-center justify-start gap-2 p-2 pl-0"
+          className="relative flex h-6 w-full items-center justify-start gap-2 px-0 py-2"
           variant="ghost"
           onClick={onCopy}
         >

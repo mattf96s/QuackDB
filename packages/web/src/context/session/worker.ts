@@ -2,7 +2,12 @@
 import * as Comlink from "comlink";
 import { type Editor, type FileEntry, type Source } from "@/constants";
 import { newfileContents } from "./data/newfile-content";
-import type { CodeEditor, SessionState } from "./types";
+import type {
+  CodeEditor,
+  SaveEditorProps,
+  SaveEditorResponse,
+  SessionState,
+} from "./types";
 
 type SessionFiles = Pick<
   SessionState,
@@ -117,17 +122,22 @@ const onInitialize = async (sessionId: string) => {
       });
     }
 
-    const editorsWithContent: CodeEditor[] = editors.map((editor, i) => {
-      const isFirst = i === 0;
-      return {
+    const editorsWithContent: CodeEditor[] = [];
+
+    for await (const editor of editors) {
+      const isFirst = editorsWithContent.length === 0;
+      const file = await editor.handle.getFile();
+      const content = await file.text();
+      editorsWithContent.push({
         ...editor,
+        content,
         isOpen: isFirst,
         isFocused: isFirst,
         isSaved: true,
         isDirty: false,
-        content: "",
-      };
-    });
+        isNew: false,
+      });
+    }
 
     const sessionFiles: SessionFiles = {
       sessionId,
@@ -417,12 +427,143 @@ const onAddEditor = async (sessionId: string) => {
   }
 };
 
+// ------- Delete editor file ------- //
+
+/**
+ * Permanently delete the editor file.
+ *
+ * #TODO: archive the file instead of deleting it.
+ */
+async function onDeleteEditor({
+  sessionId,
+  path,
+}: {
+  sessionId: string;
+  path: string;
+}) {
+  postMessage({
+    type: "DELETE_EDITOR_START",
+    payload: {
+      sessionId,
+      path,
+    },
+  });
+
+  try {
+    const directory = await getSessionDirectory(sessionId);
+    await directory.removeEntry(path, { recursive: true });
+    postMessage({
+      type: "DELETE_EDITOR_COMPLETE",
+      payload: {
+        sessionId,
+        path,
+        error: null,
+      },
+    });
+
+    return {
+      sessionId,
+      path,
+      error: null,
+    };
+  } catch (e) {
+    console.error(`Error deleting editor file: ${path} `, e);
+    postMessage({
+      type: "DELETE_EDITOR_ERROR",
+      payload: {
+        sessionId,
+        path,
+        error: e instanceof Error ? e.message : "Unknown error",
+      },
+    });
+
+    return {
+      sessionId,
+      path,
+      error: e instanceof Error ? e.message : "Unknown error",
+    };
+  }
+}
+
+// ------- Save editor file ------- //
+
+async function onSaveEditor({
+  content,
+  path,
+  sessionId,
+}: SaveEditorProps & {
+  sessionId: string;
+}): Promise<SaveEditorResponse> {
+  postMessage({
+    type: "SAVE_FILE_START",
+    payload: {
+      sessionId,
+      path,
+    },
+  });
+
+  let draftHandle: FileSystemFileHandle | undefined;
+
+  try {
+    const directory = await getSessionDirectory(sessionId);
+
+    draftHandle = await directory.getFileHandle(path, {
+      create: true,
+    });
+
+    const syncHandle = await draftHandle.createSyncAccessHandle();
+
+    const textEncoder = new TextEncoder();
+
+    const buffer = textEncoder.encode(content);
+
+    syncHandle.truncate(0); // clear the file
+
+    syncHandle.write(buffer, {
+      at: 0,
+    });
+
+    syncHandle.flush();
+    syncHandle.close();
+
+    const payload: SaveEditorResponse = {
+      handle: draftHandle,
+      content,
+      path,
+      error: null,
+    };
+
+    postMessage({
+      type: "SAVED_FILE_COMPLETE",
+      payload,
+    });
+
+    return payload;
+  } catch (error) {
+    console.error(`Error saving file: ${path}: `, error);
+    const payload: SaveEditorResponse = {
+      handle: draftHandle,
+      content,
+      path,
+      error: error instanceof Error ? error : new Error("Unknown error"),
+    };
+    postMessage({
+      type: "SAVE_ERROR",
+      payload: payload,
+    });
+
+    return payload;
+  }
+}
+
 // ----------------------------//
 
 const methods = {
   onInitialize,
   onAddSource,
   onAddEditor,
+  onDeleteEditor,
+  onSaveEditor,
 };
 
 export type SessionWorker = typeof methods;
