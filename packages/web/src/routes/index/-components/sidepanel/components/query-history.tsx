@@ -1,26 +1,37 @@
-import { useEffect, useState } from "react";
-import { get, set } from "idb-keyval";
-import { ChevronDown, CopyCheck, History } from "lucide-react";
-import { z } from "zod";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CACHE_KEYS } from "@/constants";
+import { IDB_KEYS, queryMetaSchema, type QueryMeta } from "@/constants";
 import { useQuery } from "@/context/query/useQuery";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { del, get } from "idb-keyval";
+import {
+  ChevronDown,
+  ChevronRightIcon,
+  CopyCheck,
+  History,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { z } from "zod";
 import { useWrapper } from "./wrapper/context/useWrapper";
+/**
+ * Note: idb-keyval is probably the wrong tool for anything more advanced than this.
+ * Would be better to avoid keyval and use a proper indexeddb schema.
+ */
 
-const querySchema = z.array(z.string());
+const onGetStoredQueries = async (): Promise<QueryMeta[]> => {
+  // get stored queries from indexeddb
+  const stored = await get(IDB_KEYS.QUERY_HISTORY);
 
-const onGetStoredQueries = async () => {
-  const stored = await get(CACHE_KEYS.QUERY_HISTORY);
+  if (!stored) return [];
 
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
-      const validated = querySchema.safeParse(parsed);
+      const validated = z.array(queryMetaSchema).safeParse(parsed);
       if (validated.success) {
-        const unique = Array.from(new Set(validated.data));
-        return unique;
+        return validated.data;
       }
     } catch (e) {
       console.error("Failed to parse query history", e);
@@ -29,18 +40,11 @@ const onGetStoredQueries = async () => {
   return [];
 };
 
-const onAddQuery = async (query: string) => {
-  const stored = await onGetStoredQueries();
-  stored.unshift(query);
-  const unique = Array.from(new Set(stored));
-  await set(CACHE_KEYS.QUERY_HISTORY, JSON.stringify(unique));
-  return unique;
-};
-
 export default function QueryHistory() {
-  const [queries, setQueries] = useState<string[]>([]);
+  const [runs, setRuns] = useState<QueryMeta[]>([]);
 
   const { isCollapsed, onToggleIsCollapse } = useWrapper();
+  const { meta } = useQuery();
 
   const onCollapse = () => {
     onToggleIsCollapse(true);
@@ -50,30 +54,27 @@ export default function QueryHistory() {
     onToggleIsCollapse(false);
   };
 
-  const { sql, status } = useQuery();
+  const uniqueId = `${meta?.hash}_${meta?.created}`;
 
   useEffect(() => {
+    let ignore = false;
+
     const refresh = async () => {
       const stored = await onGetStoredQueries();
-      setQueries(stored);
+      if (ignore) return;
+      setRuns(stored);
     };
 
     refresh();
-  }, []);
 
-  const isRunning = status === "loading";
-
-  useEffect(() => {
-    if (isRunning && sql) {
-      onAddQuery(sql).then((unique) => {
-        setQueries(unique);
-      });
-    }
-  }, [sql, isRunning]);
+    return () => {
+      ignore = true;
+    };
+  }, [uniqueId]);
 
   const onClearHistory = async () => {
-    await set(CACHE_KEYS.QUERY_HISTORY, JSON.stringify([]));
-    setQueries([]);
+    await del(IDB_KEYS.QUERY_HISTORY);
+    setRuns([]);
   };
 
   return (
@@ -99,65 +100,113 @@ export default function QueryHistory() {
             size="xs"
             variant="ghost"
             onClick={onClearHistory}
-            disabled={queries.length === 0}
+            disabled={runs.length === 0}
           >
             <History size={16} />
           </Button>
         </div>
       </div>
-      {queries.length === 0 && (
-        <div className={cn("py-2 pl-6 text-sm text-gray-400")}>
-          No queries yet
-        </div>
+      {runs.length === 0 && (
+        <div className={cn("py-2 pl-6 text-sm text-gray-400")}>No runs yet</div>
       )}
-      <div
+
+      <motion.div
         className={cn(
-          "flex w-full flex-col gap-1 overflow-y-auto px-6 py-1 transition-all",
+          "flex w-full flex-col gap-1 divide-y divide-white/5 overflow-y-auto px-4 py-1 transition-all dark:divide-white/5",
           isCollapsed && "hidden",
         )}
+        role="list"
       >
-        {queries.map((query) => {
+        {runs.map((run) => {
+          const key = `${run.hash}_${run.created}`;
           return (
-            <HistoryItem
-              key={query}
-              query={query}
+            <RunHoverCard
+              key={key}
+              {...run}
             />
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }
 
-function HistoryItem(props: { query: string }) {
+function RunHoverCard(props: QueryMeta) {
   const { isCopied, copyToClipboard } = useCopyToClipboard({
     timeout: 1500,
   });
-  const { query } = props;
+  const { hash, sql, cacheHit, executionTime, error, status } = props;
+
+  const formatter = new Intl.NumberFormat("en-UK", {
+    maximumFractionDigits: 2,
+    compactDisplay: "short",
+  });
+
+  const duration = formatter.format(executionTime / 1000);
   return (
-    <div
+    <motion.li
+      layout
+      key={hash}
+      className={cn(
+        "relative flex items-center space-x-4 rounded-md px-2 py-4 transition-colors hover:cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800",
+        error &&
+          "bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-800 dark:hover:bg-yellow-700",
+      )}
       onClick={async () => {
         // copy to clipboard
-        await copyToClipboard(query);
+        await copyToClipboard(sql);
       }}
-      key={query}
-      className="relative flex w-full flex-row justify-between gap-4 rounded-sm p-1 hover:bg-gray-100 dark:hover:bg-gray-900"
     >
-      <div>
-        <button>
-          <span className="line-clamp-3 truncate text-wrap break-all text-left font-mono text-xs text-gray-700 dark:text-gray-100">
-            {query}
-          </span>
-        </button>
-      </div>
-      {isCopied && (
-        <div className="absolute inset-y-1 right-1">
-          <CopyCheck
-            className="bg-white text-green-700 dark:bg-green-700 dark:text-white"
-            size={18}
-          />
+      <div className="min-w-0 flex-auto">
+        <div className="flex items-center gap-x-3">
+          <div
+            className={cn(
+              "flex-none rounded-full p-1",
+              status === "SUCCESS" && "bg-green-500",
+              status === "ERROR" && "bg-yellow-500",
+            )}
+          >
+            <div className="size-2 rounded-full bg-current" />
+          </div>
+          <h2 className="min-w-0 text-sm font-semibold leading-6 dark:text-white">
+            <span className="truncate">{error ? "Error" : "Success"}</span>
+            <span className="px-1 text-gray-400">/</span>
+            <span className="whitespace-nowrap">{duration}s</span>
+            <span className="absolute inset-0" />
+          </h2>
+          <Badge
+            variant="outline"
+            color={cacheHit ? "green" : "blue"}
+          >
+            {cacheHit ? "CACHE" : "LIVE"}
+          </Badge>
         </div>
-      )}
-    </div>
+        {error && (
+          <div className="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
+            <span className="line-clamp-3 truncate text-wrap break-words text-left font-mono text-xs text-gray-700 dark:text-gray-100">
+              {error}
+            </span>
+          </div>
+        )}
+        <div className="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
+          <span className="line-clamp-3 truncate text-wrap break-words text-left font-mono text-xs text-gray-700 dark:text-gray-100">
+            {sql}
+          </span>
+          {isCopied && (
+            <div className="absolute inset-y-1 right-1">
+              <CopyCheck
+                className="bg-transparent text-green-700"
+                size={18}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <ChevronRightIcon
+        className="size-5 flex-none text-gray-400"
+        aria-hidden="true"
+      />
+    </motion.li>
   );
 }

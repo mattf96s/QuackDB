@@ -1,15 +1,13 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import type * as Plot from "@observablehq/plot";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -18,71 +16,99 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { useChart } from "../context/useChart";
+
+// Don't seem to have any effect on Plot.auto mark.
+const schemaOptions: {
+  value: NonNullable<Plot.ScaleOptions["scheme"]>;
+  label: string;
+}[] = [
+  {
+    label: "Category10",
+    value: "category10",
+  },
+  {
+    label: "Accent",
+    value: "accent",
+  },
+  {
+    label: "Dark2",
+    value: "dark2",
+  },
+  {
+    label: "Paired",
+    value: "paired",
+  },
+  {
+    label: "Pastel1",
+    value: "pastel1",
+  },
+  {
+    label: "Pastel2",
+    value: "pastel2",
+  },
+  {
+    label: "Set1",
+    value: "set1",
+  },
+  {
+    label: "Set2",
+    value: "set2",
+  },
+  {
+    label: "Set3",
+    value: "set3",
+  },
+  {
+    label: "Tableau10",
+    value: "tableau10",
+  },
+];
 
 export default function PlotSettings() {
+  const { scheme, _dispatch } = useChart();
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Report an issue</CardTitle>
-        <CardDescription>
-          What area are you having problems with?
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-6">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="area">Area</Label>
-            <Select defaultValue="billing">
-              <SelectTrigger id="area">
-                <SelectValue placeholder="Select" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="team">Team</SelectItem>
-                <SelectItem value="billing">Billing</SelectItem>
-                <SelectItem value="account">Account</SelectItem>
-                <SelectItem value="deployments">Deployments</SelectItem>
-                <SelectItem value="support">Support</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="security-level">Security Level</Label>
-            <Select defaultValue="2">
-              <SelectTrigger
-                id="security-level"
-                className="line-clamp-1 w-[160px] truncate"
+    <div className="pr-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>Chart Settings</CardTitle>
+          <CardDescription>Adjust the settings for your chart.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-full">
+              <Label htmlFor="scheme">Scheme</Label>
+              <Select
+                value={scheme}
+                onValueChange={(v) => {
+                  if (!v) return;
+                  _dispatch({
+                    type: "SET_SCHEME",
+                    payload: {
+                      scheme: v as Plot.ScaleOptions["scheme"],
+                    },
+                  });
+                }}
               >
-                <SelectValue placeholder="Select level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Severity 1 (Highest)</SelectItem>
-                <SelectItem value="2">Severity 2</SelectItem>
-                <SelectItem value="3">Severity 3</SelectItem>
-                <SelectItem value="4">Severity 4 (Lowest)</SelectItem>
-              </SelectContent>
-            </Select>
+                <SelectTrigger id="schema">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  {schemaOptions.map((option) => (
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                    >
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="subject">Subject</Label>
-          <Input
-            id="subject"
-            placeholder="I need help with..."
-          />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            placeholder="Please include all information relevant to your issue."
-          />
-        </div>
-      </CardContent>
-      <CardFooter className="justify-between space-x-2">
-        <Button variant="ghost">Cancel</Button>
-        <Button>Submit</Button>
-      </CardFooter>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

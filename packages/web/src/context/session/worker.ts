@@ -1,6 +1,12 @@
 /// <reference lib="webworker" />
 import * as Comlink from "comlink";
-import { type Editor, type FileEntry, type Source } from "@/constants";
+import { delMany } from "idb-keyval";
+import {
+  type Editor,
+  type FileEntry,
+  IDB_KEYS,
+  type Source,
+} from "@/constants";
 import { newfileContents } from "./data/newfile-content";
 import type {
   CodeEditor,
@@ -556,6 +562,68 @@ async function onSaveEditor({
   }
 }
 
+// ------- Burst cache ------- //
+
+const clearCacheAPI = async () => {
+  const cacheKeys = await caches.keys();
+  return Promise.all(cacheKeys.map((key) => caches.delete(key)));
+};
+
+const clearIDB = async () => {
+  const keys = Object.keys(IDB_KEYS);
+  return delMany(keys);
+};
+
+type OnBurstCacheResponse = {
+  sessionId: string;
+  error: string | null;
+};
+
+/**
+ * Clear the session cache (files, datasets, query results).
+ */
+async function onBurstCache({
+  sessionId,
+}: {
+  sessionId: string;
+}): Promise<OnBurstCacheResponse> {
+  postMessage({
+    type: "BURST_CACHE_START",
+    payload: null,
+  });
+
+  const root = await navigator.storage.getDirectory();
+
+  try {
+    const clearOPFS = root.removeEntry(sessionId, { recursive: true });
+
+    await Promise.all([clearOPFS, clearCacheAPI(), clearIDB()]);
+
+    postMessage({
+      type: "BURST_CACHE_COMPLETE",
+      payload: null,
+    });
+
+    return {
+      sessionId,
+      error: null,
+    };
+  } catch (e) {
+    console.error("Error bursting cache: ", e);
+    postMessage({
+      type: "BURST_CACHE_ERROR",
+      payload: {
+        error: e instanceof Error ? e.message : "Unknown error",
+      },
+    });
+
+    return {
+      sessionId,
+      error: e instanceof Error ? e.message : "Unknown error",
+    };
+  }
+}
+
 // ----------------------------//
 
 const methods = {
@@ -564,6 +632,7 @@ const methods = {
   onAddEditor,
   onDeleteEditor,
   onSaveEditor,
+  onBurstCache,
 };
 
 export type SessionWorker = typeof methods;

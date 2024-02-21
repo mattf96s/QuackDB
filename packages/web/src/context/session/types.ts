@@ -27,6 +27,7 @@ export type SessionState = {
   onDeleteEditor: (path: string) => Promise<void>;
   onSaveEditor: (props: SaveEditorProps) => Promise<void>;
   onCloseEditor: (path: string) => Promise<void>;
+  onBurstCache: () => Promise<void>;
 };
 
 // saving file
@@ -125,6 +126,10 @@ type RefreshEditor = {
   };
 };
 
+type RESET_SESSION = {
+  type: "RESET_SESSION";
+};
+
 export type Action =
   | AddSources
   | RemoveSource
@@ -137,4 +142,5 @@ export type Action =
   | UpdateEditor
   | OpenSession
   | SetStatus
-  | RefreshEditor;
+  | RefreshEditor
+  | RESET_SESSION;

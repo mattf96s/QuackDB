@@ -1,13 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type {
-  AsyncRecordBatchStreamReader,
-  RecordBatch,
-  StructRow,
-  TypeMap,
+import {
+  type AsyncRecordBatchStreamReader,
+  type RecordBatch,
+  type StructRow,
+  type TypeMap,
 } from "@apache-arrow/esnext-esm";
 import { type AsyncDuckDB, DuckDBDataProtocol } from "@duckdb/duckdb-wasm";
 import * as duckdb from "@duckdb/duckdb-wasm";
-import { getArrowTableSchema, type ResultColumn } from "@/utils/arrow/helpers";
+import {
+  CACHE_KEYS,
+  type FetchResultsReturn,
+  type QueryMeta,
+} from "@/constants";
+import { getArrowTableSchema } from "@/utils/arrow/helpers";
 import { getCompletions } from "@/utils/duckdb/autocomplete";
 import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
 
@@ -118,16 +123,6 @@ type DuckDBInstanceOptions = {
   extensions?: DuckDBExtension[]; // list of extensions to load
 };
 
-const CACHE_KEYS = {
-  queries: "queries",
-  files: "files",
-};
-
-export type FetchResultsReturn = {
-  rows: Record<string, unknown>[];
-  schema: ResultColumn[];
-};
-
 /**
  * Singleton class to manage a DuckDB instance and connections.
  *
@@ -160,10 +155,9 @@ export class DuckDBInstance {
   #extensions: DuckDBExtension[] = ["icu"]; // default is to load the icu extension
 
   // Cache settings
-  #shouldCache = true; // default is to allow caching
+  #shouldCache = false; // default is to not cache
   #cacheTimeout: number = 60 * 60 * 1000; // default is to cache for 1 hour
-  #queryCache: string = CACHE_KEYS.queries; // results from duckdb queries
-  #fileCache: string = CACHE_KEYS.files; // downloaded files from S3.
+  #queryCache: string = CACHE_KEYS.QUERY_RESULTS; // results from duckdb queries
 
   static getInstance(): DuckDBInstance {
     if (!DuckDBInstance.instance) {
@@ -208,10 +202,6 @@ export class DuckDBInstance {
 
   clearQueryCache() {
     return caches.delete(this.#queryCache);
-  }
-
-  clearFileCache() {
-    return caches.delete(this.#fileCache);
   }
 
   // replace with Valtio
@@ -270,13 +260,8 @@ export class DuckDBInstance {
       .catch((e) =>
         console.error("Failed to delete query cache in disposal: ", e),
       );
-    const fileCache = caches
-      .delete(this.#fileCache)
-      .catch((e) =>
-        console.error("Failed to delete file cache in disposal: ", e),
-      );
 
-    await Promise.all([queryCache, fileCache]);
+    await Promise.all([queryCache]);
 
     if (this.#db) {
       this.#db
@@ -437,20 +422,24 @@ export class DuckDBInstance {
    */
   async fetchResults({
     query,
-    noCache,
+    forceCache,
   }: {
     query: string;
-    noCache?: boolean;
+    forceCache?: boolean;
   }): Promise<FetchResultsReturn> {
+    // measure the time it takes to run the query
+    const t1 = performance.now();
+
     const conn = await this.#connect();
 
+    const cacheKey = await this.createHashKey(query);
+
     // Allow local override of caching
-    const shouldCache = this.#shouldCache && !noCache;
+    const shouldCache = this.#shouldCache || forceCache;
 
     try {
       if (shouldCache) {
         // ensure all relevant query parameters are included in the cache key
-        const cacheKey = await this.createHashKey(query);
 
         // check if the query results are already cached
         const queries = await caches.open(this.#queryCache);
@@ -458,35 +447,28 @@ export class DuckDBInstance {
 
         if (cached) {
           const response = await cached.json();
-          return response;
+
+          // add meta info
+          const t2 = performance.now();
+          const executionTime = t2 - t1;
+
+          const meta: QueryMeta = {
+            ...response.meta,
+            cacheHit: true,
+            executionTime,
+            status: "SUCCESS",
+            error: null,
+            sql: query,
+            created: new Date().toISOString(),
+            hash: cacheKey,
+          };
+
+          return {
+            ...response,
+            meta,
+          };
         }
       }
-
-      // check cardinality incase the query is too large
-      // try {
-      //   const cleanSQL = query.replace(/'/g, "''"); // escape single quotes
-      //   const explain = await conn.query(
-      //     `SELECT json_serialize_sql('${cleanSQL}', format:= true);`,
-      //   );
-
-      //   // @ts-expect-error: depedency issue with arrowjs/esnext-esm
-      //   const asJson = explain.toArray().map((row) => row.toJSON()) as Record<
-      //     string,
-      //     string
-      //   >[];
-      //   const firstRow = asJson[0];
-      //   const value = firstRow ? Object.values(firstRow)[0] : null;
-
-      //   if (value) {
-      //     const parsed = JSON.parse(value);
-      //     // const cardinality = parsed?.cardinality;
-      //     // if(cardinality && cardinality > 100000){
-      //     //   throw new Error("Query is too large to run in the browser. Please run in a local environment.");
-      //     // }
-      //   }
-      // } catch (e) {
-      //   console.error("Error in explain: ", e);
-      // }
 
       const queryResults = await conn.query(query);
 
@@ -515,13 +497,30 @@ export class DuckDBInstance {
 
       const schema = getArrowTableSchema(queryResults);
 
-      // @ts-expect-error: depedency issue with arrowjs/esnext-esm
       const rows = queryResults.toArray().map((row) => row.toJSON()) as Record<
         string,
         unknown
       >[];
 
-      const results = { rows, schema };
+      const t2 = performance.now();
+      const executionTime = t2 - t1;
+
+      const meta: QueryMeta = {
+        cacheHit: false,
+        executionTime,
+        sql: query,
+        error: "",
+        status: "SUCCESS",
+        hash: cacheKey,
+        created: new Date().toISOString(),
+      };
+
+      const results: FetchResultsReturn = {
+        rows,
+        schema,
+        meta,
+        count: rows.length,
+      };
 
       if (!shouldCache) return results;
 
@@ -540,21 +539,30 @@ export class DuckDBInstance {
         },
       });
 
-      const cacheKey = await this.createHashKey(query);
       const queries = await caches.open(this.#queryCache);
       await queries.put(cacheKey, response);
 
       return results;
     } catch (e) {
-      const isError = e instanceof Error;
-      if (isError) {
-        console.error("%c", {
-          name: e.name,
-          message: e.message,
-          stack: e.stack,
-        });
-      }
-      throw e;
+      const t2 = performance.now();
+      const executionTime = t2 - t1;
+
+      const payload: FetchResultsReturn = {
+        rows: [],
+        schema: [],
+        count: 0,
+        meta: {
+          cacheHit: false,
+          executionTime,
+          sql: query,
+          error: e instanceof Error ? e.message : "Unknown error",
+          status: "ERROR",
+          hash: "",
+          created: new Date().toISOString(),
+        },
+      };
+
+      return payload;
     } finally {
       await this.#cleanupConnection(conn);
     }
@@ -627,18 +635,18 @@ export class DuckDBInstance {
   async describeTableSchema({ table }: { table: string }) {
     const conn = await this.#connect();
     try {
-      type TableSchema = {
-        column_name: string;
-        column_type: string;
-        null: "YES" | "NO";
-        key: "PRI" | "NULL";
-        default: string | null;
-        extra: string;
-      };
+      // type TableSchema= {
+      //   column_name: string;
+      //   column_type: string;
+      //   null: "YES" | "NO";
+      //   key: "PRI" | "NULL";
+      //   default: string | null;
+      //   extra: string;
+      // };
 
-      const results = await conn.query<TableSchema>(`DESCRIBE ${table}`);
+      const results = await conn.query(`DESCRIBE ${table}`);
       // Not sure why we need to cast to TableSchema
-      const columns = results.toArray() as TableSchema[];
+      const columns = results.toArray();
 
       return columns.map(({ column_name, column_type }) => {
         return {

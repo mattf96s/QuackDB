@@ -1,65 +1,101 @@
-import { useCallback, useMemo, useReducer } from "react";
+import {
+  IDB_KEYS,
+  queryMetaSchema,
+  type FetchResultsReturn,
+  type QueryMeta,
+} from "@/constants";
 import { useDB } from "@/context/db/useDB";
 import useAbortController from "@/hooks/use-abortable";
-import type { FetchResultsReturn } from "@/modules/duckdb-singleton";
+import { get, set } from "idb-keyval";
+import { useCallback, useMemo, useReducer } from "react";
+import { z } from "zod";
 import { QueryContext } from "./context";
-import type { QueryState } from "./types";
+import type { QueryContextValue, QueryState } from "./types";
 
 type QueryProviderProps = { children: React.ReactNode };
 
 // Breakup everything into smaller files because of React Fast Refresh limitations.
 
-type State = Pick<QueryState, "rows" | "schema" | "status" | "error" | "sql">;
-type Action =
+type QueryAction =
   | {
-      type: "QUERY_START";
+      type: "RUN_START";
       payload: {
         sql: string;
       };
     }
   | {
-      type: "QUERY_SUCCESS";
-      payload: {
-        rows: QueryState["rows"];
-        schema: QueryState["schema"];
-      };
-    }
-  | {
-      type: "QUERY_ERROR";
-      paylod: {
-        error: string;
-      };
+      type: "RUN_STOP";
+      payload: FetchResultsReturn;
     };
 
-function queryReducer(state: State, action: Action): State {
+function queryReducer(state: QueryState, action: QueryAction): QueryState {
   switch (action.type) {
-    case "QUERY_START": {
+    case "RUN_START": {
       return {
         ...state,
-        error: null,
-        sql: action.payload.sql,
-        status: "loading",
+        ...action.payload,
+        status: "RUNNING",
       };
     }
-    case "QUERY_SUCCESS": {
+    case "RUN_STOP": {
       return {
         ...state,
-        status: "idle",
-        rows: action.payload.rows,
-        schema: action.payload.schema,
-      };
-    }
-    case "QUERY_ERROR": {
-      return {
-        ...state,
-        status: "error",
-        error: action.paylod.error,
-        rows: [],
-        schema: [],
+        ...action.payload,
+        status: "IDLE",
       };
     }
     default:
       return { ...state };
+  }
+}
+
+const initialState: QueryState = {
+  sql: "",
+  status: "IDLE",
+  rows: [],
+  schema: [],
+  meta: undefined,
+  count: 0,
+};
+
+async function onStoreRun(payload: FetchResultsReturn) {
+  try {
+    const newRunValidation = queryMetaSchema.safeParse(payload.meta);
+    if (!newRunValidation.success) return;
+
+    const runs: QueryMeta[] = [];
+
+    const history = await get(IDB_KEYS.QUERY_HISTORY);
+
+    if (history) {
+      try {
+        const parsed = JSON.parse(history);
+        const validated = z.array(queryMetaSchema).safeParse(parsed);
+        if (validated.success) {
+          runs.push(...validated.data);
+        }
+      } catch (e) {
+        console.error("Failed to parse query history", e);
+      }
+    }
+
+    // check if the query is already in the history or if the length is greater than 100
+    const exists = runs.find(
+      (r) =>
+        r.hash === newRunValidation.data.hash &&
+        r.created === newRunValidation.data.created,
+    );
+    if (exists) return;
+
+    if (runs.length > 100) {
+      runs.pop();
+    }
+
+    const newRuns = [{ ...newRunValidation.data }, ...runs];
+
+    await set(IDB_KEYS.QUERY_HISTORY, JSON.stringify(newRuns));
+  } catch (e) {
+    console.error("Failed to save SQL run: ", e);
   }
 }
 
@@ -69,11 +105,7 @@ function queryReducer(state: State, action: Action): State {
  */
 function QueryProvider({ children }: QueryProviderProps) {
   const [state, dispatch] = useReducer(queryReducer, {
-    status: "idle",
-    rows: [],
-    schema: [],
-    error: null,
-    sql: "",
+    ...initialState,
   });
 
   // abort controller which we can control imperatively
@@ -85,11 +117,12 @@ function QueryProvider({ children }: QueryProviderProps) {
     async (sql: string) => {
       if (!db) return;
 
-      dispatch({ type: "QUERY_START", payload: { sql } });
+      dispatch({ type: "RUN_START", payload: { sql } });
       try {
         const signal = getSignal();
         const doQuery = db.fetchResults({ query: sql });
 
+        // Only a user abort will throw an error. The response contains the error message if there is one.
         const isCancelledPromise = new Promise((_, reject) => {
           signal.addEventListener("abort", () => {
             reject(new DOMException("Aborted", "AbortError"));
@@ -98,14 +131,23 @@ function QueryProvider({ children }: QueryProviderProps) {
 
         const results = await Promise.race([doQuery, isCancelledPromise]);
 
-        const { rows, schema } = results as FetchResultsReturn;
+        const payload = results as FetchResultsReturn;
 
-        dispatch({ type: "QUERY_SUCCESS", payload: { rows, schema } });
-      } catch (error) {
-        console.error("Error running query: ", error);
-        const message =
-          error instanceof Error ? error.message : "Unknown error";
-        dispatch({ type: "QUERY_ERROR", paylod: { error: message } });
+        console.log("results", payload);
+
+        // store the query in indexeddb
+        await onStoreRun(payload);
+
+        dispatch({
+          type: "RUN_STOP",
+          payload,
+        });
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") {
+          // query was cancelled (not sure whether we should add this to the query history or not...)
+          dispatch({ type: "RUN_STOP", payload: initialState });
+          return;
+        }
       }
     },
     [db, getSignal],
@@ -114,12 +156,20 @@ function QueryProvider({ children }: QueryProviderProps) {
   const onCancelQuery = useCallback(
     (reason: string) => {
       abortSignal(reason);
-      dispatch({ type: "QUERY_ERROR", paylod: { error: reason } });
+      dispatch({
+        type: "RUN_STOP",
+        payload: {
+          count: 0,
+          rows: [],
+          schema: [],
+          meta: undefined,
+        },
+      });
     },
     [abortSignal],
   );
 
-  const value = useMemo(
+  const value: QueryContextValue = useMemo(
     () => ({
       ...state,
       onRunQuery,
