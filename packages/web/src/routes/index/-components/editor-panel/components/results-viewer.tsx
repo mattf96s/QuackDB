@@ -1,10 +1,15 @@
-import { memo, useState } from "react";
+import { memo, Suspense, useEffect, useMemo, useState } from "react";
 import { type AutoOptions } from "@observablehq/plot";
-import { AlertOctagon } from "lucide-react";
+import { Await, defer } from "@tanstack/react-router";
+import { AlertOctagon, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { getHighlighter } from "shiki";
 import DataGrid from "@/components/data-grid";
 import Chart from "@/components/plot";
 import { useTheme } from "@/components/theme-provider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@/context/query/useQuery";
 import { cn } from "@/lib/utils";
@@ -51,7 +56,7 @@ export default function ResultsView() {
         </TabsContent>
         <TabsContent
           value="json"
-          className="h-full pb-10"
+          className="h-full flex-col border-none p-0 data-[state=active]:flex"
         >
           <JsonViewer />
         </TabsContent>
@@ -133,14 +138,96 @@ function EmptyResults() {
   );
 }
 
+const limit = 100;
+
 function JsonViewer() {
   const { rows } = useQuery();
+  const { theme } = useTheme();
+  const [offset, setOffset] = useState(0);
+
+  const isDark = theme === "dark";
+
+  const json = useMemo(
+    () => JSON.stringify(rows.slice(offset, offset + limit), null, 2),
+    [rows, offset],
+  );
 
   return (
-    <div className="size-full max-h-full overflow-auto">
-      <pre className="whitespace-pre-wrap text-sm text-foreground">
-        {JSON.stringify(rows, null, 2)}
-      </pre>
+    <div className="flex h-full flex-1 flex-col justify-between gap-2 overflow-y-auto px-2 pb-4 xl:px-10">
+      <ScrollArea className="h-72">
+        <JsonContent
+          json={json}
+          isDark={isDark}
+        />
+      </ScrollArea>
+      <div className="flex flex-col gap-2">
+        <Separator />
+        <div className="mx-auto mt-2 inline-flex items-center gap-2">
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => setOffset(offset - limit)}
+            disabled={offset === 0}
+          >
+            <ChevronLeft className="size-5" />
+          </Button>
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => setOffset(offset + limit)}
+            disabled={offset + limit >= rows.length}
+          >
+            <ChevronRight className="size-5" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+async function highlightJson(json: string, isDark: boolean) {
+  return getHighlighter({
+    themes: [isDark ? "vitesse-dark" : "vitesse-light"],
+    langs: ["json"],
+  })
+    .then((highlighter) => {
+      const html = highlighter.codeToHtml(json, {
+        lang: "json",
+        theme: isDark ? "vitesse-dark" : "vitesse-light",
+      });
+
+      /* biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation> */
+      return <div dangerouslySetInnerHTML={{ __html: html }} />;
+    })
+    .catch((error) => {
+      console.error("Error in highlightJson: ", error);
+      return <p className="text-red-500 dark:text-red-200">{error}</p>;
+    });
+}
+
+function JsonContent({ isDark, json }: { isDark: boolean; json: string }) {
+  const promise = defer(highlightJson(json, isDark));
+
+  return (
+    <Suspense fallback={<DeferFallback />}>
+      <Await promise={promise}>{(p) => p}</Await>
+    </Suspense>
+  );
+}
+
+function DeferFallback() {
+  const [message, setMessage] = useState("Loading...");
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setMessage("Making it pretty...");
+    }, 1000);
+    return () => clearTimeout(id);
+  }, []);
+  return (
+    <div className="inline-flex items-center gap-2">
+      <p>{message}</p>
+      <Loader2 className="size-5 animate-spin" />
     </div>
   );
 }

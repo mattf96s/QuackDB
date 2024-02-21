@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import type { OnChange } from "@monaco-editor/react";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
@@ -36,9 +36,7 @@ function EditorPanel() {
         </div>
       </PanelResizeHandle>
       <Panel minSize={10}>
-        <Suspense fallback={<p>Loading...</p>}>
-          <ResultsView />
-        </Suspense>
+        <ResultsView />
       </Panel>
     </PanelGroup>
   );
@@ -93,14 +91,9 @@ function CurrentEditor() {
 
       const content = editor.getValue();
 
-      console.log("onSave", content);
-
       const model = editor.getModel();
-      const value = model?.getValue();
 
-      console.log("onSave model: ", value);
-
-      if (!model) return;
+      if (model == null) return;
 
       setIsSaving(true);
 

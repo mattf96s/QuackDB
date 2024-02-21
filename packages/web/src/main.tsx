@@ -19,6 +19,7 @@ declare module "@tanstack/react-router" {
 }
 
 // Render our app!
+// biome-ignore lint/style/noNonNullAssertion: <explanation>
 const rootElement = document.getElementById("app")!;
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);

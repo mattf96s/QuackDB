@@ -291,6 +291,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     );
 
     return () => {
+      // biome-ignore lint/complexity/noForEach: <explanation>
       disposables.forEach((disposable) => disposable.dispose());
     };
   }, [isReady, onRunQuery]);
@@ -314,6 +315,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     );
 
     return () => {
+      // biome-ignore lint/complexity/noForEach: <explanation>
       disposables.forEach((disposable) => disposable.dispose());
     };
   }, [props, isReady]);

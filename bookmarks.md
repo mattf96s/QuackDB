@@ -1,5 +1,13 @@
 # Bookmarks of ideas / inspiration
 
+## Urgent
+
+- [Vega / Apache](https://observablehq.com/@vega/vega-lite-and-apache-arrow-no-plugin)
+- [DeepHaven](https://github.com/deephaven/web-client-ui/blob/e1c1585f688f9a5f805347fff5b1d95eaf75d065/packages/dashboard-core-plugins/src/panels/NotebookPanel.tsx#L6)
+  - [Monaco](https://github.com/deephaven/web-client-ui/blob/0a2f054591d04dd32c4919ce90fd538638e0b563/packages/console/src/monaco/MonacoProviders.tsx#L139)
+- [SqlMesh](https://github.com/TobikoData/sqlmesh/blob/main/web/client/src/context/editor.ts)
+- [Tailwind background](https://bg.ibelick.com/?utm_source=tailkits&utm_medium=referral&utm_campaign=components)
+
 ## Code Patterns
 
 - [VsCode Async](https://github.com/microsoft/vscode/blob/main/src/vs/base/common/async.ts#L24)
@@ -39,6 +47,7 @@
   - [Inline completions](https://github.com/microsoft/vscode-extension-samples/blob/main/inline-completions/src/extension.ts)
   - [Semantic tokens](https://github.com/microsoft/vscode-extension-samples/tree/main/semantic-tokens-sample)
     - can use serialize_auto_json in DuckDB to get semantic tokens.xw
+  - [TypeCell](https://github.com/TypeCellOS/TypeCell/blob/staging/packages/frame/src/MonacoElement.tsx)
 
 ## Autocompletion
 
@@ -56,6 +65,7 @@
   - has syntax
 - [Grafana](https://github.com/grafana/grafana/blob/main/packages/grafana-ui/src/components/Monaco/suggestions.ts)
 - [SQLPad](https://github.com/DiscoverForever/monaco-sqlpad/blob/master/src/core/snippets.js)
+- [CodeMirror](https://github.com/sekuel/codemirror-sql-duckdb)
 
   - snippet ideas
 
@@ -68,6 +78,12 @@
 - [DuckDB Wasm Kit](https://github.com/holdenmatt/duckdb-wasm-kit/blob/main/src/files/exportFile.ts)
   - useful utilities
 - [Falcon vis](https://github.com/cmudig/falcon-vis/blob/main/falcon-vis/src/db/arrow.ts)
+- [Observable data tools](https://github.com/RandomFractals/observable-data-tools/blob/main/notebooks/observable/duckdb-data-tables.omd)
+- [DuckDB Proxy](https://www.goblgobl.com/docs/duckdb-proxy/)
+
+## Charting
+
+- [Excalichart](https://github.com/excalichart/excalichart/blob/main/src/lib/io/FileStreamer.ts)
 
 ## Other bookmarks I made a long time ago
 
@@ -102,6 +118,12 @@
 - [react-duckdb-table](https://github.com/shaunstoltz/duckdb-wasm/tree/master/packages/react-duckdb-table/src)
 - [pyodide](https://github.com/letterfowl/Platyrhynchos/blob/main/app/src/index.js)
 - [SimpleDB](https://github.com/nshiab/simple-data-analysis/blob/main/src/class/SimpleDB.ts)
+- [percival](https://github.com/ekzhang/percival/blob/main/src/lib/notebook.ts)
+- [SqlEditor](https://github.com/tabixio/tabix/blob/54198f2b081a11034f34f5ca469e17168159ab06/app/src/components/Dashboard/EditorTabPage/SqlEditor/SimpleEditor.tsx)
+- [egret](https://github.com/egret-labs/egret-ui-editor-opensource/blob/b36ec6a7490d5e086e72143e005f48450a1b72ce/src/vs/base/common/actions.ts)
+- [SQLens](https://github.com/oslabs-beta/SQLens)
+- [DBGate](https://github.com/dbgate/dbgate/blob/master/packages/web/src/query/SqlEditor.svelte)
+- [legend-studio](https://github.com/finos/legend-studio/blob/master/packages/legend-query-builder/src/components/explorer/QueryBuilderMilestoningEditor.tsx)
 
 ## Useful snippets
 

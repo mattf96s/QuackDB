@@ -79,7 +79,7 @@
     src: url("/fonts/Geist/GeistVariableVF.woff2") format("woff2");
   }
   @font-face {
-    font-family: 'jetbrains-mono';
+    font-family: 'jetbrains-mono', monospace;
     font-weight: 300 900;
     font-style: normal;
     font-display: swap;
@@ -99,8 +99,7 @@
 }
 
 code {
-  font-family: var(--font-jetbrains-mono);
-  font-size: 0.875rem;
+  @apply font-mono;
 }
 
 @media (max-width: 640px) {
