@@ -15,6 +15,7 @@ import { useSpinDelay } from "spin-delay";
 import PanelHandle from "@/components/panel-handle";
 import { ThemeToggler } from "@/components/theme-toggle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DbProvider } from "@/context/db/provider";
@@ -25,6 +26,7 @@ import { QueryProvider } from "@/context/query/provider";
 import { useQuery } from "@/context/query/useQuery";
 import { SessionProvider } from "@/context/session/provider";
 import useBreakpoint from "@/hooks/use-breakpoints";
+import { cn } from "@/lib/utils";
 import type { GetSessionWorker } from "@/workers/get-session-worker";
 import EditorPanel from "./-components/editor-panel";
 import Settings from "./-components/settings";
@@ -229,7 +231,7 @@ function Playground() {
         <PanelHandle />
         <Panel
           minSize={15}
-          className="max-h-full"
+          className="max-h-full max-w-full"
         >
           <EditorPanel />
         </Panel>
@@ -239,6 +241,7 @@ function Playground() {
         createPortal(
           <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
             {/* <PresetSelector presets={presets} /> */}
+            <QueryMeta />
 
             <Toolbar />
             <Settings />
@@ -247,6 +250,45 @@ function Playground() {
           </div>,
           el,
         )}
+    </>
+  );
+}
+
+function QueryMeta() {
+  const { meta, status } = useQuery();
+
+  const seconds = Math.floor(meta?.executionTime ?? 0) / 1000;
+  const formattedTime = seconds.toFixed(2);
+
+  if (status === "RUNNING") {
+    return (
+      <Badge
+        variant="secondary"
+        className="text-xs tabular-nums text-muted-foreground"
+      >
+        <Loader2 className="size-4 animate-spin" />
+      </Badge>
+    );
+  }
+
+  return (
+    <>
+      <Badge
+        variant="outline"
+        className={cn(
+          "border-green-300 bg-green-100 text-xs tabular-nums text-muted-foreground",
+          meta?.cacheHit && "border-orange-300 bg-orange-100",
+        )}
+      >
+        {meta?.cacheHit ? "cached" : "live"}{" "}
+      </Badge>
+
+      <Badge
+        variant="outline"
+        className="text-xs tabular-nums text-muted-foreground"
+      >
+        {formattedTime}s
+      </Badge>
     </>
   );
 }
@@ -278,6 +320,7 @@ function Toolbar() {
 
   // run the whole file contents rather than the selected text;
   // Don't wait;
+
   const onRun = useCallback(async () => {
     const controller = new AbortController();
     const signal = controller.signal;
@@ -316,7 +359,7 @@ function Toolbar() {
   useHotkeys(
     "mod+enter",
     () => {
-      if (status === "loading") {
+      if (status === "RUNNING") {
         onCancelQuery("cancelled");
       } else {
         onRun();
@@ -325,33 +368,20 @@ function Toolbar() {
     [status, onCancelQuery, onRun],
   );
 
-  const isLoading = useSpinDelay(status === "loading", {
+  const isLoading = useSpinDelay(status === "RUNNING", {
     delay: 0,
     minDuration: 200,
   });
 
-  const isError = status === "error";
-
   if (isLoading) {
     return (
       <Button
+        size="sm"
         onClick={() => onCancelQuery("cancelled")}
         className="h-7 w-20"
         variant="destructive"
       >
         Cancel
-        <Loader2 className="ml-2 size-4 animate-spin" />
-      </Button>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Button
-        onClick={onRun}
-        className="h-7 w-20"
-      >
-        Retry
       </Button>
     );
   }

@@ -1,10 +1,25 @@
-export const CACHE_KEYS = {
-  QUERY_HISTORY: "query-history",
-  SQL_EDITOR_CONTENT: "sql-editor-content",
-  THEME: "theme",
+import { z } from "zod";
+import type { ResultColumn } from "./utils/arrow/helpers";
+
+/**
+ * IndexedDB cache (accessed through idb-keyval).
+ */
+export const IDB_KEYS = {
+  QUERY_HISTORY: "query-history", // the actual SQL query runs
 };
 
+/**
+ * Caches API keys.
+ */
+export const CACHE_KEYS = {
+  QUERY_RESULTS: "query-result", // the result of the SQL query for caching in caches.
+};
+
+export const LOCAL_STORAGE_KEYS = {};
+
 export const sidebarWidth = 20;
+
+// ----------- File System ------------ //
 
 export type SourceFileExt =
   | "csv"
@@ -104,3 +119,33 @@ export type FileEntry<T extends FileKind> = T extends "SOURCE"
 
 export type Source = FileEntry<"SOURCE">;
 export type Editor = FileEntry<"EDITOR">;
+
+// ----------- Query ------------ //
+
+/**
+ * Query meta Zod schema
+ */
+export const queryMetaSchema = z.object({
+  cacheHit: z.boolean(),
+  executionTime: z.number(),
+  sql: z.string(),
+  error: z.string().nullable(),
+  status: z.enum(["IDLE", "SUCCESS", "ERROR", "CANCELLED"]),
+  hash: z.string(),
+  created: z.string().datetime(),
+});
+
+/**
+ * Store metadata about the query execution (WIP)
+ */
+export type QueryMeta = z.infer<typeof queryMetaSchema>;
+
+/**
+ * Return type for the fetchResults function in the DuckDB singleton.
+ */
+export type FetchResultsReturn = {
+  rows: Record<string, unknown>[];
+  schema: ResultColumn[];
+  meta: QueryMeta | undefined;
+  count: number;
+};

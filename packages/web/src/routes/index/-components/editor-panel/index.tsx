@@ -15,7 +15,7 @@ import ResultsView from "./components/results-viewer";
 function EditorPanel() {
   return (
     <PanelGroup
-      className="flex flex-col"
+      className="flex w-full flex-col"
       direction="vertical"
     >
       <Panel

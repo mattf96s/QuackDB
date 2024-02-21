@@ -191,6 +191,9 @@ function reducer(state: SessionState, action: Action): SessionState {
         ],
       };
     }
+    case "RESET_SESSION": {
+      return { ...initialFileState };
+    }
     default: {
       console.warn(`Unhandled file action type: ${action}`);
       return { ...state };
@@ -212,6 +215,7 @@ const initialFileState: SessionState = {
   onDeleteEditor: async () => {},
   onSaveEditor: async () => {},
   onCloseEditor: async () => {},
+  onBurstCache: async () => {},
 };
 
 /**
@@ -608,6 +612,34 @@ function SessionProvider({ children }: SessionProviderProps) {
     [session.editors, session.sessionId],
   );
 
+  /**
+   * Reset the session by deleting all files and query results and reloading the window.
+   */
+
+  const onBurstCache: SessionState["onBurstCache"] = useCallback(async () => {
+    if (!proxyRef.current) return;
+
+    const { sessionId } = session;
+
+    try {
+      const result = await proxyRef.current.onBurstCache({ sessionId });
+
+      if (result.error) throw result.error;
+
+      dispatch({
+        type: "RESET_SESSION",
+      });
+
+      window.location.reload();
+    } catch (e) {
+      console.error("Failed to clear session: ", e);
+      toast.error("Failed to clear the session", {
+        description: e instanceof Error ? e.message : undefined,
+      });
+      return;
+    }
+  }, [session]);
+
   const value = useMemo(
     () => ({
       ...session,
@@ -618,6 +650,7 @@ function SessionProvider({ children }: SessionProviderProps) {
       onDeleteEditor,
       onSaveEditor,
       onCloseEditor,
+      onBurstCache,
     }),
     [
       onSessionChange,
@@ -627,6 +660,7 @@ function SessionProvider({ children }: SessionProviderProps) {
       onDeleteEditor,
       onSaveEditor,
       onCloseEditor,
+      onBurstCache,
     ],
   );
 

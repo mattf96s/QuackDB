@@ -1,5 +1,7 @@
 import { createContext } from "react";
-import type { QueryState } from "./types";
+import type { QueryContextValue } from "./types";
 
 // Breakup everything into smaller files because of React Fast Refresh limitations.
-export const QueryContext = createContext<QueryState | undefined>(undefined);
+export const QueryContext = createContext<QueryContextValue | undefined>(
+  undefined,
+);

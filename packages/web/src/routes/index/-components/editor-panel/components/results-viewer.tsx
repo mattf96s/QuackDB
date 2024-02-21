@@ -17,12 +17,12 @@ import { cn } from "@/lib/utils";
 export default function ResultsView() {
   const { error } = useQuery();
   return (
-    <div className="size-full p-4">
+    <div className="size-full max-w-full pr-20">
       <Tabs
         defaultValue="table"
-        className="size-full space-y-6"
+        className="size-full space-y-6 px-4"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex w-full max-w-full flex-wrap items-center justify-between py-4">
           <TabsList>
             {["Table", "Chart", "Json"].map((value) => (
               <TabsTrigger
@@ -34,6 +34,9 @@ export default function ResultsView() {
               </TabsTrigger>
             ))}
           </TabsList>
+          <div>
+            <div id="results-viewer-toolbar" />
+          </div>
         </div>
         {error && (
           <div className="w-full px-4 py-10">
@@ -44,7 +47,7 @@ export default function ResultsView() {
         )}
         <TabsContent
           value="table"
-          className="h-full max-w-full border-none p-0 pb-20 outline-none"
+          className="h-full flex-col border-none p-0 pb-20 data-[state=active]:flex"
         >
           <TableViewer />
         </TabsContent>
@@ -73,7 +76,7 @@ function ErrorNotification(props: { error: string }) {
       variant={isDark ? "default" : "destructive"}
       className={cn(
         "group flex flex-col gap-3 hover:shadow hover:dark:border-card-foreground/30",
-        "space-y-1 font-mono dark:bg-accent dark:text-accent-foreground",
+        "min-w-24 space-y-1 font-mono dark:bg-accent dark:text-accent-foreground",
       )}
     >
       <AlertTitle>
@@ -90,16 +93,17 @@ function ErrorNotification(props: { error: string }) {
 }
 
 const TableViewer = memo(function TableViewer() {
-  const { rows, schema } = useQuery();
+  const { rows, schema, meta } = useQuery();
 
   const noQuery = rows.length === 0 && schema.length === 0;
 
   return (
-    <div className="size-full max-h-full max-w-full overflow-auto">
+    <div className="flex h-full flex-1 flex-col justify-between gap-2 overflow-y-auto px-2 pb-4 xl:px-10">
       {noQuery && <EmptyResults />}
       <DataGrid
         rows={rows}
         schema={schema}
+        meta={meta}
       />
     </div>
   );
@@ -118,14 +122,11 @@ const ChartViewer = memo(function ChartViewer() {
   }
 
   return (
-    <div className="relative flex size-full flex-row gap-2 overflow-y-auto p-2">
-      <div className="w-full">
-        <Chart
-          data={{ rows, columns: schema }}
-          containerClassName="px-10 py-4"
-          chartProps={options}
-        />
-      </div>
+    <div className="flex h-full max-w-full flex-col justify-between gap-2 overflow-y-auto px-2 pb-4 xl:px-10">
+      <Chart
+        data={{ rows, columns: schema }}
+        chartProps={options}
+      />
     </div>
   );
 });

@@ -52,7 +52,7 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
     "source.fixAll.eslint": "explicit",
-    "quickfix.biome": "explicit"
+    "source.organizeImports": "explicit"
   },
   "eslint.codeAction.showDocumentation": {
     "enable": true,
@@ -78,7 +78,7 @@
   "editor.formatOnSaveMode": "file",
   "editor.formatOnSave": true,
   "editor.wordWrapColumn": 100,
-  "editor.defaultFormatter": "biomejs.biome",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[typescript]": {
     "editor.tabSize": 2,
     "editor.defaultFormatter": "esbenp.prettier-vscode",

@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { format } from "date-fns";
-import { ChevronLeftIcon, ChevronRightIcon, Loader2 } from "lucide-react";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -9,6 +15,7 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -21,17 +28,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { FetchResultsReturn } from "@/modules/duckdb-singleton";
+import type { FetchResultsReturn } from "@/constants";
 import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
 
 export default function DataGrid(props: FetchResultsReturn) {
   const { rows, schema } = props;
   const [offset, setOffset] = useState(0);
-  const [count, setCount] = useState(0);
   const [limit, setLimit] = useState(10);
-  // const [columns, setColumns] = useState<Map<string, string>>(new Map());
-  //const [results, setResults] = useState<Record<string, unknown>[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const count = rows.length;
 
   const onPrevPage = () => {
     let newOffset = offset - limit;
@@ -51,7 +55,7 @@ export default function DataGrid(props: FetchResultsReturn) {
 
   return (
     <>
-      <ScrollArea className="h-full max-h-[800px] w-full min-w-[1000px]">
+      <ScrollArea className="size-full max-h-[800px] max-w-[1000px]">
         <Table>
           <TableHeader>
             <TableRow>
@@ -62,7 +66,7 @@ export default function DataGrid(props: FetchResultsReturn) {
           </TableHeader>
 
           <TableBody>
-            {rows.map((row, i) => (
+            {rows.slice(offset, offset + limit).map((row, i) => (
               <TableRow key={i}>
                 {Object.entries(row).map(([column, value]) => {
                   const type =
@@ -85,47 +89,127 @@ export default function DataGrid(props: FetchResultsReturn) {
 
       <Separator />
 
-      <div className="mx-auto mt-8 flex w-full justify-center">
-        <div className="flex flex-row items-center gap-1">
-          <Button
-            variant="ghost"
-            onClick={onPrevPage}
-            disabled={offset === 0}
-          >
-            <ChevronLeftIcon className="h-4 w-4" />
-            <span>Previous</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            onClick={onNextPage}
-            disabled={offset + limit >= count}
-          >
-            <span>Next</span>
-            <ChevronRightIcon className="h-4 w-4" />
-          </Button>
-
-          <PageSize
-            value={`${limit}`}
-            onChange={(newValue) => {
-              setLimit(parseInt(newValue));
-            }}
-          />
-        </div>
-      </div>
-
-      {isLoading && (
-        <span className="absolute right-0 top-0 z-50">
-          <Loader2 className="h-5 w-5 animate-spin" />
-        </span>
-      )}
+      <PaginationToolbar
+        total={count}
+        onNextPage={onNextPage}
+        onPrevPage={onPrevPage}
+        canGoNext={offset + limit < count}
+        canGoPrev={offset > 0}
+        limit={limit}
+        onLimitChange={(value) => {
+          setOffset(0); // reset offset when limit changes
+          setLimit(value);
+        }}
+        goToFirstPage={() => {
+          setOffset(0);
+        }}
+        goToLastPage={() => {
+          setOffset(count - limit);
+        }}
+        goToPage={(page) => {
+          setOffset(page * limit);
+        }}
+      />
     </>
+  );
+}
+
+type PaginationToolbarProps = {
+  onNextPage: () => void;
+  onPrevPage: () => void;
+  canGoNext: boolean;
+  canGoPrev: boolean;
+  limit: number;
+  onLimitChange: (value: number) => void;
+  goToPage: (page: number) => void;
+  goToLastPage: () => void;
+  goToFirstPage: () => void;
+  total: number;
+};
+
+function PaginationToolbar(props: PaginationToolbarProps) {
+  const [el, setEl] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    // Don't like this pattern but temporary solution.
+    const toolbarEl = document.getElementById("results-viewer-toolbar");
+
+    if (toolbarEl) {
+      setEl(toolbarEl);
+    }
+
+    return () => {
+      setEl(null);
+    };
+  }, []);
+
+  const {
+    onNextPage,
+    onPrevPage,
+    canGoNext,
+    canGoPrev,
+    limit,
+    onLimitChange,
+    goToFirstPage,
+    goToLastPage,
+    total,
+  } = props;
+
+  if (!el) return null;
+
+  return createPortal(
+    <div className="flex flex-row items-center gap-4">
+      <div className="inline-flex items-center gap-1">
+        <Button
+          size="icon"
+          variant="secondary"
+          onClick={goToFirstPage}
+          disabled={!canGoPrev}
+        >
+          <ChevronsLeftIcon className="size-4" />
+        </Button>
+        <Button
+          size="icon"
+          variant="secondary"
+          onClick={onPrevPage}
+          disabled={!canGoPrev}
+        >
+          <ChevronLeftIcon className="size-4" />
+        </Button>
+
+        <Button
+          size="icon"
+          variant="secondary"
+          onClick={onNextPage}
+          disabled={!canGoNext}
+        >
+          <ChevronRightIcon className="size-4" />
+        </Button>
+
+        <Button
+          size="icon"
+          variant="secondary"
+          onClick={goToLastPage}
+          disabled={!canGoNext}
+        >
+          <ChevronsRightIcon className="size-4" />
+        </Button>
+      </div>
+      <PageSize
+        total={total}
+        value={`${limit}`}
+        onChange={(newValue) => {
+          onLimitChange(parseInt(newValue));
+        }}
+      />
+    </div>,
+    el,
   );
 }
 
 type PageSizeProps = {
   value: string;
   onChange: (value: string) => void;
+  total: number;
 };
 
 function PageSize(props: PageSizeProps) {
@@ -146,6 +230,10 @@ function PageSize(props: PageSizeProps) {
           <SelectItem value="25">25</SelectItem>
           <SelectItem value="50">50</SelectItem>
           <SelectItem value="100">100</SelectItem>
+        </SelectGroup>
+        <SelectSeparator />
+        <SelectGroup>
+          <SelectItem value={`${props.total ?? 0}`}>All</SelectItem>
         </SelectGroup>
       </SelectContent>
     </Select>
