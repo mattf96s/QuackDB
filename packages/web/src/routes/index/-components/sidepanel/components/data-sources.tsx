@@ -1,12 +1,3 @@
-import { useCallback } from "react";
-import {
-  ChevronDown,
-  CopyCheck,
-  Database,
-  Plus,
-  RefreshCw,
-} from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
@@ -20,6 +11,15 @@ import { useDB } from "@/context/db/useDB";
 import { useSession } from "@/context/session/useSession";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
+import {
+  ChevronDown,
+  CopyCheck,
+  Database,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
+import { useCallback } from "react";
+import { toast } from "sonner";
 import { useWrapper } from "./wrapper/context/useWrapper";
 
 export default function DataSources() {
@@ -141,7 +141,7 @@ function DatesetItem(props: SourceEntry) {
             <span className="absolute inset-y-0 right-0">
               <CopyCheck
                 size={16}
-                className="bg-white text-green-700 shadow-sm"
+                className="bg-transparent text-green-700"
               />
             </span>
           )}
@@ -178,6 +178,7 @@ function SourcesToolbar() {
   const { db } = useDB();
 
   const onAddDataset = useCallback(async () => {
+    if (!db) return;
     const hasShowPicker = "showOpenFilePicker" in window;
 
     if (!hasShowPicker) {
@@ -213,9 +214,11 @@ function SourcesToolbar() {
 
       if (!fileHandles || fileHandles.length === 0) return;
 
-      await onAddSources(fileHandles);
+      const newSources = await onAddSources(fileHandles);
 
-      for (const handle of fileHandles) {
+      if (!newSources || newSources.length === 0) return;
+
+      for await (const { handle } of newSources) {
         const file = await handle.getFile();
         await db?.registerFileHandle(file.name, file);
       }
