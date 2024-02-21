@@ -1,12 +1,12 @@
 /// <reference lib="webworker" />
-import * as Comlink from "comlink";
-import { delMany } from "idb-keyval";
 import {
+  IDB_KEYS,
   type Editor,
   type FileEntry,
-  IDB_KEYS,
   type Source,
 } from "@/constants";
+import * as Comlink from "comlink";
+import { delMany } from "idb-keyval";
 import { newfileContents } from "./data/newfile-content";
 import type {
   CodeEditor,
@@ -264,6 +264,7 @@ const onAddSource = async <T extends NewSourceType>(
   const meta = getMimeType(name);
 
   if (!meta || meta.kind !== "SOURCE") {
+    console.error("Invalid file type: ", name);
     postMessage({
       type: "ADD_SOURCE_ERROR",
       payload: {

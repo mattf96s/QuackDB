@@ -1,4 +1,4 @@
-import type { Editor, Source } from "@/constants";
+import type { Editor, FileEntry, Source } from "@/constants";
 
 /**
  * Each code file and its state including within the tabs.
@@ -17,18 +17,25 @@ export type CodeEditor = Editor & {
 export type SessionState = {
   status: "initializing_worker" | "loading_session" | "ready" | "error";
   sessionId: string;
-  onSessionChange: (session: string) => void;
   directoryHandle: FileSystemDirectoryHandle | null;
   editors: CodeEditor[];
   sources: Source[];
+};
+
+export type SessionMethods = {
+  onSessionChange: (session: string) => void;
   dispatch: React.Dispatch<Action> | null;
-  onAddSources: (handles: FileSystemFileHandle[]) => Promise<void>;
+  onAddSources: (
+    handles: FileSystemFileHandle[],
+  ) => Promise<FileEntry<"SOURCE">[] | undefined>;
   onAddEditor: () => Promise<void>;
   onDeleteEditor: (path: string) => Promise<void>;
   onSaveEditor: (props: SaveEditorProps) => Promise<void>;
   onCloseEditor: (path: string) => Promise<void>;
   onBurstCache: () => Promise<void>;
 };
+
+export type SessionContextValue = SessionState & SessionMethods;
 
 // saving file
 export type SaveEditorProps = {

@@ -1,9 +1,14 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
-import { releaseProxy, type Remote, wrap } from "comlink";
-import { toast } from "sonner";
 import type { FileEntry } from "@/constants";
+import { releaseProxy, wrap, type Remote } from "comlink";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
+import { toast } from "sonner";
 import { SessionContext } from "./context";
-import type { Action, SaveEditorProps, SessionState } from "./types";
+import type {
+  Action,
+  SaveEditorProps,
+  SessionMethods,
+  SessionState,
+} from "./types";
 import type { SessionWorker } from "./worker";
 
 // Split up the context files to appease react-refresh.
@@ -204,18 +209,9 @@ function reducer(state: SessionState, action: Action): SessionState {
 const initialFileState: SessionState = {
   status: "initializing_worker",
   sessionId: "quackdb", // 'quackdb' is the default session name.
-  onSessionChange: () => {},
-  // editor stuff
   directoryHandle: null,
   editors: [],
   sources: [],
-  dispatch: null,
-  onAddSources: async () => {},
-  onAddEditor: async () => {},
-  onDeleteEditor: async () => {},
-  onSaveEditor: async () => {},
-  onCloseEditor: async () => {},
-  onBurstCache: async () => {},
 };
 
 /**
@@ -404,7 +400,7 @@ function SessionProvider({ children }: SessionProviderProps) {
     console.log("Session change: ", session);
   }, []);
 
-  const onAddSources = useCallback(
+  const onAddSources: SessionMethods["onAddSources"] = useCallback(
     async (handles: FileSystemFileHandle[]) => {
       if (!proxyRef.current) return;
 
@@ -436,6 +432,8 @@ function SessionProvider({ children }: SessionProviderProps) {
         type: "ADD_SOURCES",
         payload: sources,
       });
+
+      return sources;
     },
     [session.sessionId],
   );
@@ -616,7 +614,7 @@ function SessionProvider({ children }: SessionProviderProps) {
    * Reset the session by deleting all files and query results and reloading the window.
    */
 
-  const onBurstCache: SessionState["onBurstCache"] = useCallback(async () => {
+  const onBurstCache: SessionMethods["onBurstCache"] = useCallback(async () => {
     if (!proxyRef.current) return;
 
     const { sessionId } = session;
