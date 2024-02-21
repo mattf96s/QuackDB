@@ -3,6 +3,19 @@
     "organizeImports": {
         "enabled": true
     },
+    "formatter": {
+        "enabled": true,
+        "ignore": [
+            "./src/routeTree.gen.ts",
+            "src/components/monaco/syntax/index.ts",
+            "node_modules",
+            "dist",
+            "build",
+            "pnpm-lock.yaml",
+            "yarn.lock",
+            "package-lock.json"
+        ]
+    },
     "linter": {
         "enabled": true,
         "rules": {
@@ -13,6 +26,14 @@
             "complexity": {
                 "noForEach": "off"
             }
-        }
+        },
+        "ignore": [
+            "node_modules",
+            "dist",
+            "build",
+            "pnpm-lock.yaml",
+            "yarn.lock",
+            "package-lock.json"
+        ]
     }
 }

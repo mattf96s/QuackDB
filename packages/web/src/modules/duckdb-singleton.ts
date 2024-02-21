@@ -15,9 +15,7 @@ type MakeDBProps = {
   logLevel?: duckdb.LogLevel;
 };
 
-export const makeDB = async ({
-  logLevel = duckdb.LogLevel.DEBUG,
-}: MakeDBProps) => {
+const makeDB = async ({ logLevel = duckdb.LogLevel.DEBUG }: MakeDBProps) => {
   // ensure we can properly dispose of the worker
   let worker_url: string | undefined;
 
@@ -162,7 +160,7 @@ export class DuckDBInstance {
   #extensions: DuckDBExtension[] = ["icu"]; // default is to load the icu extension
 
   // Cache settings
-  #shouldCache: boolean = true; // default is to allow caching
+  #shouldCache = true; // default is to allow caching
   #cacheTimeout: number = 60 * 60 * 1000; // default is to cache for 1 hour
   #queryCache: string = CACHE_KEYS.queries; // results from duckdb queries
   #fileCache: string = CACHE_KEYS.files; // downloaded files from S3.
@@ -381,6 +379,8 @@ export class DuckDBInstance {
    * @source [Excalichart](https://github.com/excalichart/excalichart/blob/c47a3665af936cb1bb33a8c91df098beb8060308/src/lib/io/DuckDBClient.ts#L20C2-L53C3)
    * @source [Observable stdlib](https://github.com/observablehq/stdlib/blob/main/src/duckdb.js)
    */
+
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   public async queryStream<T extends TypeMap = any>(
     query: string,
     params?: Array<unknown>,
@@ -391,6 +391,7 @@ export class DuckDBInstance {
     const cleanup = this.#cleanupConnection.bind(this, connection);
 
     let reader: AsyncRecordBatchStreamReader<T>;
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     let batch: IteratorResult<RecordBatch<T>, any>;
     try {
       if (params && params.length > 0) {
@@ -560,6 +561,7 @@ export class DuckDBInstance {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   async query<T extends TypeMap = any>(query: string, params?: T[]) {
     const key = `Query ${query}`;
     console.time(key);

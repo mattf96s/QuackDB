@@ -923,7 +923,7 @@
 //   ],
 //   typeKeywords: [
 //     // monaco-sql-language 自定义属性
-//     // https://www.postgresql.org/docs/16/datatype.html
+//     https://www.postgresql.org/docs/16/datatype.html
 //     "SMALLINT",
 //     "INTEGER",
 //     "BIGINT",

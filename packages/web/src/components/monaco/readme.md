@@ -1,4 +1,4 @@
-Prettier
+# Links
 
 See <https://github.com/ptc-iot-sharing/MonacoEditorTWX/blob/master/src/editors/basicCodeEditor.ts>
 

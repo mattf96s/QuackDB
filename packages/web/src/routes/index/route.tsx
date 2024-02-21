@@ -158,7 +158,7 @@ const DBInitializer = memo(function DBInitializer(props: {
   return <Suspense fallback={<p>Loading...</p>}>{props.children}</Suspense>;
 });
 
-const Playground = memo(function Playground() {
+function Playground() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // we read this during render so we can't use a ref.
   const [el, setEl] = useState<HTMLElement | null>(null);
@@ -213,45 +213,43 @@ const Playground = memo(function Playground() {
     <>
       {/* Panel provider is custom context while PanelGroup is unrelated component; poor naming. */}
 
-      <Suspense fallback={<p>Loading...</p>}>
-        <PanelGroup
-          className="h-[calc(100vh-64px)] rounded-none"
-          direction="horizontal"
-          autoSaveId="_desktop-layout-panel-group"
+      <PanelGroup
+        className="h-[calc(100vh-64px)] rounded-none"
+        direction="horizontal"
+        autoSaveId="_desktop-layout-panel-group"
+      >
+        <Panel
+          collapsedSize={5}
+          defaultSize={15}
+          minSize={5}
+          className="max-h-full"
         >
-          <Panel
-            collapsedSize={5}
-            defaultSize={15}
-            minSize={5}
-            className="max-h-full"
-          >
-            <Sidepanel />
-          </Panel>
-          <PanelHandle />
-          <Panel
-            minSize={15}
-            className="max-h-full"
-          >
-            <EditorPanel />
-          </Panel>
-        </PanelGroup>
-        {/* put into the top level toolbar */}
-        {el &&
-          createPortal(
-            <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
-              {/* <PresetSelector presets={presets} /> */}
+          <Sidepanel />
+        </Panel>
+        <PanelHandle />
+        <Panel
+          minSize={15}
+          className="max-h-full"
+        >
+          <EditorPanel />
+        </Panel>
+      </PanelGroup>
+      {/* put into the top level toolbar */}
+      {el &&
+        createPortal(
+          <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
+            {/* <PresetSelector presets={presets} /> */}
 
-              <Toolbar />
-              <Settings />
+            <Toolbar />
+            <Settings />
 
-              {/* <SessionCombobox /> */}
-            </div>,
-            el,
-          )}
-      </Suspense>
+            {/* <SessionCombobox /> */}
+          </div>,
+          el,
+        )}
     </>
   );
-});
+}
 
 function MobileSidePanel(props: {
   children: React.ReactNode;
