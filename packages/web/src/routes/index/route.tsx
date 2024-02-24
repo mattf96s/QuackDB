@@ -1,17 +1,3 @@
-import { memo, Suspense, useCallback, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { useHotkeys } from "react-hotkeys-hook";
-import { Panel, PanelGroup } from "react-resizable-panels";
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
-import {
-  createFileRoute,
-  type ErrorComponentProps,
-  useRouter,
-} from "@tanstack/react-router";
-import { releaseProxy, type Remote, wrap } from "comlink";
-import { Loader2, MenuIcon, PlayIcon } from "lucide-react";
-import { toast } from "sonner";
-import { useSpinDelay } from "spin-delay";
 import PanelHandle from "@/components/panel-handle";
 import { ThemeToggler } from "@/components/theme-toggle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -19,53 +5,71 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DbProvider } from "@/context/db/provider";
-import { useDB } from "@/context/db/useDB";
 import { EditorProvider } from "@/context/editor/provider";
 import { useEditor } from "@/context/editor/useEditor";
 import { QueryProvider } from "@/context/query/provider";
 import { useQuery } from "@/context/query/useQuery";
+import { useFileDrop } from "@/context/session/hooks/useAddFile.tsx";
 import { SessionProvider } from "@/context/session/provider";
 import useBreakpoint from "@/hooks/use-breakpoints";
 import { cn } from "@/lib/utils";
-import type { GetSessionWorker } from "@/workers/get-session-worker";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import {
+  createFileRoute,
+  useRouter,
+  type ErrorComponentProps,
+} from "@tanstack/react-router";
+import { Loader2, MenuIcon, PlayIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useHotkeys } from "react-hotkeys-hook";
+import { Panel, PanelGroup } from "react-resizable-panels";
+import { toast } from "sonner";
+import { useSpinDelay } from "spin-delay";
 import EditorPanel from "./-components/editor-panel";
 import Settings from "./-components/settings";
 import Sidepanel from "./-components/sidepanel";
 import { PanelProvider } from "./-context/panel/provider";
+
 export const Route = createFileRoute("/")({
   component: PlaygroundContainer,
   errorComponent: ErrorComponent,
   //errorComponent: (props)=><ErrorComponent {...props} />,
-  loader: async ({ abortController }) => {
-    let worker: Worker | undefined;
-    let getFilesFn: Remote<GetSessionWorker> | undefined;
+  // loader: async ({ abortController }) => {
+  //   let worker: Worker | undefined;
+  //   let getFilesFn: Remote<GetSessionWorker> | undefined;
 
-    try {
-      worker = new Worker(
-        new URL("@/workers/get-session-worker.ts", import.meta.url),
-        {
-          type: "module",
-          name: "GetSessionWorker",
-        },
-      );
+  //   try {
+  //     worker = new Worker(
+  //       new URL("@/workers/get-session-worker.ts", import.meta.url),
+  //       {
+  //         type: "module",
+  //         name: "GetSessionWorker",
+  //       },
+  //     );
 
-      getFilesFn = wrap<GetSessionWorker>(worker);
+  //     getFilesFn = wrap<GetSessionWorker>(worker);
 
-      const resPromise = getFilesFn("default");
+  //     const resPromise = await getFilesFn("default");
 
-      // abort worker if route is aborted
-      abortController.signal.addEventListener("abort", () => {
-        worker?.terminate();
-      });
+  //     console.log("resPromise", resPromise);
 
-      const res = await resPromise;
+  //     // abort worker if route is aborted
+  //     abortController.signal.addEventListener("abort", () => {
+  //       worker?.terminate();
+  //     });
 
-      return res;
-    } finally {
-      getFilesFn?.[releaseProxy]();
-      worker?.terminate();
-    }
-  },
+  //     const res = await resPromise;
+
+  //     return res;
+  //   } catch (e) {
+  //     console.error("Error loading route: ", e);
+  //     throw e;
+  //   } finally {
+  //     getFilesFn?.[releaseProxy]();
+  //     worker?.terminate();
+  //   }
+  // },
   headers: () => {
     // add headers to allow shared array buffer and cors
     return {
@@ -107,60 +111,27 @@ function PlaygroundContainer() {
   return (
     <SessionProvider>
       <DbProvider>
-        <DBInitializer>
-          <PanelProvider>
-            <QueryProvider>
-              <EditorProvider>
-                <Playground />
-              </EditorProvider>
-            </QueryProvider>
-          </PanelProvider>
-        </DBInitializer>
+        <PanelProvider>
+          <QueryProvider>
+            <EditorProvider>
+              <Playground />
+            </EditorProvider>
+          </QueryProvider>
+        </PanelProvider>
       </DbProvider>
     </SessionProvider>
   );
 }
 
-const DBInitializer = memo(function DBInitializer(props: {
-  children: React.ReactNode;
-}) {
-  const { db } = useDB();
-
-  const { datasets } = Route.useLoaderData();
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    // initialize the db with the datasets
-    const init = async () => {
-      try {
-        for (const dataset of datasets) {
-          if (signal.aborted) {
-            break;
-          }
-          const file = await dataset.handle.getFile();
-          await db?.registerFileHandle(dataset.name, file);
-        }
-      } catch (e) {
-        console.error("Error registering datasets: ", e);
-        toast.error("Error registering datasets", {
-          description: "You can try clicking the refresh sources button.",
-        });
-      }
-    };
-
-    init();
-
-    return () => {
-      controller.abort();
-    };
-  }, [datasets, db]);
-
-  return <Suspense fallback={<p>Loading...</p>}>{props.children}</Suspense>;
-});
-
 function Playground() {
+  const {
+    isDragActive,
+    ref,
+    onDragEnter,
+    onDragLeave,
+    onDragOver,
+    onFileDrop,
+  } = useFileDrop();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // we read this during render so we can't use a ref.
   const [el, setEl] = useState<HTMLElement | null>(null);
@@ -212,7 +183,17 @@ function Playground() {
     );
   }
   return (
-    <>
+    <div
+      onDrop={onFileDrop}
+      onDragOver={onDragOver}
+      onDragEnter={onDragEnter}
+      onDragLeave={onDragLeave}
+      ref={ref}
+      className={cn(
+        "flex size-full bg-inherit",
+        isDragActive && "bg-gray-100 dark:bg-gray-800",
+      )}
+    >
       {/* Panel provider is custom context while PanelGroup is unrelated component; poor naming. */}
 
       <PanelGroup
@@ -250,7 +231,7 @@ function Playground() {
           </div>,
           el,
         )}
-    </>
+    </div>
   );
 }
 
@@ -349,7 +330,13 @@ function Toolbar() {
       });
     });
 
-    onRunQuery(query);
+    // cleanup query to remove comments and empty lines
+    const cleanedQuery = query
+      .split("\n")
+      .filter((line) => !line.trim().startsWith("--"))
+      .join("\n");
+
+    await onRunQuery(cleanedQuery);
 
     return () => {
       controller.abort();

@@ -1,4 +1,3 @@
-import type { FileEntry } from "@/constants";
 import { releaseProxy, wrap, type Remote } from "comlink";
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { toast } from "sonner";
@@ -400,40 +399,43 @@ function SessionProvider({ children }: SessionProviderProps) {
     console.log("Session change: ", session);
   }, []);
 
-  const onAddSources: SessionMethods["onAddSources"] = useCallback(
-    async (handles: FileSystemFileHandle[]) => {
-      if (!proxyRef.current) return;
-
-      if (handles.length === 0) {
-        toast.error("No files selected", {});
+  /**
+   * Add data sources to the session.
+   *
+   * Can be file, file handle, filesystementry, or urk.
+   *
+   */
+  const onAddDataSources: SessionMethods["onAddDataSources"] = useCallback(
+    async (entries) => {
+      if (!proxyRef.current) {
+        console.warn("No proxyRef.current");
         return;
       }
 
-      const sources: FileEntry<"SOURCE">[] = [];
-
-      // #TODO: adjust worker to handle multiple files
-      for (const handle of handles) {
-        const res = await proxyRef.current.onAddSource({
-          handle,
-          name: handle.name,
-          sessionId: session.sessionId,
-          type: "FILE",
-        });
-
-        if (!res) {
-          toast.error("Error adding source", {});
-          return;
-        }
-
-        sources.push(res);
+      if (entries.length === 0) {
+        toast.error("No data sources selected", {});
+        return;
       }
 
-      dispatch({
-        type: "ADD_SOURCES",
-        payload: sources,
-      });
+      try {
+        const sources = await proxyRef.current.onAddDataSource({
+          entries,
+          sessionId: session.sessionId,
+        });
 
-      return sources;
+        dispatch({
+          type: "ADD_SOURCES",
+          payload: sources,
+        });
+
+        return sources;
+      } catch (e) {
+        console.error("Failed to add source: ", e);
+        toast.error("Failed to add source", {
+          description: e instanceof Error ? e.message : undefined,
+        });
+        return [];
+      }
     },
     [session.sessionId],
   );
@@ -643,7 +645,7 @@ function SessionProvider({ children }: SessionProviderProps) {
       ...session,
       onSessionChange,
       dispatch,
-      onAddSources,
+      onAddDataSources,
       onAddEditor,
       onDeleteEditor,
       onSaveEditor,
@@ -653,7 +655,7 @@ function SessionProvider({ children }: SessionProviderProps) {
     [
       onSessionChange,
       session,
-      onAddSources,
+      onAddDataSources,
       onAddEditor,
       onDeleteEditor,
       onSaveEditor,

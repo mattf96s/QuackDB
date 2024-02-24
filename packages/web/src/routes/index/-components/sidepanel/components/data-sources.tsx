@@ -174,20 +174,12 @@ function DatesetItem(props: SourceEntry) {
  * @component
  */
 function SourcesToolbar() {
-  const { onAddSources } = useSession();
+  const { onAddDataSources } = useSession();
   const { db } = useDB();
 
   const onAddDataset = useCallback(async () => {
-    if (!db) return;
-    const hasShowPicker = "showOpenFilePicker" in window;
-
-    if (!hasShowPicker) {
-      console.error("File picker not supported");
-
-      toast.error("File picker not supported", {
-        description: "File picker not supported on this browser",
-      });
-
+    if (!db) {
+      console.error("No db found");
       return;
     }
 
@@ -214,13 +206,18 @@ function SourcesToolbar() {
 
       if (!fileHandles || fileHandles.length === 0) return;
 
-      const newSources = await onAddSources(fileHandles);
+      const newSources = await onAddDataSources(
+        fileHandles.map((handle) => ({
+          filename: handle.name,
+          type: "FILE_HANDLE",
+          entry: handle,
+        })),
+      );
 
       if (!newSources || newSources.length === 0) return;
 
       for await (const { handle } of newSources) {
-        const file = await handle.getFile();
-        await db?.registerFileHandle(file.name, file);
+        await db?.registerFileHandle(handle.name, handle);
       }
     } catch (e) {
       // ignore aborted request
@@ -230,7 +227,7 @@ function SourcesToolbar() {
         description: e instanceof Error ? e.message : undefined,
       });
     }
-  }, [db, onAddSources]);
+  }, [db, onAddDataSources]);
 
   return (
     <>

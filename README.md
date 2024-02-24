@@ -54,3 +54,11 @@ See [bookmarks.md](./bookmarks.md) for more interesting projects and references.
 ## Feedback
 
 If you have any feedback or questions about the DuckDB SQL Playground, feel free to reach out (especially since there are no error monitoring tools in place 😅).
+
+## License
+
+MIT
+
+## Tips
+
+- View all stored files: filesystem: <https://app.quackdb.com/temporary>. To navigate, manually change the URL to the desired path as Chrome does not allow navigation by clicking on the links.

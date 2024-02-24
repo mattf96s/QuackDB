@@ -9,6 +9,7 @@ import * as Comlink from "comlink";
 import { delMany } from "idb-keyval";
 import { newfileContents } from "./data/newfile-content";
 import type {
+  AddDataSourceProps,
   CodeEditor,
   SaveEditorProps,
   SaveEditorResponse,
@@ -228,54 +229,25 @@ function getMimeType(
 // --- Add new data source -- //
 
 /**
- * If we receive a file handle, it's from the user's local file system and we need to copy and store it in the opfs.
+ * Add a new data source to the session.
+ *
+ * If we receive a file handle / file entry, it's from the user's local file system and we need to copy and store it in the opfs.
+ *
+ * FILE_HANDLE: File handle from the user's local file system.
+ * URL: Save the URL as a file in the opfs.
+ * FILE_ENTRY: File entry from the user's local file system.
+ * FILE: File from the user's local file system.
  */
-type NewSourceType = "FILE" | "URL";
 
-type AddSourceBase = {
+type AddDataSourceBase = {
+  entries: AddDataSourceProps;
   sessionId: string;
-  name: string; // with the extension
 };
 
-type OnAddSourceProps<T extends NewSourceType> = T extends "FILE"
-  ? {
-      type: T;
-      handle: FileSystemFileHandle;
-    }
-  : {
-      type: T;
-      url: string;
-    };
-
-const onAddSource = async <T extends NewSourceType>(
-  props: AddSourceBase & OnAddSourceProps<T>,
+const findUniqueName = async (
+  directory: FileSystemDirectoryHandle,
+  name: string,
 ) => {
-  const { type, name, sessionId } = props;
-  postMessage({
-    type: "ADD_SOURCE_START",
-    payload: {
-      name,
-      type,
-    },
-  });
-
-  const directory = await getSessionDirectory(sessionId);
-
-  const meta = getMimeType(name);
-
-  if (!meta || meta.kind !== "SOURCE") {
-    console.error("Invalid file type: ", name);
-    postMessage({
-      type: "ADD_SOURCE_ERROR",
-      payload: {
-        name,
-        type,
-      },
-    });
-    return null;
-  }
-
-  // Check that the file name is unique. If not, append a number to the end.
   let counter = 0;
   const paths = name.split(".");
   const ext = paths.pop();
@@ -290,13 +262,98 @@ const onAddSource = async <T extends NewSourceType>(
     path = `${path}-${counter}`;
   }
 
-  const filename = `${path}.${ext}`;
+  return `${path}.${ext}`;
+};
 
-  try {
+const onAddDataSource = async ({ entries, sessionId }: AddDataSourceBase) => {
+  postMessage({
+    type: "ADD_SOURCE_START",
+  });
+
+  const directory = await getSessionDirectory(sessionId);
+
+  const sources: FileEntry<"SOURCE">[] = [];
+
+  for await (const { entry, filename: filenameRaw, type } of entries) {
+    if (!entry) continue;
+
+    // use the pre-processed filename from the client.
+    const meta = getMimeType(filenameRaw);
+    if (!meta) continue;
+
+    const filename = await findUniqueName(directory, filenameRaw);
+
     switch (type) {
       case "FILE": {
-        const { handle } = props;
-        const file = await handle.getFile();
+        const draftHandle = await directory.getFileHandle(filename, {
+          create: true,
+        });
+        const accessHandle = await draftHandle.createSyncAccessHandle();
+
+        const buffer = await entry.arrayBuffer();
+        accessHandle.write(buffer);
+        accessHandle.flush();
+        accessHandle.close();
+
+        const source: FileEntry<"SOURCE"> = {
+          path: filename,
+          kind: "SOURCE",
+          // @ts-expect-error: TODO: fix this
+          mimeType: meta.mimeType,
+          // @ts-expect-error: TODO: fix this
+          ext: meta.ext,
+          handle: draftHandle,
+        };
+
+        postMessage({
+          type: "SOURCE_FILE_ADDED",
+          payload: source,
+        });
+
+        sources.push(source);
+
+        continue;
+      }
+      // from the user's local file system (drag and drop).
+      case "FILE_ENTRY": {
+        const file = await new Promise<File>((resolve, reject) =>
+          entry.file(resolve, reject),
+        );
+
+        const draftHandle = await directory.getFileHandle(filename, {
+          create: true,
+        });
+
+        const accessHandle = await draftHandle.createSyncAccessHandle();
+
+        const buffer = await file.arrayBuffer();
+        accessHandle.write(buffer);
+        accessHandle.flush();
+        accessHandle.close();
+
+        const source: FileEntry<"SOURCE"> = {
+          path: filename,
+          // @ts-expect-error: TODO: fix this
+          kind: meta.kind,
+          // @ts-expect-error: TODO: fix this
+          mimeType: meta.mimeType,
+          // @ts-expect-error: TODO: fix this
+          ext: meta.ext,
+          handle: draftHandle,
+        };
+
+        postMessage({
+          type: "SOURCE_FILE_ADDED",
+          payload: source,
+        });
+
+        sources.push(source);
+
+        continue;
+      }
+      // from the window.showOpenFilePicker API.
+      case "FILE_HANDLE": {
+        const file = await entry.getFile();
 
         const draftHandle = await directory.getFileHandle(filename, {
           create: true,
@@ -312,60 +369,67 @@ const onAddSource = async <T extends NewSourceType>(
 
         const source: FileEntry<"SOURCE"> = {
           path: filename,
+          // @ts-expect-error: TODO: fix this
           kind: meta.kind,
+          // @ts-expect-error: TODO: fix this
           mimeType: meta.mimeType,
+          // @ts-expect-error: TODO: fix this
           ext: meta.ext,
           handle: draftHandle, // not the original file handle we received.
         };
 
         postMessage({
-          type: "SOURCE_FILE_COMPLETE",
+          type: "SOURCE_FILE_ADDED",
           payload: source,
         });
 
-        return source;
+        sources.push(source);
+
+        continue;
       }
       // save URL as a URI file (don't download the file, just store the URL as a file in the opfs).
       case "URL": {
-        const { url } = props;
-        const draftHandle = await directory.getFileHandle(path, {
+        const draftHandle = await directory.getFileHandle(filename, {
           create: true,
         });
         const accessHandle = await draftHandle.createSyncAccessHandle();
+
         const textEncoder = new TextEncoder();
-        const buffer = textEncoder.encode(url);
+        const buffer = textEncoder.encode(entry);
+
         accessHandle.write(buffer);
-        // Flush the changes.
         accessHandle.flush();
         accessHandle.close();
 
         const source: FileEntry<"SOURCE"> = {
-          path: name,
+          path: filename,
+          // @ts-expect-error: TODO: fix this
           kind: meta.kind,
+          // @ts-expect-error: TODO: fix this
           mimeType: meta.mimeType,
+          // @ts-expect-error: TODO: fix this
           ext: meta.ext,
           handle: draftHandle,
         };
 
         postMessage({
-          type: "SOURCE_FILE_COMPLETE",
+          type: "SOURCE_FILE_ADDED",
           payload: source,
         });
 
-        return source;
+        sources.push(source);
+        continue;
       }
+      default:
+        continue;
     }
-  } catch (e) {
-    console.error("Error adding source: ", e);
-    postMessage({
-      type: "ADD_SOURCE_ERROR",
-      payload: {
-        name,
-        type,
-      },
-    });
-    return null;
   }
+
+  postMessage({
+    type: "ADD_SOURCE_COMPLETE",
+    payload: sources,
+  });
+  return sources;
 };
 
 // --- Add new editor file -- //
@@ -629,7 +693,7 @@ async function onBurstCache({
 
 const methods = {
   onInitialize,
-  onAddSource,
+  onAddDataSource,
   onAddEditor,
   onDeleteEditor,
   onSaveEditor,

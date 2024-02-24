@@ -22,11 +22,35 @@ export type SessionState = {
   sources: Source[];
 };
 
+type DataSource =
+  | {
+      filename: string;
+      type: "FILE";
+      entry: File;
+    }
+  | {
+      filename: string;
+      type: "URL";
+      entry: string;
+    }
+  | {
+      filename: string;
+      type: "FILE_ENTRY";
+      entry: FileSystemFileEntry;
+    }
+  | {
+      filename: string;
+      type: "FILE_HANDLE";
+      entry: FileSystemFileHandle;
+    };
+
+export type AddDataSourceProps = DataSource[];
+
 export type SessionMethods = {
   onSessionChange: (session: string) => void;
   dispatch: React.Dispatch<Action> | null;
-  onAddSources: (
-    handles: FileSystemFileHandle[],
+  onAddDataSources: (
+    props: AddDataSourceProps,
   ) => Promise<FileEntry<"SOURCE">[] | undefined>;
   onAddEditor: () => Promise<void>;
   onDeleteEditor: (path: string) => Promise<void>;

@@ -1,13 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  type AsyncRecordBatchStreamReader,
-  type RecordBatch,
-  type StructRow,
-  type TypeMap,
-} from "@apache-arrow/esnext-esm";
-import { type AsyncDuckDB, DuckDBDataProtocol } from "@duckdb/duckdb-wasm";
-import * as duckdb from "@duckdb/duckdb-wasm";
-import {
   CACHE_KEYS,
   type FetchResultsReturn,
   type QueryMeta,
@@ -15,64 +7,59 @@ import {
 import { getArrowTableSchema } from "@/utils/arrow/helpers";
 import { getCompletions } from "@/utils/duckdb/autocomplete";
 import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
+import type {
+  AsyncRecordBatchStreamReader,
+  RecordBatch,
+  StructRow,
+  TypeMap,
+} from "@apache-arrow/esnext-esm";
+import type { AsyncDuckDB } from "@duckdb/duckdb-wasm";
+import * as duckdb from "@duckdb/duckdb-wasm";
+import eh_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
+import mvp_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url";
+import duckdb_wasm_eh from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
+import duckdb_wasm from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url";
+
+// import { type Range } from "monaco-editor";
+
+const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
+  mvp: {
+    mainModule: duckdb_wasm,
+    mainWorker: mvp_worker,
+  },
+  eh: {
+    mainModule: duckdb_wasm_eh,
+    mainWorker: eh_worker,
+  },
+  coi: {
+    mainModule: duckdb_wasm,
+    mainWorker: mvp_worker,
+    pthreadWorker: eh_worker,
+  },
+};
 
 type MakeDBProps = {
   logLevel?: duckdb.LogLevel;
 };
 
+let bundle: duckdb.DuckDBBundle;
+
 const makeDB = async ({ logLevel = duckdb.LogLevel.DEBUG }: MakeDBProps) => {
-  // ensure we can properly dispose of the worker
-  let worker_url: string | undefined;
-
-  try {
-    // Select a bundle based on browser checks
-    const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
-
-    // Select a bundle based on browser checks
-    const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
-
-    worker_url = URL.createObjectURL(
-      new Blob([`importScripts("${bundle.mainWorker}");`], {
-        type: "text/javascript",
-      }),
-    );
-
-    // Instantiate the asynchronus version of DuckDB-wasm
-    const worker = new Worker(worker_url);
-    const logger = new duckdb.ConsoleLogger(logLevel);
-    const db = new duckdb.AsyncDuckDB(logger, worker);
-    await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
-
-    URL.revokeObjectURL(worker_url);
-
-    // https://github.com/holdenmatt/duckdb-wasm-kit/blob/1dfa5ac9b2a49254dbf0f043963f432f4fe7e593/src/init/initializeDuckDb.ts#L51C3-L62C4
-    // if (config) {
-    //   if (config.path) {
-    //     const res = await fetch(config.path);
-    //     const buffer = await res.arrayBuffer();
-    //     const fileNameMatch = config.path.match(/[^/]*$/);
-    //     if (fileNameMatch) {
-    //       config.path = fileNameMatch[0];
-    //     }
-    //     await db.registerFileBuffer(config.path, new Uint8Array(buffer));
-    //   }
-    //   await db.open(config);
-    // }
-
-    // #TODO: add adjustable config as props
-    await db.open({
-      query: { castBigIntToDouble: true },
-    });
-
-    return db;
-  } catch (e) {
-    console.error("Failed to create DuckDB instance: ", e);
-    throw e;
-  } finally {
-    if (worker_url) {
-      URL.revokeObjectURL(worker_url);
-    }
+  if (!bundle) {
+    bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
   }
+
+  // Instantiate the asynchronus version of DuckDB-wasm
+  const worker = new Worker(bundle.mainWorker!);
+  const logger = new duckdb.ConsoleLogger(logLevel);
+  const db = new duckdb.AsyncDuckDB(logger, worker);
+  await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+
+  await db.open({
+    query: { castBigIntToDouble: true },
+  });
+
+  return db;
 };
 
 /**
@@ -101,19 +88,20 @@ type DuckDBExtension =
 
 type LocalFileSource = {
   kind: "LOCAL_FILE";
-  name: string;
+  path: string;
   handle: FileSystemFileHandle; // cheaper than storing the file itself
 };
 
 type RemoteSource = {
   kind: "REMOTE";
-  name: string;
+  path: string;
   url: string;
 };
 
 type DataSource = LocalFileSource | RemoteSource;
 
 type DuckDBInstanceOptions = {
+  sources?: DataSource[];
   session?: string;
   cache?: {
     noCache?: boolean; // if true, do not cache any connections
@@ -171,6 +159,12 @@ export class DuckDBInstance {
     if (props?.session) {
       this.#session = props.session;
     }
+
+    // register sources
+    if (props?.sources) {
+      this.#sources = props.sources;
+    }
+
     // cache settings
     if (props?.cache) {
       const { noCache, cacheTimeout } = props.cache;
@@ -233,6 +227,33 @@ export class DuckDBInstance {
       logLevel: this.#logLevel,
     });
 
+    try {
+      for await (const source of this.#sources) {
+        switch (source.kind) {
+          case "REMOTE": {
+            await this.#db.registerFileURL(
+              source.path,
+              source.url,
+              duckdb.DuckDBDataProtocol.HTTP,
+              true,
+            );
+            break;
+          }
+          case "LOCAL_FILE": {
+            await this.#db.registerFileHandle(
+              source.path,
+              await source.handle.getFile(),
+              duckdb.DuckDBDataProtocol.BROWSER_FILEREADER,
+              true,
+            );
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to register sources: ", e);
+    }
+
     return this.#db;
   }
 
@@ -264,7 +285,7 @@ export class DuckDBInstance {
     await Promise.all([queryCache]);
 
     if (this.#db) {
-      this.#db
+      await this.#db
         .terminate()
         .catch((e) => console.error("Failed to terminate DuckDBInstance: ", e));
     }
@@ -320,7 +341,7 @@ export class DuckDBInstance {
     }
 
     // set errors as JSON (not in the release yet, but will be in the next release);
-    // await conn.query("SET errors_as_json = true;");
+    await conn.query("SET errors_as_json = true;");
 
     // Note: extensions are automatically handled by DuckDB wasm; https://duckdb.org/docs/api/wasm/extensions
 
@@ -343,7 +364,13 @@ export class DuckDBInstance {
 
   // ------- File methods ------- //
 
-  async registerFileHandle(fileName: string, file: File) {
+  async registerFileHandle(fileName: string, handle: FileSystemFileHandle) {
+    this.#sources.push({
+      handle,
+      kind: "LOCAL_FILE",
+      path: fileName,
+    });
+    const file = await handle.getFile();
     const db = await this._getDB();
     await db.dropFile(fileName).catch((e) => {
       console.error("Failed to drop file: ", e);
@@ -351,7 +378,7 @@ export class DuckDBInstance {
     await db.registerFileHandle(
       fileName,
       file,
-      DuckDBDataProtocol.BROWSER_FILEREADER,
+      duckdb.DuckDBDataProtocol.BROWSER_FILEREADER,
       true,
     );
   }
@@ -381,8 +408,10 @@ export class DuckDBInstance {
     try {
       if (params && params.length > 0) {
         const statement = await connection.prepare(query);
+        // @ts-expect-error: duckdb / arrow version mismatch
         reader = await statement.send(...params);
       } else {
+        // @ts-expect-error: duckdb / arrow version mismatch
         reader = await connection.send(query);
       }
       batch = await reader.next();
@@ -406,7 +435,6 @@ export class DuckDBInstance {
       },
     };
   }
-
   /**
    * Fetch the results of a query.
    *
@@ -495,6 +523,7 @@ export class DuckDBInstance {
       //   },
       // );
 
+      // @ts-expect-error: duckdb / arrow version mismatch
       const schema = getArrowTableSchema(queryResults);
 
       const rows = queryResults.toArray().map((row) => row.toJSON()) as Record<
@@ -613,6 +642,7 @@ export class DuckDBInstance {
   /**
    * Create a hash key for a query.
    * This is used to cache the result of a query.
+   * Also includes the session id.
    *
    * Ensure that the query is deterministic and does not depend on any external state (i.e. everything is within the query itself).
    *
@@ -623,7 +653,7 @@ export class DuckDBInstance {
     const encoder = new TextEncoder();
     const data = encoder.encode(query);
     const hash = await crypto.subtle.digest("SHA-256", data);
-    const cacheKey = `query-${new Uint8Array(hash).join("-")}`;
+    const cacheKey = `query-${this.#session ?? ""}-${new Uint8Array(hash).join("-")}`;
     return cacheKey;
   }
 

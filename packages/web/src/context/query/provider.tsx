@@ -8,6 +8,7 @@ import { useDB } from "@/context/db/useDB";
 import useAbortController from "@/hooks/use-abortable";
 import { get, set } from "idb-keyval";
 import { useCallback, useMemo, useReducer } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 import { QueryContext } from "./context";
 import type { QueryContextValue, QueryState } from "./types";
@@ -115,7 +116,11 @@ function QueryProvider({ children }: QueryProviderProps) {
 
   const onRunQuery = useCallback(
     async (sql: string) => {
-      if (!db) return;
+      if (!db) {
+        console.error("Run failed: db not ready yet");
+        toast.warning("Run failed: db not ready yet");
+        return;
+      }
 
       dispatch({ type: "RUN_START", payload: { sql } });
       try {
@@ -132,8 +137,6 @@ function QueryProvider({ children }: QueryProviderProps) {
         const results = await Promise.race([doQuery, isCancelledPromise]);
 
         const payload = results as FetchResultsReturn;
-
-        console.log("results", payload);
 
         // store the query in indexeddb
         await onStoreRun(payload);

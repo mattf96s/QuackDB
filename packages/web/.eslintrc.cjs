@@ -9,7 +9,7 @@ module.exports = {
     "plugin:react/recommended",
     "plugin:tailwindcss/recommended"
   ],
-  "plugins": ['react-refresh', 'unused-imports', 'simple-import-sort', 'react', 'react-hooks', "tailwindcss"],
+  "plugins": ['react-refresh', 'unused-imports', 'react', 'react-hooks', "tailwindcss"],
   "rules": {
     "tailwindcss/no-custom-classname": "off",
     "tailwindcss/classnames-order": "off"
@@ -76,15 +76,15 @@ module.exports = {
         fixStyle: "inline-type-imports",
       },
     ],
-    'simple-import-sort/imports': [
-      'warn',
-      {
-        groups: [
-          ['^\\u0000', '^(react|react-dom)', '^node:', '^@?\\w', '^', '^\\.'],
-        ],
-      },
-    ],
-    'simple-import-sort/exports': 'warn',
+    // 'simple-import-sort/imports': [
+    //   'warn',
+    //   {
+    //     groups: [
+    //       ['^\\u0000', '^(react|react-dom)', '^node:', '^@?\\w', '^', '^\\.'],
+    //     ],
+    //   },
+    // ],
+    // 'simple-import-sort/exports': 'warn',
     "unused-imports/no-unused-vars": [
       "warn",
       { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
