@@ -1,21 +1,22 @@
-import { memo, type ReactNode, useEffect } from "react";
-import {
-  createRootRoute,
-  Outlet,
-  useRouter,
-  useRouterState,
-} from "@tanstack/react-router";
-import * as Fathom from "fathom-client";
-import { TerminalIcon } from "lucide-react";
-import NProgress from "nprogress";
 import NotFound from "@/components/NotFound";
 import Sidebar from "@/components/sidebar";
 import { SidebarProvider } from "@/components/sidebar/context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggler } from "@/components/theme-toggle";
 import { Toaster } from "@/components/ui/sonner";
+import { ConfigProvider } from "@/context/config/provider";
 import useBreakpoint from "@/hooks/use-breakpoints";
 import { cn } from "@/lib/utils";
+import {
+  Outlet,
+  createRootRoute,
+  useRouter,
+  useRouterState,
+} from "@tanstack/react-router";
+import * as Fathom from "fathom-client";
+import { TerminalIcon } from "lucide-react";
+import NProgress from "nprogress";
+import { memo, useEffect, type ReactNode } from "react";
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -72,47 +73,49 @@ const Analytics = memo(function Analytics() {
 function Layout(props: { children: ReactNode }) {
   const isSmallerScreen = useBreakpoint("md");
   return (
-    <SidebarProvider>
-      <LayoutContainer>
-        <Sidebar />
-        <div className="w-full pl-0 lg:pl-16">
-          {/* navbar */}
-          <div className="fixed left-16 right-0 top-0 z-40 hidden h-16 shrink-0 items-center gap-x-4 border bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:flex lg:px-8">
-            <div className="flex items-center justify-evenly gap-2">
-              <h1 className="text-lg font-semibold">QuackDB</h1>
-              <TerminalIcon className="size-5" />
+    <ConfigProvider>
+      <SidebarProvider>
+        <LayoutContainer>
+          <Sidebar />
+          <div className="w-full pl-0 lg:pl-16">
+            {/* navbar */}
+            <div className="fixed left-16 right-0 top-0 z-40 hidden h-16 shrink-0 items-center gap-x-4 border bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:flex lg:px-8">
+              <div className="flex items-center justify-evenly gap-2">
+                <h1 className="text-lg font-semibold">QuackDB</h1>
+                <TerminalIcon className="size-5" />
+              </div>
+              <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
+                {/* toolbar portal */}
+                <div id="toolbar-portal" />
+                <ThemeToggler />
+              </div>
             </div>
-            <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
-              {/* toolbar portal */}
-              <div id="toolbar-portal" />
-              <ThemeToggler />
-            </div>
+
+            <main
+              className={cn(
+                "fixed inset-x-0 bottom-0 top-16 w-full lg:left-16",
+                isSmallerScreen && "left-0 top-0",
+              )}
+            >
+              <div className="flex h-full flex-col">
+                <ContentShell>{props.children}</ContentShell>
+              </div>
+            </main>
           </div>
 
-          <main
-            className={cn(
-              "fixed inset-x-0 bottom-0 top-16 w-full lg:left-16",
-              isSmallerScreen && "left-0 top-0",
-            )}
-          >
-            <div className="flex h-full flex-col">
-              <ContentShell>{props.children}</ContentShell>
-            </div>
-          </main>
-        </div>
+          {/* Start rendering router matches */}
+          {/* <TanStackRouterDevtools position="bottom-right" /> */}
 
-        {/* Start rendering router matches */}
-        {/* <TanStackRouterDevtools position="bottom-right" /> */}
-
-        {/* should be inside LayoutContainer incase we change tailwind things */}
-        <Toaster
-          closeButton
-          pauseWhenPageIsHidden
-          visibleToasts={3}
-          expand
-        />
-      </LayoutContainer>
-    </SidebarProvider>
+          {/* should be inside LayoutContainer incase we change tailwind things */}
+          <Toaster
+            closeButton
+            pauseWhenPageIsHidden
+            visibleToasts={3}
+            expand
+          />
+        </LayoutContainer>
+      </SidebarProvider>
+    </ConfigProvider>
   );
 }
 
