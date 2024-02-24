@@ -104,7 +104,7 @@ async function onStoreRun(payload: FetchResultsReturn) {
  * Context for the query results;
  *
  */
-function QueryProvider({ children }: QueryProviderProps) {
+function QueryProvider(props: QueryProviderProps) {
   const [state, dispatch] = useReducer(queryReducer, {
     ...initialState,
   });
@@ -181,7 +181,9 @@ function QueryProvider({ children }: QueryProviderProps) {
     [onCancelQuery, onRunQuery, state],
   );
   return (
-    <QueryContext.Provider value={value}>{children}</QueryContext.Provider>
+    <QueryContext.Provider value={value}>
+      {props.children}
+    </QueryContext.Provider>
   );
 }
 

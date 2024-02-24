@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useConfig } from "@/context/config/useConfig";
 import { DbProvider } from "@/context/db/provider";
 import { EditorProvider } from "@/context/editor/provider";
 import { useEditor } from "@/context/editor/useEditor";
@@ -115,11 +116,33 @@ function PlaygroundContainer() {
           <QueryProvider>
             <EditorProvider>
               <Playground />
+              <BrowserAlertBar />
             </EditorProvider>
           </QueryProvider>
         </PanelProvider>
       </DbProvider>
     </SessionProvider>
+  );
+}
+
+function BrowserAlertBar() {
+  const { browser } = useConfig();
+
+  const isChrome = browser === "chrome";
+
+  if (isChrome) return null;
+
+  return (
+    <Alert
+      variant="destructive"
+      className="absolute inset-x-0 top-4 z-50 mx-auto max-w-2xl bg-red-500  text-white shadow-md"
+    >
+      <AlertTitle>Warning</AlertTitle>
+      <AlertDescription>
+        QuackDB does not yet support your browser. Please use Chrome for the
+        best experience.
+      </AlertDescription>
+    </Alert>
   );
 }
 
@@ -133,6 +156,7 @@ function Playground() {
     onFileDrop,
   } = useFileDrop();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   // we read this during render so we can't use a ref.
   const [el, setEl] = useState<HTMLElement | null>(null);
   useEffect(() => {
@@ -191,7 +215,8 @@ function Playground() {
       ref={ref}
       className={cn(
         "flex size-full bg-inherit",
-        isDragActive && "bg-gray-100 dark:bg-gray-800",
+        isDragActive &&
+          "bg-gray-100 transition-colors duration-200 ease-in-out dark:bg-gray-800",
       )}
     >
       {/* Panel provider is custom context while PanelGroup is unrelated component; poor naming. */}
