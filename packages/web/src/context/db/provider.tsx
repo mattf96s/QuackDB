@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef } from "react";
+import type { Source } from "@/constants";
 import { useSession } from "@/context/session/useSession";
 import { DuckDBInstance } from "@/modules/duckdb-singleton";
+import { useEffect, useMemo, useRef } from "react";
 import { DBContext } from "./context";
 
 type DBProviderProps = { children: React.ReactNode };
@@ -32,6 +33,7 @@ function DbProvider(props: DBProviderProps) {
   const { sessionId, sources } = useSession();
 
   if (db.current === null) {
+    // don't need to wait for first render to create the instance (and avoid creating a new instance on every render)
     db.current = new DuckDBInstance({
       session: sessionId,
     });
@@ -40,43 +42,35 @@ function DbProvider(props: DBProviderProps) {
   // cleanup on unmount (not session change)
   useEffect(() => {
     return () => {
-      db?.current
+      db.current
         ?.dispose()
-
         .catch((e) => console.error("Error disposing db: ", e));
     };
   }, []);
 
-  // Reset the database instance when the session changes but don't disconnect from the database.
-  // However, we should close all the connections and write the state to opfs.
+  // add sources to db
   useEffect(() => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const resetSession = async (_session: string) => {
+    const addSources = async (sources: Source[]) => {
       try {
-        await Promise.all([db.current?.reset(), signal.throwIfAborted()]);
-
         for await (const source of sources) {
-          await db.current?.registerFileHandle(
-            source.path,
-            await source.handle.getFile(),
-          );
+          if (signal.aborted) break;
+          await db.current?.registerFileHandle(source.path, source.handle);
         }
       } catch (e) {
         if (e instanceof DOMException && e.name === "AbortError") return;
-        console.error("Error resetting session: ", e);
+        console.error("Error adding sources: ", e);
       }
     };
 
-    if (sessionId) {
-      resetSession(sessionId);
-    }
+    addSources(sources);
 
     return () => {
       abortController.abort();
     };
-  }, [sessionId, sources]);
+  }, [sources]);
 
   const value = useMemo(
     () => ({

@@ -72,6 +72,11 @@
 - [Diagnostics](https://stackoverflow.com/questions/76792125/set-up-listeners-when-a-model-is-created-or-disposed-for-monaco-editor-react)
 - [PRQL](https://github.com/PRQL/prql/blob/main/web/playground/src/workbench/Workbench.jsx)
 
+## Language service
+
+- [Kusto](https://github.com/axiomhq/monaco-kusto/blob/master/package/src/languageService/kustoMonarchLanguageDefinition.ts)
+  - seems good
+
 ## Other DuckDB Projects
 
 - [Harlequin](https://github.com/tconbeer/harlequin)
