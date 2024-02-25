@@ -1,14 +1,13 @@
 import DataGrid from "@/components/data-grid";
+import ErrorNotification from "@/components/error";
 import Icon from "@/components/icon";
 import Chart from "@/components/plot";
 import { useTheme } from "@/components/theme-provider";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@/context/query/useQuery";
-import { cn } from "@/lib/utils";
 import { type AutoOptions } from "@observablehq/plot";
 import { Await, defer } from "@tanstack/react-router";
 import { Suspense, memo, useEffect, useMemo, useState } from "react";
@@ -66,33 +65,6 @@ export default function ResultsView() {
         </TabsContent>
       </Tabs>
     </div>
-  );
-}
-
-function ErrorNotification(props: { error: string }) {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  return (
-    <Alert
-      variant={isDark ? "default" : "destructive"}
-      className={cn(
-        "group flex flex-col gap-3 hover:shadow hover:dark:border-card-foreground/30",
-        "min-w-24 space-y-1 font-mono dark:bg-accent dark:text-accent-foreground",
-      )}
-    >
-      <AlertTitle>
-        <span className="inline-flex items-center gap-2">
-          <Icon
-            name="AlertOctagon"
-            className="size-4"
-          />
-          <p className="text-base">Error</p>
-        </span>
-      </AlertTitle>
-      <AlertDescription className="whitespace-pre-wrap font-mono text-sm">
-        {props.error}
-      </AlertDescription>
-    </Alert>
   );
 }
 
