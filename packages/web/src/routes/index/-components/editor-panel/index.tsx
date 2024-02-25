@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import type { OnChange } from "@monaco-editor/react";
-import { DragHandleDots2Icon } from "@radix-ui/react-icons";
-import { Loader2 } from "lucide-react";
-import type { editor } from "monaco-editor";
-import { useSpinDelay } from "spin-delay";
+import Icon from "@/components/icon";
 import Editor from "@/components/monaco";
 import { useEditor } from "@/context/editor/useEditor";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
+import type { OnChange } from "@monaco-editor/react";
+import { DragHandleDots2Icon } from "@radix-ui/react-icons";
+import type { editor } from "monaco-editor";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { useSpinDelay } from "spin-delay";
 import OpenFileTabs from "./components/open-files";
 import ResultsView from "./components/results-viewer";
 
@@ -149,7 +149,10 @@ function CurrentEditor() {
       />
       {showLoader && (
         <div className="absolute right-4 top-2 z-10">
-          <Loader2 className="size-4 animate-spin text-primary" />
+          <Icon
+            name="Loader2"
+            className="size-4 animate-spin text-primary"
+          />
         </div>
       )}
     </>

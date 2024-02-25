@@ -1,7 +1,4 @@
-import { useState } from "react";
-import { Pencil2Icon } from "@radix-ui/react-icons";
-import { ChevronDown, DotIcon, Plus, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
+import Icon from "@/components/icon";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +21,9 @@ import {
 import type { CodeEditor } from "@/context/session/types";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
+import { Pencil2Icon } from "@radix-ui/react-icons";
+import { useState } from "react";
+import { toast } from "sonner";
 import { useWrapper } from "./wrapper/context/useWrapper";
 
 export default function EditorSources() {
@@ -48,7 +48,8 @@ export default function EditorSources() {
             variant="ghost"
             className="flex w-full items-center justify-start gap-1 hover:bg-transparent"
           >
-            <ChevronDown
+            <Icon
+              name="ChevronDown"
               className={cn(
                 "size-5",
                 isCollapsed && "rotate-180 transition-transform",
@@ -156,7 +157,12 @@ function CodeEditorItem(editor: CodeEditor) {
                 {editor.path}
               </span>
             </div>
-            {editor.isOpen && <DotIcon className="size-4" />}
+            {editor.isOpen && (
+              <Icon
+                name="Dot"
+                className="size-4"
+              />
+            )}
           </Button>
         </ContextMenuTrigger>
         <ContextMenuContent className="w-64">
@@ -213,7 +219,10 @@ function SourcesToolbar() {
         variant="ghost"
         onClick={onAddEditor}
       >
-        <Plus size={16} />
+        <Icon
+          name="Plus"
+          size={16}
+        />
       </Button>
       <Button
         disabled
@@ -222,7 +231,10 @@ function SourcesToolbar() {
         // #TODO: implement refresh
         onClick={() => null}
       >
-        <RefreshCw size={16} />
+        <Icon
+          name="RefreshCw"
+          size={16}
+        />
       </Button>
     </>
   );

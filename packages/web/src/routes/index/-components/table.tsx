@@ -1,6 +1,4 @@
-import { useState } from "react";
-import { format } from "date-fns";
-import { ChevronLeftIcon, ChevronRightIcon, Loader2 } from "lucide-react";
+import Icon from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -22,6 +20,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
+import { format } from "date-fns";
+import { useState } from "react";
 
 type TablePreviewProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,7 +58,7 @@ export default function TableView(props: TablePreviewProps) {
 
   return (
     <>
-      <ScrollArea className="h-full max-h-[800px] w-full min-w-[1000px]">
+      <ScrollArea className="size-full max-h-[800px] min-w-[1000px]">
         <Table>
           <TableHeader>
             <TableRow>
@@ -98,7 +98,10 @@ export default function TableView(props: TablePreviewProps) {
             onClick={onPrevPage}
             disabled={offset === 0}
           >
-            <ChevronLeftIcon className="h-4 w-4" />
+            <Icon
+              name="ChevronLeft"
+              className="size-4"
+            />
             <span>Previous</span>
           </Button>
 
@@ -108,7 +111,10 @@ export default function TableView(props: TablePreviewProps) {
             disabled={offset + limit >= count}
           >
             <span>Next</span>
-            <ChevronRightIcon className="h-4 w-4" />
+            <Icon
+              name="ChevronRight"
+              className="size-4"
+            />
           </Button>
 
           <PageSize
@@ -122,7 +128,10 @@ export default function TableView(props: TablePreviewProps) {
 
       {isLoading && (
         <span className="absolute right-0 top-0 z-50">
-          <Loader2 className="h-5 w-5 animate-spin" />
+          <Icon
+            name="Loader2"
+            className="size-5 animate-spin"
+          />
         </span>
       )}
     </>

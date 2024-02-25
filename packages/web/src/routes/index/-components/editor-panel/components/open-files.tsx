@@ -1,4 +1,4 @@
-import { Code2, PlusIcon, X } from "lucide-react";
+import Icon from "@/components/icon";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,10 @@ export default function OpenFileTabs() {
                 key={editor.path}
                 onClick={() => onOpenEditor(editor.path)}
               >
-                <Code2 className="size-5" />
+                <Icon
+                  name="Code2"
+                  className="size-5"
+                />
                 <span className="text-sm">{editor.path}</span>
 
                 <button
@@ -52,7 +55,8 @@ export default function OpenFileTabs() {
                       "hover:bg-background/30 dark:hover:bg-gray-200",
                   )}
                 >
-                  <X
+                  <Icon
+                    name="X"
                     className="size-4"
                     type="close"
                   />
@@ -79,7 +83,10 @@ function AddNewFileButton() {
       className="flex size-8 items-center justify-center hover:bg-gray-200"
       type="button"
     >
-      <PlusIcon className="size-5" />
+      <Icon
+        name="Plus"
+        className="size-5"
+      />
     </button>
   );
 }

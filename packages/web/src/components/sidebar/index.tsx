@@ -1,14 +1,21 @@
+import Icon from "@/components/icon";
+import { cn } from "@/lib/utils";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { useMatchRoute } from "@tanstack/react-router";
-import { Code2Icon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import type { icons } from "lucide-react";
 import { StyledLink } from "../ui/link/link";
+
+type NavItem = {
+  name: string;
+  href: string;
+  icon: keyof typeof icons;
+};
 
 const navigation = [
   {
     name: "Editor",
     href: "/",
-    icon: Code2Icon,
+    icon: "Code2",
   },
 ] as const;
 
@@ -59,7 +66,7 @@ function DesktopSidebar() {
 }
 
 function NavItem(props: (typeof navigation)[number]) {
-  const { href, icon: Icon } = props;
+  const { href, icon: iconName } = props;
   const matchRoute = useMatchRoute();
 
   const match = matchRoute({ from: href, fuzzy: true });
@@ -77,7 +84,10 @@ function NavItem(props: (typeof navigation)[number]) {
         )}
       >
         <span className="inline-flex items-center">
-          <Icon className={cn("size-5 text-inherit")} />
+          <Icon
+            name={iconName}
+            className={cn("size-5 text-inherit")}
+          />
         </span>
       </StyledLink>
     </li>

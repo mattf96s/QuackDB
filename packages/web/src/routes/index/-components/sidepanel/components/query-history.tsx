@@ -1,3 +1,4 @@
+import Icon from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { IDB_KEYS, queryMetaSchema, type QueryMeta } from "@/constants";
@@ -6,12 +7,6 @@ import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { del, get } from "idb-keyval";
-import {
-  ChevronDown,
-  ChevronRightIcon,
-  CopyCheck,
-  History,
-} from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useWrapper } from "./wrapper/context/useWrapper";
@@ -86,7 +81,8 @@ export default function QueryHistory() {
             variant="ghost"
             className="flex w-full items-center justify-start gap-1 hover:bg-transparent"
           >
-            <ChevronDown
+            <Icon
+              name="ChevronDown"
               className={cn(
                 "size-5",
                 isCollapsed && "rotate-180 transition-transform",
@@ -102,7 +98,10 @@ export default function QueryHistory() {
             onClick={onClearHistory}
             disabled={runs.length === 0}
           >
-            <History size={16} />
+            <Icon
+              name="History"
+              size={16}
+            />
           </Button>
         </div>
       </div>
@@ -194,7 +193,8 @@ function RunHoverCard(props: QueryMeta) {
           </span>
           {isCopied && (
             <div className="absolute inset-y-1 right-1">
-              <CopyCheck
+              <Icon
+                name="CopyCheck"
                 className="bg-transparent text-green-700"
                 size={18}
               />
@@ -203,7 +203,8 @@ function RunHoverCard(props: QueryMeta) {
         </div>
       </div>
 
-      <ChevronRightIcon
+      <Icon
+        name="ChevronRight"
         className="size-5 flex-none text-gray-400"
         aria-hidden="true"
       />

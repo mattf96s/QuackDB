@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
-import { Settings2, Trash2Icon } from "lucide-react";
+import Icon from "@/components/icon";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useDB } from "@/context/db/useDB";
 import { useSession } from "@/context/session/useSession";
+import { useCallback, useEffect, useState } from "react";
 
 export default function Settings() {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,7 +51,10 @@ export default function Settings() {
           variant="outline"
           size="sm"
         >
-          <Settings2 size={16} />
+          <Icon
+            name="Settings2"
+            size={16}
+          />
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -125,7 +128,10 @@ function ClearSession() {
             variant="destructive"
             size="sm"
           >
-            <Trash2Icon size={16} />
+            <Icon
+              name="Trash2"
+              size={16}
+            />
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>

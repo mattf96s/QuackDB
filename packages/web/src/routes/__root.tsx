@@ -1,4 +1,5 @@
 import NotFound from "@/components/NotFound";
+import Icon from "@/components/icon";
 import Sidebar from "@/components/sidebar";
 import { SidebarProvider } from "@/components/sidebar/context";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -14,7 +15,6 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import * as Fathom from "fathom-client";
-import { TerminalIcon } from "lucide-react";
 import NProgress from "nprogress";
 import { memo, useEffect, type ReactNode } from "react";
 
@@ -82,7 +82,10 @@ function Layout(props: { children: ReactNode }) {
             <div className="fixed left-16 right-0 top-0 z-40 hidden h-16 shrink-0 items-center gap-x-4 border bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:flex lg:px-8">
               <div className="flex items-center justify-evenly gap-2">
                 <h1 className="text-lg font-semibold">QuackDB</h1>
-                <TerminalIcon className="size-5" />
+                <Icon
+                  name="Terminal"
+                  className="size-5"
+                />
               </div>
               <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
                 {/* toolbar portal */}
