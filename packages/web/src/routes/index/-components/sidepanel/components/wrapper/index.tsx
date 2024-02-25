@@ -41,7 +41,7 @@ function Content(props: ComponentWrapperProps) {
       id={id}
       order={order}
       minSize={5}
-      maxSize={75} // NB: otherwise the middle panel gets into a weird state whereby it can't be imperatively expanded once collapsed if both the middle and bottom panels are collapsed.
+      maxSize={80} // NB: otherwise the middle panel gets into a weird state whereby it can't be imperatively expanded once collapsed if both the middle and bottom panels are collapsed.
       collapsedSize={5}
       ref={ref} // imperative api: https://react-resizable-panels.vercel.app/examples/imperative-panel-api
       collapsible

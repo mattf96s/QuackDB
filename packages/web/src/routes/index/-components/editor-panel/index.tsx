@@ -1,11 +1,13 @@
 import Icon from "@/components/icon";
 import Editor from "@/components/monaco";
+import { formatSQL } from "@/components/monaco/helpers/prettier";
+import { useEditorSettings } from "@/context/editor-settings/useEditor";
 import { useEditor } from "@/context/editor/useEditor";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
 import type { OnChange } from "@monaco-editor/react";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
-import type { editor } from "monaco-editor";
+import { Range, type editor } from "monaco-editor";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useSpinDelay } from "spin-delay";
@@ -51,6 +53,8 @@ function CurrentEditor() {
   const [isReady, setIsReady] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  const { shouldFormat } = useEditorSettings();
+
   const currentEditor = useMemo(
     () => editors.find((editor) => editor.isFocused),
     [editors],
@@ -89,13 +93,42 @@ function CurrentEditor() {
 
       // check if the content has changed
 
-      const content = editor.getValue();
+      let content = editor.getValue();
 
       const model = editor.getModel();
 
       if (model == null) return;
 
       setIsSaving(true);
+
+      // try format
+
+      if (shouldFormat) {
+        try {
+          // check whether user has disabled formatting
+
+          // Format the SQL query using the formatting provider
+          const formatted = await formatSQL(content);
+          model.applyEdits([
+            {
+              range: new Range(
+                0,
+                0,
+                model.getLineCount(),
+                model.getLineMaxColumn(model.getLineCount()),
+              ),
+              text: formatted,
+            },
+          ]);
+
+          // Push the formatted content to the undo stack (so that the user can undo the formatting if they want to)
+          model.pushStackElement();
+
+          content = formatted;
+        } catch (e) {
+          console.error(`Error formatting file: ${currentEditor.path}: `, e);
+        }
+      }
 
       try {
         await onSaveEditor({
@@ -108,7 +141,7 @@ function CurrentEditor() {
         setIsSaving(false);
       }
     },
-    [currentEditor, onSaveEditor],
+    [currentEditor, onSaveEditor, shouldFormat],
   );
 
   const showLoader = useSpinDelay(isSaving, {
