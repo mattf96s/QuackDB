@@ -1,9 +1,7 @@
 import NotFound from "@/components/NotFound";
-import Icon from "@/components/icon";
 import Sidebar from "@/components/sidebar";
 import { SidebarProvider } from "@/components/sidebar/context";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ThemeToggler } from "@/components/theme-toggle";
 import { Toaster } from "@/components/ui/sonner";
 import { ConfigProvider } from "@/context/config/provider";
 import useBreakpoint from "@/hooks/use-breakpoints";
@@ -16,7 +14,7 @@ import {
 } from "@tanstack/react-router";
 import * as Fathom from "fathom-client";
 import NProgress from "nprogress";
-import { memo, useEffect, type ReactNode } from "react";
+import { Suspense, memo, useEffect, type ReactNode } from "react";
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -78,30 +76,18 @@ function Layout(props: { children: ReactNode }) {
         <LayoutContainer>
           <Sidebar />
           <div className="w-full pl-0 lg:pl-16">
-            {/* navbar */}
-            <div className="fixed left-16 right-0 top-0 z-40 hidden h-16 shrink-0 items-center gap-x-4 border bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:flex lg:px-8">
-              <div className="flex items-center justify-evenly gap-2">
-                <h1 className="text-lg font-semibold">QuackDB</h1>
-                <Icon
-                  name="Terminal"
-                  className="size-5"
-                />
-              </div>
-              <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
-                {/* toolbar portal */}
-                <div id="toolbar-portal" />
-                <ThemeToggler />
-              </div>
-            </div>
-
             <main
               className={cn(
-                "fixed inset-x-0 bottom-0 top-16 w-full lg:left-16",
-                isSmallerScreen && "left-0 top-0",
+                "fixed inset-x-0 bottom-0 top-16 lg:left-16 lg:w-[calc(100vw-64px)]",
+                isSmallerScreen && "left-0 top-0 w-full",
               )}
             >
-              <div className="flex h-full flex-col">
-                <ContentShell>{props.children}</ContentShell>
+              <div className="flex size-full flex-col">
+                <ContentShell>
+                  <Suspense fallback={<p>loading...</p>}>
+                    {props.children}
+                  </Suspense>
+                </ContentShell>
               </div>
             </main>
           </div>
@@ -167,5 +153,7 @@ const LayoutContainer = memo(function LayoutContainer(props: {
 const ContentShell = memo(function ContentShell(props: {
   children: ReactNode;
 }) {
-  return <div className="flex h-full min-h-0 flex-col">{props.children}</div>;
+  return (
+    <div className="flex size-full min-h-0 flex-col">{props.children}</div>
+  );
 });

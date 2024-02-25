@@ -1,6 +1,6 @@
 {
   "name": "quackdb",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@8.14.0",
@@ -8,9 +8,9 @@
     "url": "https://github.com/mattf96s/quackdb"
   },
   "author": {
-    "name": "Matt Fainman"
+    "name": "Matthew Fainman"
   },
-  "description": "QuackDB - An online DuckDB playground",
+  "description": "QuackDB - An online DuckDB SQL playground and editor",
   "scripts": {
     "dev": "sst dev",
     "build": "sst build",

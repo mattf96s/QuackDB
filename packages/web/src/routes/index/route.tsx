@@ -1,9 +1,11 @@
+import ErrorNotification from "@/components/error";
 import Icon from "@/components/icon";
 import PanelHandle from "@/components/panel-handle";
 import { ThemeToggler } from "@/components/theme-toggle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StyledLink } from "@/components/ui/link";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useConfig } from "@/context/config/useConfig";
 import { DbProvider } from "@/context/db/provider";
@@ -15,14 +17,12 @@ import { useFileDrop } from "@/context/session/hooks/useAddFile.tsx";
 import { SessionProvider } from "@/context/session/provider";
 import useBreakpoint from "@/hooks/use-breakpoints";
 import { cn } from "@/lib/utils";
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import {
   createFileRoute,
   useRouter,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Panel, PanelGroup } from "react-resizable-panels";
 import { toast } from "sonner";
@@ -35,42 +35,6 @@ import { PanelProvider } from "./-context/panel/provider";
 export const Route = createFileRoute("/")({
   component: PlaygroundContainer,
   errorComponent: ErrorComponent,
-  //errorComponent: (props)=><ErrorComponent {...props} />,
-  // loader: async ({ abortController }) => {
-  //   let worker: Worker | undefined;
-  //   let getFilesFn: Remote<GetSessionWorker> | undefined;
-
-  //   try {
-  //     worker = new Worker(
-  //       new URL("@/workers/get-session-worker.ts", import.meta.url),
-  //       {
-  //         type: "module",
-  //         name: "GetSessionWorker",
-  //       },
-  //     );
-
-  //     getFilesFn = wrap<GetSessionWorker>(worker);
-
-  //     const resPromise = await getFilesFn("default");
-
-  //     console.log("resPromise", resPromise);
-
-  //     // abort worker if route is aborted
-  //     abortController.signal.addEventListener("abort", () => {
-  //       worker?.terminate();
-  //     });
-
-  //     const res = await resPromise;
-
-  //     return res;
-  //   } catch (e) {
-  //     console.error("Error loading route: ", e);
-  //     throw e;
-  //   } finally {
-  //     getFilesFn?.[releaseProxy]();
-  //     worker?.terminate();
-  //   }
-  // },
   headers: () => {
     // add headers to allow shared array buffer and cors
     return {
@@ -88,21 +52,58 @@ function ErrorComponent(props: ErrorComponentProps) {
 
   const msg = error instanceof Error ? error.message : "Unknown error";
   return (
-    <div className="flex flex-col gap-10">
-      <Alert variant="destructive">
-        <ExclamationTriangleIcon className="size-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{msg}</AlertDescription>
-      </Alert>
-      <div>
-        <Button
-          onClick={() => {
-            router.cleanCache();
-            router.invalidate();
-          }}
-        >
-          Reload
-        </Button>
+    <div className="mx-auto flex w-full max-w-full flex-col gap-10 py-10">
+      <div className="mx-auto flex w-full max-w-xl flex-col gap-10 md:max-w-2xl lg:max-w-5xl">
+        <ErrorNotification error={msg} />
+        <div className="flex w-full items-center justify-center gap-4">
+          <StyledLink
+            variant="outline"
+            size="lg"
+            href="https://github.com/mattf96s/quackdb/issues/new"
+            // target="_blank"
+            // rel="noopener noreferrer"
+            className="flex items-center gap-1"
+          >
+            Create an issue{" "}
+            <Icon
+              name="ExternalLink"
+              className="ml-1 size-4"
+            />
+          </StyledLink>
+
+          <Button
+            size="lg"
+            onClick={() => {
+              router.cleanCache();
+              router.invalidate();
+            }}
+          >
+            Reload
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NavBar() {
+  return (
+    <div className="fixed left-16 right-0 top-0 z-40 hidden h-16 shrink-0 items-center gap-x-4 border bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 md:flex lg:px-8">
+      <div className="flex items-center justify-evenly gap-2">
+        <h1 className="text-lg font-semibold">QuackDB</h1>
+        <Icon
+          name="Terminal"
+          className="size-5"
+        />
+      </div>
+      <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
+        <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
+          <QueryMeta />
+
+          <Toolbar />
+          <Settings />
+        </div>
+        <ThemeToggler />
       </div>
     </div>
   );
@@ -115,6 +116,7 @@ function PlaygroundContainer() {
         <PanelProvider>
           <QueryProvider>
             <EditorProvider>
+              <NavBar />
               <Playground />
               <BrowserAlertBar />
             </EditorProvider>
@@ -156,20 +158,6 @@ function Playground() {
     onFileDrop,
   } = useFileDrop();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // we read this during render so we can't use a ref.
-  const [el, setEl] = useState<HTMLElement | null>(null);
-  useEffect(() => {
-    const toolbarEl = document.getElementById("toolbar-portal");
-
-    if (toolbarEl) {
-      setEl(toolbarEl);
-    }
-
-    return () => {
-      setEl(null);
-    };
-  }, []);
 
   const isSmallerScreen = useBreakpoint("md");
 
@@ -245,20 +233,6 @@ function Playground() {
           <EditorPanel />
         </Panel>
       </PanelGroup>
-      {/* put into the top level toolbar */}
-      {el &&
-        createPortal(
-          <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
-            {/* <PresetSelector presets={presets} /> */}
-            <QueryMeta />
-
-            <Toolbar />
-            <Settings />
-
-            {/* <SessionCombobox /> */}
-          </div>,
-          el,
-        )}
     </div>
   );
 }
@@ -288,7 +262,7 @@ function QueryMeta() {
       <Badge
         variant="outline"
         className={cn(
-          "border-green-300 bg-green-100 text-xs tabular-nums text-muted-foreground",
+          "border-green-300 bg-green-100 text-xs tabular-nums text-muted-foreground dark:border-green-500 dark:bg-background dark:text-green-500",
           meta?.cacheHit && "border-orange-300 bg-orange-100",
         )}
       >
