@@ -56,6 +56,30 @@
 }
 
 @layer base {
+  @font-face {
+    font-family: "geist-sans";
+    font-weight: 300 900;
+    font-display: swap;
+    src: url("/fonts/Geist/GeistVariableVF.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "jetbrains-mono", monospace;
+    font-weight: 300 900;
+    font-style: normal;
+    font-display: swap;
+    font-stretch: normal;
+    src: url("/fonts/JetBrainsMono/JetBrainsMono[wght].woff2") format("woff2");
+  }
+
+  @font-face {
+    font-family: "jetbrains-mono";
+    font-weight: 300 900;
+    font-style: italic;
+    font-display: swap;
+    font-stretch: normal;
+    src: url("/fonts/JetBrainsMono/JetBrainsMono-Italic[wght].woff2")
+      format("woff2");
+  }
   * {
     @apply border-border;
   }
@@ -68,33 +92,6 @@
     /* anti-aliasing */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-
-  @font-face {
-    font-family: 'geist-sans';
-    font-weight: 300 900;
-    font-display: swap;
-    font-style: normal;
-    font-stretch: normal;
-    src: url("/fonts/Geist/GeistVariableVF.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: 'jetbrains-mono', monospace;
-    font-weight: 300 900;
-    font-style: normal;
-    font-display: swap;
-    font-stretch: normal;
-    src: url("/fonts/JetBrainsMono/JetBrainsMono[wght].woff2") format("woff2");
-  }
-
-  @font-face {
-    font-family: 'jetbrains-mono';
-    font-weight: 300 900;
-    font-style: italic;
-    font-display: swap;
-    font-stretch: normal;
-    src: url("/fonts/JetBrainsMono/JetBrainsMono-Italic[wght].woff2")
-      format("woff2");
   }
 }
 

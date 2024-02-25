@@ -1,8 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CaretSortIcon } from "@radix-ui/react-icons";
-import { releaseProxy, type Remote, wrap } from "comlink";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -19,6 +16,9 @@ import {
 } from "@/components/ui/popover";
 import { useSession } from "@/context/session/useSession";
 import type { ListSessionsWorker } from "@/workers/list-sessions-worker";
+import { CaretSortIcon } from "@radix-ui/react-icons";
+import { releaseProxy, wrap, type Remote } from "comlink";
+import { useEffect, useState } from "react";
 
 type Option = {
   value: string;
@@ -26,7 +26,7 @@ type Option = {
 };
 
 export default function SessionCombobox() {
-  const { session, onSessionChange } = useSession();
+  const { sessionId, onSessionChange } = useSession();
   const [options, setOptions] = useState<Option[]>([]);
   const [open, setOpen] = useState(false);
 
@@ -75,8 +75,8 @@ export default function SessionCombobox() {
             >
               {value
                 ? options.find((option) => option.value === value)?.label
-                : session}
-              <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                : sessionId}
+              <CaretSortIcon className="ml-2 size-4 shrink-0 opacity-50" />
             </Button>
           </div>
         </PopoverTrigger>

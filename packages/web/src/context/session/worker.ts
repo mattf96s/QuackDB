@@ -1,12 +1,7 @@
 /// <reference lib="webworker" />
-import {
-  IDB_KEYS,
-  type Editor,
-  type FileEntry,
-  type Source,
-} from "@/constants";
+import { type Editor, type FileEntry, type Source } from "@/constants";
 import * as Comlink from "comlink";
-import { delMany } from "idb-keyval";
+import { clear } from "idb-keyval";
 import { newfileContents } from "./data/newfile-content";
 import type {
   AddDataSourceProps,
@@ -635,8 +630,7 @@ const clearCacheAPI = async () => {
 };
 
 const clearIDB = async () => {
-  const keys = Object.keys(IDB_KEYS);
-  return delMany(keys);
+  return clear();
 };
 
 type OnBurstCacheResponse = {
@@ -660,7 +654,14 @@ async function onBurstCache({
   const root = await navigator.storage.getDirectory();
 
   try {
-    const clearOPFS = root.removeEntry(sessionId, { recursive: true });
+    // // This will delete all
+    // const keys = root.keys();
+    // for await (const key of keys) {
+    //   await root.removeEntry(key, { recursive: true }).catch((e) => {
+    //     console.error("Error removing entry: ", e);
+    //   });
+    // }
+    const clearOPFS = await root.removeEntry(sessionId, { recursive: true });
 
     await Promise.all([clearOPFS, clearCacheAPI(), clearIDB()]);
 

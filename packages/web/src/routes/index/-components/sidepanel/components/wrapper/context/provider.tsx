@@ -1,8 +1,9 @@
-import { useCallback, useMemo, useReducer } from "react";
+import { useCallback, useMemo, useReducer, useRef } from "react";
+import { type ImperativePanelHandle } from "react-resizable-panels";
 import { WrapperContext } from "./context";
 import type { WrapperState } from "./types";
 
-type WrapperProviderProps = {
+type WrapperProviderProps = Pick<WrapperState, "id" | "order"> & {
   children: React.ReactNode;
 };
 
@@ -27,6 +28,8 @@ function wrapperReducer(state: State, action: Action): State {
 }
 
 function WrapperProvider(props: WrapperProviderProps) {
+  const ref = useRef<ImperativePanelHandle | null>(null);
+
   const [state, dispatch] = useReducer(wrapperReducer, {
     isCollapsed: false,
   });
@@ -42,12 +45,17 @@ function WrapperProvider(props: WrapperProviderProps) {
     [],
   );
 
+  const { order, id } = props;
+
   const value = useMemo(
     () => ({
       isCollapsed: state.isCollapsed,
       onToggleIsCollapse,
+      ref,
+      id,
+      order,
     }),
-    [onToggleIsCollapse, state.isCollapsed],
+    [onToggleIsCollapse, state.isCollapsed, id, order],
   );
 
   return (

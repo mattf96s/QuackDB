@@ -38,17 +38,21 @@ const onGetStoredQueries = async (): Promise<QueryMeta[]> => {
 export default function QueryHistory() {
   const [runs, setRuns] = useState<QueryMeta[]>([]);
 
-  const { isCollapsed, onToggleIsCollapse } = useWrapper();
+  const { isCollapsed, ref } = useWrapper();
   const { meta } = useQuery();
 
-  const onCollapse = () => {
-    onToggleIsCollapse(true);
+  const onToggle = () => {
+    if (!ref.current) {
+      console.warn("No panel ref found");
+      return;
+    }
+    const isExpanded = ref.current.isExpanded();
+    if (isExpanded) {
+      ref.current.collapse();
+    } else {
+      ref.current.expand();
+    }
   };
-
-  const onExpand = () => {
-    onToggleIsCollapse(false);
-  };
-
   const uniqueId = `${meta?.hash}_${meta?.created}`;
 
   useEffect(() => {
@@ -77,7 +81,7 @@ export default function QueryHistory() {
       <div className="flex max-h-full w-full items-center justify-between">
         <div className="flex grow">
           <Button
-            onClick={isCollapsed ? onExpand : onCollapse}
+            onClick={onToggle}
             variant="ghost"
             className="flex w-full items-center justify-start gap-1 hover:bg-transparent"
           >
@@ -85,13 +89,13 @@ export default function QueryHistory() {
               name="ChevronDown"
               className={cn(
                 "size-5",
-                isCollapsed && "rotate-180 transition-transform",
+                isCollapsed && "-rotate-90 transition-transform",
               )}
             />
             <span className="text-sm font-semibold">History</span>
           </Button>
         </div>
-        <div className="flex items-center gap-1 pr-1">
+        <div className="flex items-center gap-1 px-2">
           <Button
             size="xs"
             variant="ghost"

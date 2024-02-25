@@ -5,7 +5,6 @@ import {
   type QueryMeta,
 } from "@/constants";
 import { getArrowTableSchema } from "@/utils/arrow/helpers";
-import { getCompletions } from "@/utils/duckdb/autocomplete";
 import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
 import type {
   AsyncRecordBatchStreamReader,
@@ -698,29 +697,6 @@ export class DuckDBInstance {
    *
    * Source: [Harlequin](https://github.com/tconbeer/harlequin/blob/main/src/harlequin_duckdb/completions.py)
    */
-
-  async autoCompletion({ query }: { query?: string }) {
-    try {
-      const completions = await getCompletions(this);
-      const flattened = completions.flatMap((completion) => completion.rows);
-
-      if (!query) return flattened;
-
-      const queryLower = query.toLowerCase();
-      const queryWords = queryLower.split(" ");
-      const lastWord = queryWords[queryWords.length - 1];
-
-      const filteredCompletions = flattened.filter((completion) =>
-        // @ts-expect-error: #TODO: fix this
-        completion?.label.toLowerCase().startsWith(lastWord),
-      );
-
-      return filteredCompletions;
-    } catch (e) {
-      console.error("Error in autoCompletion: ", e);
-      return [];
-    }
-  }
 
   /**
    * Validate a query.
