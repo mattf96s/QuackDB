@@ -9,6 +9,7 @@ import { StyledLink } from "@/components/ui/link";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useConfig } from "@/context/config/useConfig";
 import { DbProvider } from "@/context/db/provider";
+import { EditorSettingsProvider } from "@/context/editor-settings/provider";
 import { EditorProvider } from "@/context/editor/provider";
 import { useEditor } from "@/context/editor/useEditor";
 import { QueryProvider } from "@/context/query/provider";
@@ -115,11 +116,13 @@ function PlaygroundContainer() {
       <DbProvider>
         <PanelProvider>
           <QueryProvider>
-            <EditorProvider>
-              <NavBar />
-              <Playground />
-              <BrowserAlertBar />
-            </EditorProvider>
+            <EditorSettingsProvider>
+              <EditorProvider>
+                <NavBar />
+                <Playground />
+                <BrowserAlertBar />
+              </EditorProvider>
+            </EditorSettingsProvider>
           </QueryProvider>
         </PanelProvider>
       </DbProvider>

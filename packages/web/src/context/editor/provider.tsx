@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from "react";
 import type { EditorForwardedRef } from "@/components/monaco";
+import { useEffect, useMemo, useRef } from "react";
 import { EditorContext } from "./context";
 
 type EditorProviderProps = { children: React.ReactNode };

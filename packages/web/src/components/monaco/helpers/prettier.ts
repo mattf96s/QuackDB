@@ -14,5 +14,6 @@ export const formatSQL = (code: string) => {
     pluginSearchDirs: false,
     language: "postgresql",
     database: "postgresql",
+    expressionWidth: 200,
   });
 };

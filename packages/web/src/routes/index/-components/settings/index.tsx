@@ -20,6 +20,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useDB } from "@/context/db/useDB";
+import { useEditorSettings } from "@/context/editor-settings/useEditor";
 import { useSession } from "@/context/session/useSession";
 import { useCallback, useEffect, useState } from "react";
 
@@ -86,11 +87,37 @@ export default function Settings() {
               id="cache"
             />
           </div>
+          {/* format */}
+          <div className="flex items-center justify-between space-x-2">
+            <FormatOption />
+          </div>
           <Separator />
           <ClearSession />
         </div>
       </PopoverContent>
     </Popover>
+  );
+}
+
+function FormatOption() {
+  const { shouldFormat, toggleShouldFormat } = useEditorSettings();
+  return (
+    <>
+      <Label
+        htmlFor="format"
+        className="flex flex-col space-y-1"
+      >
+        <span>Format</span>
+        <span className="font-normal leading-snug text-muted-foreground">
+          Format SQL queries on save.
+        </span>
+      </Label>
+      <Switch
+        checked={shouldFormat}
+        onCheckedChange={(v) => toggleShouldFormat(v)}
+        id="format"
+      />
+    </>
   );
 }
 

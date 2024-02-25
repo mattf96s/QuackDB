@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@/context/query/useQuery";
 import { type AutoOptions } from "@observablehq/plot";
 import { Await, defer } from "@tanstack/react-router";
-import { Suspense, memo, useEffect, useMemo, useState } from "react";
+import { Suspense, memo, useMemo, useState } from "react";
 import { getHighlighter } from "shiki";
 
 export default function ResultsView() {
@@ -193,28 +193,8 @@ function JsonContent({ isDark, json }: { isDark: boolean; json: string }) {
   const promise = defer(highlightJson(json, isDark));
 
   return (
-    <Suspense fallback={<DeferFallback />}>
+    <Suspense>
       <Await promise={promise}>{(p) => p}</Await>
     </Suspense>
-  );
-}
-
-function DeferFallback() {
-  const [message, setMessage] = useState("Loading...");
-
-  useEffect(() => {
-    const id = setTimeout(() => {
-      setMessage("Making it pretty...");
-    }, 1000);
-    return () => clearTimeout(id);
-  }, []);
-  return (
-    <div className="inline-flex items-center gap-2">
-      <p>{message}</p>
-      <Icon
-        name="Loader2"
-        className="size-5 animate-spin"
-      />
-    </div>
   );
 }
