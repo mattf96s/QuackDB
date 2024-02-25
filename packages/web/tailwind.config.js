@@ -2,8 +2,8 @@ import aspectRatio from "@tailwindcss/aspect-ratio"
 import containerQueries from '@tailwindcss/container-queries'
 import form from "@tailwindcss/forms"
 import typography from '@tailwindcss/typography'
-import { fontFamily } from "tailwindcss/defaultTheme"
 import animate from "tailwindcss-animate"
+import { fontFamily } from "tailwindcss/defaultTheme"
 
 
 /** @type {import("tailwindcss").Config} */

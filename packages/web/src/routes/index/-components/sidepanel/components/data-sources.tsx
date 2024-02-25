@@ -8,6 +8,16 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useDB } from "@/context/db/useDB";
 import { useSession } from "@/context/session/useSession";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
@@ -18,14 +28,21 @@ import { useWrapper } from "./wrapper/context/useWrapper";
 
 export default function DataSources() {
   const { sources } = useSession();
-  const { isCollapsed, onToggleIsCollapse } = useWrapper();
+  const { ref, isCollapsed } = useWrapper();
 
-  const onCollapse = () => {
-    onToggleIsCollapse(true);
-  };
+  const onToggle = () => {
+    if (!ref.current) {
+      console.warn("No panel ref found");
+      return;
+    }
 
-  const onExpand = () => {
-    onToggleIsCollapse(false);
+    const isExpanded = ref.current.isExpanded();
+
+    if (isExpanded) {
+      ref.current.collapse();
+    } else {
+      ref.current.expand();
+    }
   };
 
   return (
@@ -33,7 +50,7 @@ export default function DataSources() {
       <div className="flex w-full items-center justify-between">
         <div className="flex grow">
           <Button
-            onClick={isCollapsed ? onExpand : onCollapse}
+            onClick={onToggle}
             variant="ghost"
             className="flex w-full items-center justify-start gap-1 hover:bg-transparent"
           >
@@ -41,13 +58,13 @@ export default function DataSources() {
               name="ChevronDown"
               className={cn(
                 "size-5",
-                isCollapsed && "rotate-180 transition-transform",
+                isCollapsed && "-rotate-90 transition-transform",
               )}
             />
             <span className="text-sm font-semibold">Source</span>
           </Button>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 px-2">
           <SourcesToolbar />
         </div>
       </div>
@@ -230,28 +247,37 @@ function SourcesToolbar() {
 
   return (
     <>
-      <Button
-        size="xs"
-        variant="ghost"
-        onClick={onAddDataset}
-      >
-        <Icon
-          name="Plus"
-          size={16}
-        />
-      </Button>
-      <Button
-        disabled
-        size="xs"
-        variant="ghost"
-        // #TODO: refresh sources
-        onClick={() => null}
-      >
-        <Icon
-          name="RefreshCw"
-          size={16}
-        />
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="xs"
+          >
+            <Icon
+              name="Plus"
+              size={16}
+            />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          className="w-56"
+          // prevent focus going back to the trigger on close.
+          onCloseAutoFocus={(e) => e.preventDefault()}
+        >
+          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem onSelect={onAddDataset}>
+              Local file
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled>
+              Remote URL
+              <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled>Paste</DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </>
   );
 }

@@ -1,4 +1,18 @@
-import "monaco-editor/esm/vs/basic-languages/pgsql/pgsql.contribution";
+import { useDB } from "@/context/db/useDB";
+import { useQuery } from "@/context/query/useQuery";
+import { cn } from "@/lib/utils";
+import MonacoEditor, {
+  type Monaco,
+  type EditorProps as MonacoEditorProps,
+  type OnMount,
+} from "@monaco-editor/react";
+import {
+  KeyCode,
+  KeyMod,
+  Range,
+  type IDisposable,
+  type editor,
+} from "monaco-editor";
 import "monaco-editor/esm/vs/basic-languages/sql/sql.contribution";
 import {
   forwardRef,
@@ -7,23 +21,8 @@ import {
   useRef,
   useState,
 } from "react";
-import MonacoEditor, {
-  type EditorProps as MonacoEditorProps,
-  type Monaco,
-  type OnMount,
-} from "@monaco-editor/react";
-import {
-  type editor,
-  type IDisposable,
-  KeyCode,
-  KeyMod,
-  languages,
-  Range,
-} from "monaco-editor";
-import { useQuery } from "@/context/query/useQuery";
-import { cn } from "@/lib/utils";
 import { useTheme } from "../theme-provider";
-import { autocompleter } from "./helpers/autocomplete";
+import { SuggestionMaker } from "./suggestions";
 import { sqlConf, sqlDef } from "./syntax";
 
 type EditorProps = Exclude<MonacoEditorProps, "value"> & {
@@ -42,6 +41,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
   const [isReady, setIsReady] = useState(false);
 
   const { onRunQuery } = useQuery();
+  const { db } = useDB();
 
   const { theme } = useTheme();
 
@@ -152,57 +152,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
       monacoRef.current.languages.setMonarchTokensProvider(language, sqlDef),
     );
 
-    disposables.push(
-      monacoRef.current.languages.registerCompletionItemProvider(language, {
-        async provideCompletionItems(model, position, _context, _token) {
-          const input = model.getValue();
-
-          if (!input) {
-            return {
-              suggestions: [
-                {
-                  label: "SELECT",
-                  kind: languages.CompletionItemKind.Keyword,
-                  insertText: "SELECT",
-                  range: new Range(1, 1, 1, 1),
-                },
-                {
-                  label: "FROM",
-                  kind: languages.CompletionItemKind.Keyword,
-                  insertText: "FROM",
-                  range: new Range(1, 1, 1, 1),
-                },
-              ],
-              incomplete: true,
-            };
-          }
-
-          const word = model.getWordUntilPosition(position);
-          const range = new Range(
-            position.lineNumber,
-            word.startColumn,
-            position.lineNumber,
-            word.endColumn,
-          );
-
-          const { suggestions } = autocompleter(word.word);
-
-          const suggestionsWithRange = suggestions.map((suggestion) => ({
-            detail: suggestion.detail,
-            insertText: suggestion.insertText,
-            kind: suggestion.kind,
-            label: suggestion.label,
-            range,
-          }));
-
-          return {
-            suggestions: suggestionsWithRange,
-            incomplete: true,
-          };
-        },
-      }),
-    );
-
     // create Monaco model
 
     disposables.push(monacoRef.current.editor.createModel("sql", language));
@@ -233,7 +182,66 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
       // biome-ignore lint/complexity/noForEach: <explanation>
       disposables.forEach((disposable) => disposable.dispose());
     };
-  }, [isReady, language]);
+  }, [db, isReady, language]);
+
+  // completions
+
+  useEffect(() => {
+    const disposables: IDisposable[] = [];
+
+    if (!monacoRef.current) return;
+    if (!isReady) return;
+    if (!db) return;
+
+    const suggestor = new SuggestionMaker(db);
+
+    // register Monaco languages
+    monacoRef.current.languages.register({
+      id: language,
+      extensions: [`.${language}`],
+      aliases: [`${language.toLowerCase()}`, `${language.toUpperCase()}`],
+    });
+
+    disposables.push(
+      monacoRef.current.languages.registerCompletionItemProvider(language, {
+        async provideCompletionItems(model, position, _context, _token) {
+          const query = model.getValue();
+
+          const { word, endColumn, startColumn } =
+            model.getWordUntilPosition(position);
+
+          const range = new Range(
+            position.lineNumber,
+            startColumn,
+            position.lineNumber,
+            endColumn,
+          );
+
+          const controller = new AbortController();
+          const { signal } = controller;
+
+          const suggestions = await suggestor.getSuggestions({
+            query,
+            word,
+            range,
+            signal,
+          });
+
+          return {
+            suggestions,
+            incomplete: true,
+            dispose() {
+              controller.abort();
+            },
+          };
+        },
+      }),
+    );
+
+    return () => {
+      disposables.forEach((disposable) => disposable.dispose());
+    };
+  }, [db, isReady, language]);
 
   // Add right-click menu run selection.
   // I don't want to the run fn to trigger the other actions.

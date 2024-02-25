@@ -27,7 +27,7 @@ export const Route = createRootRoute({
       "Access-Control-Allow-Origin": "*",
       "Cross-Origin-Opener-Policy": "same-origin",
       "Cross-Origin-Embedder-Policy": "require-corp",
-      "Cross-Origin-Resource-Policy": "same-site",
+      "Cross-Origin-Resource-Policy": "cross-origin",
     };
   },
 });
@@ -135,7 +135,9 @@ function Shell(props: { children: ReactNode }) {
 function NotFoundComponent() {
   return (
     <Shell>
-      <NotFound />
+      <div className="relative size-full">
+        <NotFound />
+      </div>
     </Shell>
   );
 }

@@ -29,14 +29,19 @@ import { useWrapper } from "./wrapper/context/useWrapper";
 export default function EditorSources() {
   const { editors } = useSession();
 
-  const { isCollapsed, onToggleIsCollapse } = useWrapper();
+  const { isCollapsed, ref } = useWrapper();
 
-  const onCollapse = () => {
-    onToggleIsCollapse(true);
-  };
-
-  const onExpand = () => {
-    onToggleIsCollapse(false);
+  const onToggle = () => {
+    if (!ref.current) {
+      console.warn("No panel ref found");
+      return;
+    }
+    const isExpanded = ref.current.isExpanded();
+    if (isExpanded) {
+      ref.current.collapse();
+    } else {
+      ref.current.expand();
+    }
   };
 
   return (
@@ -44,7 +49,7 @@ export default function EditorSources() {
       <div className="flex w-full items-center justify-between">
         <div className="flex grow">
           <Button
-            onClick={isCollapsed ? onExpand : onCollapse}
+            onClick={onToggle}
             variant="ghost"
             className="flex w-full items-center justify-start gap-1 hover:bg-transparent"
           >
@@ -52,13 +57,13 @@ export default function EditorSources() {
               name="ChevronDown"
               className={cn(
                 "size-5",
-                isCollapsed && "rotate-180 transition-transform",
+                isCollapsed && "-rotate-90 transition-transform",
               )}
             />
             <span className="text-sm font-semibold">Editor</span>
           </Button>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 px-2">
           <SourcesToolbar />
         </div>
       </div>
@@ -221,18 +226,6 @@ function SourcesToolbar() {
       >
         <Icon
           name="Plus"
-          size={16}
-        />
-      </Button>
-      <Button
-        disabled
-        size="xs"
-        variant="ghost"
-        // #TODO: implement refresh
-        onClick={() => null}
-      >
-        <Icon
-          name="RefreshCw"
           size={16}
         />
       </Button>
