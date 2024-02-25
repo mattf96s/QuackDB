@@ -1,3 +1,4 @@
+import Icon from "@/components/icon";
 import PanelHandle from "@/components/panel-handle";
 import { ThemeToggler } from "@/components/theme-toggle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -20,7 +21,6 @@ import {
   useRouter,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { Loader2, MenuIcon, PlayIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -182,7 +182,10 @@ function Playground() {
             size="sm"
             onClick={() => setMobileMenuOpen((s) => !s)}
           >
-            <MenuIcon className="size-5" />
+            <Icon
+              name="Menu"
+              className="size-5"
+            />
           </Button>
           <div className="inline-flex items-center gap-2">
             <Toolbar />
@@ -272,7 +275,10 @@ function QueryMeta() {
         variant="secondary"
         className="text-xs tabular-nums text-muted-foreground"
       >
-        <Loader2 className="size-4 animate-spin" />
+        <Icon
+          name="Loader2"
+          className="size-4 animate-spin"
+        />
       </Badge>
     );
   }
@@ -406,7 +412,10 @@ function Toolbar() {
       className="h-7 w-20"
     >
       Run
-      <PlayIcon className="ml-2 size-4" />
+      <Icon
+        name="Play"
+        className="ml-2 size-4"
+      />
     </Button>
   );
 }

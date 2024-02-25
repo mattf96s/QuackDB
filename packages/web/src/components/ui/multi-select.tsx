@@ -1,11 +1,11 @@
 "use client";
 // https://github.com/mxkaske/mxkaske.dev/blob/main/components/craft/fancy-multi-select.tsx
 // https://craft.mxkaske.dev/post/fancy-multi-select
-import * as React from "react";
-import { Command as CommandPrimitive } from "cmdk";
-import { X } from "lucide-react";
+import Icon from "@/components/icon";
 import { Badge } from "@/components/ui/badge";
 import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
+import { Command as CommandPrimitive } from "cmdk";
+import * as React from "react";
 
 type Framework = Record<"value" | "label", string>;
 
@@ -108,7 +108,10 @@ export function FancyMultiSelect() {
                   }}
                   onClick={() => handleUnselect(framework)}
                 >
-                  <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                  <Icon
+                    name="X"
+                    className="size-3 text-muted-foreground hover:text-foreground"
+                  />
                 </button>
               </Badge>
             );

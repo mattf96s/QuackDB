@@ -1,3 +1,4 @@
+import Icon from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
@@ -11,13 +12,6 @@ import { useDB } from "@/context/db/useDB";
 import { useSession } from "@/context/session/useSession";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
-import {
-  ChevronDown,
-  CopyCheck,
-  Database,
-  Plus,
-  RefreshCw,
-} from "lucide-react";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { useWrapper } from "./wrapper/context/useWrapper";
@@ -43,7 +37,8 @@ export default function DataSources() {
             variant="ghost"
             className="flex w-full items-center justify-start gap-1 hover:bg-transparent"
           >
-            <ChevronDown
+            <Icon
+              name="ChevronDown"
               className={cn(
                 "size-5",
                 isCollapsed && "rotate-180 transition-transform",
@@ -135,11 +130,15 @@ function DatesetItem(props: SourceEntry) {
           variant="ghost"
           onClick={onCopy}
         >
-          <Database className="size-4" />
+          <Icon
+            name="Database"
+            className="size-4"
+          />
           <span className="truncate font-normal">{path}</span>
           {isCopied && (
             <span className="absolute inset-y-0 right-0">
-              <CopyCheck
+              <Icon
+                name="CopyCheck"
                 size={16}
                 className="bg-transparent text-green-700"
               />
@@ -236,7 +235,10 @@ function SourcesToolbar() {
         variant="ghost"
         onClick={onAddDataset}
       >
-        <Plus size={16} />
+        <Icon
+          name="Plus"
+          size={16}
+        />
       </Button>
       <Button
         disabled
@@ -245,7 +247,10 @@ function SourcesToolbar() {
         // #TODO: refresh sources
         onClick={() => null}
       >
-        <RefreshCw size={16} />
+        <Icon
+          name="RefreshCw"
+          size={16}
+        />
       </Button>
     </>
   );

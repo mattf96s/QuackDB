@@ -1,12 +1,4 @@
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { format } from "date-fns";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
-} from "lucide-react";
+import Icon from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -30,6 +22,9 @@ import {
 } from "@/components/ui/table";
 import type { FetchResultsReturn } from "@/constants";
 import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
+import { format } from "date-fns";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export default function DataGrid(props: FetchResultsReturn) {
   const { rows, schema } = props;
@@ -165,7 +160,10 @@ function PaginationToolbar(props: PaginationToolbarProps) {
           onClick={goToFirstPage}
           disabled={!canGoPrev}
         >
-          <ChevronsLeftIcon className="size-4" />
+          <Icon
+            name="ChevronsLeft"
+            className="size-4"
+          />
         </Button>
         <Button
           size="icon"
@@ -173,7 +171,10 @@ function PaginationToolbar(props: PaginationToolbarProps) {
           onClick={onPrevPage}
           disabled={!canGoPrev}
         >
-          <ChevronLeftIcon className="size-4" />
+          <Icon
+            name="ChevronLeft"
+            className="size-4"
+          />
         </Button>
 
         <Button
@@ -182,7 +183,10 @@ function PaginationToolbar(props: PaginationToolbarProps) {
           onClick={onNextPage}
           disabled={!canGoNext}
         >
-          <ChevronRightIcon className="size-4" />
+          <Icon
+            name="ChevronRight"
+            className="size-4"
+          />
         </Button>
 
         <Button
@@ -191,7 +195,10 @@ function PaginationToolbar(props: PaginationToolbarProps) {
           onClick={goToLastPage}
           disabled={!canGoNext}
         >
-          <ChevronsRightIcon className="size-4" />
+          <Icon
+            name="ChevronsRight"
+            className="size-4"
+          />
         </Button>
       </div>
       <PageSize

@@ -1,9 +1,5 @@
-import { memo, Suspense, useEffect, useMemo, useState } from "react";
-import { type AutoOptions } from "@observablehq/plot";
-import { Await, defer } from "@tanstack/react-router";
-import { AlertOctagon, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import { getHighlighter } from "shiki";
 import DataGrid from "@/components/data-grid";
+import Icon from "@/components/icon";
 import Chart from "@/components/plot";
 import { useTheme } from "@/components/theme-provider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -13,9 +9,14 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@/context/query/useQuery";
 import { cn } from "@/lib/utils";
+import { type AutoOptions } from "@observablehq/plot";
+import { Await, defer } from "@tanstack/react-router";
+import { Suspense, memo, useEffect, useMemo, useState } from "react";
+import { getHighlighter } from "shiki";
 
 export default function ResultsView() {
-  const { error } = useQuery();
+  const { meta } = useQuery();
+  const error = meta?.error;
   return (
     <div className="size-full max-w-full pr-20">
       <Tabs
@@ -81,7 +82,10 @@ function ErrorNotification(props: { error: string }) {
     >
       <AlertTitle>
         <span className="inline-flex items-center gap-2">
-          <AlertOctagon className="size-4" />
+          <Icon
+            name="AlertOctagon"
+            className="size-4"
+          />
           <p className="text-base">Error</p>
         </span>
       </AlertTitle>
@@ -93,7 +97,7 @@ function ErrorNotification(props: { error: string }) {
 }
 
 const TableViewer = memo(function TableViewer() {
-  const { rows, schema, meta } = useQuery();
+  const { rows, schema, meta, count } = useQuery();
 
   const noQuery = rows.length === 0 && schema.length === 0;
 
@@ -101,6 +105,7 @@ const TableViewer = memo(function TableViewer() {
     <div className="flex h-full flex-1 flex-col justify-between gap-2 overflow-y-auto px-2 pb-4 xl:px-10">
       {noQuery && <EmptyResults />}
       <DataGrid
+        count={count}
         rows={rows}
         schema={schema}
         meta={meta}
@@ -170,7 +175,10 @@ function JsonViewer() {
             onClick={() => setOffset(offset - limit)}
             disabled={offset === 0}
           >
-            <ChevronLeft className="size-5" />
+            <Icon
+              name="ChevronLeft"
+              className="size-5"
+            />
           </Button>
           <Button
             size="icon"
@@ -178,7 +186,10 @@ function JsonViewer() {
             onClick={() => setOffset(offset + limit)}
             disabled={offset + limit >= rows.length}
           >
-            <ChevronRight className="size-5" />
+            <Icon
+              name="ChevronRight"
+              className="size-5"
+            />
           </Button>
         </div>
       </div>
@@ -228,7 +239,10 @@ function DeferFallback() {
   return (
     <div className="inline-flex items-center gap-2">
       <p>{message}</p>
-      <Loader2 className="size-5 animate-spin" />
+      <Icon
+        name="Loader2"
+        className="size-5 animate-spin"
+      />
     </div>
   );
 }
