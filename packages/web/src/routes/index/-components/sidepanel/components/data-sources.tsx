@@ -9,23 +9,42 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useDB } from "@/context/db/useDB";
 import { useSession } from "@/context/session/useSession";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
-import { useCallback } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useCallback, useState, type ReactNode } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 import { useWrapper } from "./wrapper/context/useWrapper";
-
 export default function DataSources() {
   const { sources } = useSession();
   const { ref, isCollapsed } = useWrapper();
@@ -183,22 +202,13 @@ function DatesetItem(props: SourceEntry) {
 }
 
 /**
- * Manage datasets.
- *
- * #TODO: remote sources.
- *
- * @component
+ * Only Chrome supports window.showOpenFilePicker.
  */
-function SourcesToolbar() {
+const useModernFilePicker = () => {
   const { onAddDataSources } = useSession();
   const { db } = useDB();
 
-  const onAddDataset = useCallback(async () => {
-    if (!db) {
-      console.error("No db found");
-      return;
-    }
-
+  const onAddFiles = useCallback(async () => {
     try {
       const fileHandles = await window.showOpenFilePicker({
         types: [
@@ -245,6 +255,71 @@ function SourcesToolbar() {
     }
   }, [db, onAddDataSources]);
 
+  return onAddFiles;
+};
+
+const usePolfillFilePicker = () => {
+  const { onAddDataSources } = useSession();
+  const { db } = useDB();
+
+  const onAddFiles = useCallback(async () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.multiple = true;
+    input.accept =
+      ".parquet,.csv,.json,.txt,.xls,.xlsx,.sql,application/octet-stream,csv/*,json/*,text/*,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain";
+
+    input.addEventListener("change", async (e) => {
+      const files = (e.target as HTMLInputElement).files;
+
+      if (!files || files.length === 0) return;
+
+      const newSources = await onAddDataSources(
+        Array.from(files).map((file) => ({
+          filename: file.name,
+          type: "FILE",
+          entry: file,
+        })),
+      );
+
+      if (!newSources || newSources.length === 0) return;
+
+      for await (const { handle } of newSources) {
+        await db?.registerFileHandle(handle.name, handle);
+      }
+    });
+
+    input.click();
+  }, [db, onAddDataSources]);
+
+  return onAddFiles;
+};
+
+/**
+ * Manage datasets.
+ *
+ * @component
+ */
+function SourcesToolbar() {
+  const [showAddDataModal, setShowAddDataModal] = useState<
+    "REMOTE" | "PASTE" | "OFF"
+  >("OFF");
+
+  const modernPicker = useModernFilePicker();
+  const pollfillPicker = usePolfillFilePicker();
+
+  const onAddFiles = useCallback(() => {
+    if ("showOpenFilePicker" in window) {
+      return modernPicker();
+    } else {
+      return pollfillPicker();
+    }
+  }, [modernPicker, pollfillPicker]);
+
+  const onClose = useCallback(() => {
+    setShowAddDataModal("OFF");
+  }, []);
+
   return (
     <>
       <DropdownMenu>
@@ -264,20 +339,170 @@ function SourcesToolbar() {
           // prevent focus going back to the trigger on close.
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel>Add data source</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onSelect={onAddDataset}>
+            <DropdownMenuItem onSelect={onAddFiles}>
               Local file
             </DropdownMenuItem>
-            <DropdownMenuItem disabled>
+            <DropdownMenuItem onClick={() => setShowAddDataModal("REMOTE")}>
               Remote URL
-              <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
             </DropdownMenuItem>
-            <DropdownMenuItem disabled>Paste</DropdownMenuItem>
+            <DropdownMenuItem
+              disabled
+              onClick={() => setShowAddDataModal("PASTE")}
+            >
+              Paste
+              <span className="ml-2 rounded-full border border-gray-500 bg-transparent px-2.5 py-0.5 text-xs font-semibold text-gray-500">
+                soon
+              </span>
+            </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* content dialog */}
+      <AddDataModal
+        isOpen={showAddDataModal !== "OFF"}
+        onOpenChange={onClose}
+      >
+        {showAddDataModal === "REMOTE" && <AddRemoteUrl onclose={onClose} />}
+        {showAddDataModal === "PASTE" && <AddPasteData />}
+      </AddDataModal>
+    </>
+  );
+}
+
+function AddPasteData() {
+  return <Textarea placeholder="Paste data here" />;
+}
+
+type AddDataModalProps = {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  children: ReactNode;
+};
+
+function AddDataModal(props: AddDataModalProps) {
+  const { isOpen, onOpenChange, children } = props;
+
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={onOpenChange}
+    >
+      <DialogContent className="sm:max-w-md lg:max-w-xl">
+        {children}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const addRemoteUrlSchema = z.object({
+  name: z.string().min(2),
+  url: z.string().url(),
+});
+
+function AddRemoteUrl(props: { onclose: () => void }) {
+  const { onAddDataSources } = useSession();
+
+  const form = useForm<z.infer<typeof addRemoteUrlSchema>>({
+    resolver: zodResolver(addRemoteUrlSchema),
+    defaultValues: {
+      name: "",
+      url: "",
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof addRemoteUrlSchema>) {
+    // ensure the filename ends with .url
+    let filename = values.name;
+    if (!filename.endsWith(".url")) {
+      filename += ".url";
+    }
+    const res = await onAddDataSources([
+      {
+        filename,
+        type: "URL",
+        entry: values.url,
+      },
+    ]);
+
+    if (!res || res.length === 0) {
+      toast.error("Failed to add remote datasource", {
+        description: "Please try again",
+      });
+
+      return;
+    }
+
+    // register the datasource
+
+    props.onclose();
+  }
+
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>Add Remote Datasource</DialogTitle>
+        <DialogDescription>
+          Add a datasource from a remote URL.
+        </DialogDescription>
+      </DialogHeader>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="common-words"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  A unique name for the datasource.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>URL</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://api.datamuse.com/words?ml=sql"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    type="url"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  {`The API needs to support CORS. If it doesn't, you can use the
+                  "Paste" option.`}
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+          <div className="flex items-center justify-end">
+            <Button type="submit">Submit</Button>
+          </div>
+        </form>
+      </Form>
     </>
   );
 }

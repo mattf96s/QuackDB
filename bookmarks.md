@@ -76,6 +76,8 @@
 
 - [Kusto](https://github.com/axiomhq/monaco-kusto/blob/master/package/src/languageService/kustoMonarchLanguageDefinition.ts)
   - seems good
+- [Codeium](https://github.com/Exafunction/codeium-react-code-editor/blob/main/src/components/CodeiumEditor/Document.ts)
+  - free but take your data
 
 ## Other DuckDB Projects
 

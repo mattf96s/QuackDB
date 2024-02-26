@@ -14,51 +14,53 @@ import type {
 } from "@apache-arrow/esnext-esm";
 import type { AsyncDuckDB } from "@duckdb/duckdb-wasm";
 import * as duckdb from "@duckdb/duckdb-wasm";
-import eh_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
-import mvp_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url";
-import duckdb_wasm_eh from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
-import duckdb_wasm from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url";
-
-// import { type Range } from "monaco-editor";
-
-const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
-  mvp: {
-    mainModule: duckdb_wasm,
-    mainWorker: mvp_worker,
-  },
-  eh: {
-    mainModule: duckdb_wasm_eh,
-    mainWorker: eh_worker,
-  },
-  coi: {
-    mainModule: duckdb_wasm,
-    mainWorker: mvp_worker,
-    pthreadWorker: eh_worker,
-  },
-};
 
 type MakeDBProps = {
   logLevel?: duckdb.LogLevel;
 };
 
-let bundle: duckdb.DuckDBBundle;
-
+/**
+ * Create a DuckDB instance.
+ *
+ * Note: getJsDelivrBundles is much quicker than using the MANUAL_BUNDLES method.
+ */
 const makeDB = async ({ logLevel = duckdb.LogLevel.DEBUG }: MakeDBProps) => {
-  if (!bundle) {
-    bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
+  let worker_url: string | undefined;
+
+  try {
+    // Select a bundle based on browser checks
+    const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
+
+    // Select a bundle based on browser checks
+    const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+
+    const worker_url = URL.createObjectURL(
+      new Blob([`importScripts("${bundle.mainWorker}");`], {
+        type: "text/javascript",
+      }),
+    );
+
+    // Instantiate the asynchronus version of DuckDB-wasm
+    const worker = new Worker(worker_url);
+    const logger = new duckdb.ConsoleLogger(logLevel);
+    const db = new duckdb.AsyncDuckDB(logger, worker);
+    URL.revokeObjectURL(worker_url);
+    await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+
+    await db.open({
+      filesystem: { allowFullHTTPReads: true },
+      query: { castBigIntToDouble: true },
+    });
+
+    return db;
+  } catch (e) {
+    console.error("Failed to create DB: ", e);
+    throw e;
+  } finally {
+    if (worker_url) {
+      URL.revokeObjectURL(worker_url);
+    }
   }
-
-  // Instantiate the asynchronus version of DuckDB-wasm
-  const worker = new Worker(bundle.mainWorker!);
-  const logger = new duckdb.ConsoleLogger(logLevel);
-  const db = new duckdb.AsyncDuckDB(logger, worker);
-  await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
-
-  await db.open({
-    query: { castBigIntToDouble: true },
-  });
-
-  return db;
 };
 
 /**
@@ -234,7 +236,7 @@ export class DuckDBInstance {
               source.path,
               source.url,
               duckdb.DuckDBDataProtocol.HTTP,
-              true,
+              false,
             );
             break;
           }
@@ -380,6 +382,47 @@ export class DuckDBInstance {
       duckdb.DuckDBDataProtocol.BROWSER_FILEREADER,
       true,
     );
+  }
+
+  /**
+   * Register a remote dataset.
+   * 
+   * @example
+    await db.registerFileURL('remote.parquet', 'https://origin/remote.parquet', DuckDBDataProtocol.HTTP, false);
+   */
+  async registerFileUrl(fileName: string, url: string) {
+    this.#sources.push({
+      kind: "REMOTE",
+      path: fileName,
+      url,
+    });
+
+    const db = await this._getDB();
+    await db.dropFile(fileName).catch((e) => {
+      console.error("Failed to drop file: ", e);
+    });
+    await db.registerFileURL(
+      fileName,
+      url,
+      duckdb.DuckDBDataProtocol.HTTP,
+      false,
+    );
+  }
+
+  /**
+   * Register a file buffer which is stored in memory.
+   *
+   * Not sure how useful this is.
+   * @example
+    const res = await fetch('https://origin/remote.parquet');
+    await db.registerFileBuffer('buffer.parquet', new Uint8Array(await res.arrayBuffer()));
+   */
+  async registerFileBuffer(name: string, buffer: ArrayBuffer) {
+    const db = await this._getDB();
+    await db.dropFile(name).catch((e) => {
+      console.error("Failed to drop file: ", e);
+    });
+    await db.registerFileBuffer(name, new Uint8Array(buffer));
   }
 
   // ------- Query methods ------- //
@@ -599,9 +642,6 @@ export class DuckDBInstance {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   async query<T extends TypeMap = any>(query: string, params?: T[]) {
-    const key = `Query ${query}`;
-    console.time(key);
-
     const conn = await this.#connect();
     try {
       const result = await this.queryStream(query, params);
@@ -615,8 +655,6 @@ export class DuckDBInstance {
 
       // @ts-expect-error: #TODO: not sure which arrow type to use.
       results.schema = result.schema;
-
-      console.timeEnd(key);
 
       return results;
     } catch (e) {

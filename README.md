@@ -62,3 +62,7 @@ MIT
 ## Tips
 
 - View all stored files: filesystem: <https://app.quackdb.com/temporary>. To navigate, manually change the URL to the desired path as Chrome does not allow navigation by clicking on the links.
+
+## Known Issues
+
+- Safari will not be supported until this [bug](https://bugs.webkit.org/show_bug.cgi?id=256712#c0) is fixed (serializing file handles is not supported in Safari).

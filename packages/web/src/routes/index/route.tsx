@@ -132,20 +132,38 @@ function PlaygroundContainer() {
 
 function BrowserAlertBar() {
   const { browser } = useConfig();
+  const [isDismissed, setIsDismissed] = useState(browser !== "safari");
 
-  const isChrome = browser === "chrome";
-
-  if (isChrome) return null;
+  if (isDismissed) return null;
 
   return (
     <Alert
       variant="destructive"
       className="absolute inset-x-0 top-4 z-50 mx-auto max-w-2xl bg-red-500  text-white shadow-md"
     >
-      <AlertTitle>Warning</AlertTitle>
+      <div className="flex items-center justify-between">
+        <AlertTitle>Warning</AlertTitle>
+        <Button
+          size="xs"
+          variant="ghost"
+          onClick={() => setIsDismissed(true)}
+        >
+          <Icon
+            name="X"
+            className="size-4"
+          />
+        </Button>
+      </div>
       <AlertDescription>
-        QuackDB does not yet support your browser. Please use Chrome for the
-        best experience.
+        QuackDB cannot fullysupport Safari until this{" "}
+        <a
+          target="_blank"
+          href="https://bugs.webkit.org/show_bug.cgi?id=256712#c0"
+          rel="noreferrer"
+        >
+          bug
+        </a>{" "}
+        is fixed.
       </AlertDescription>
     </Alert>
   );
