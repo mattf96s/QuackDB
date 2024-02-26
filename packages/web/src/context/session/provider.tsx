@@ -442,6 +442,7 @@ function SessionProvider({ children }: SessionProviderProps) {
 
   const onAddEditor = useCallback(async () => {
     if (!proxyRef.current) return;
+    if (!session.sessionId) return;
 
     try {
       const newEditor = await proxyRef.current.onAddEditor(session.sessionId);

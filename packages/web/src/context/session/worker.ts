@@ -180,6 +180,8 @@ function getMimeType(
   if (!ext) return null;
 
   switch (ext) {
+    case "url":
+      return { mimeType: "text/x-uri", kind: "SOURCE", ext: "url" };
     case "csv":
       return { mimeType: "text/csv", kind: "SOURCE", ext: "csv" };
     case "json":

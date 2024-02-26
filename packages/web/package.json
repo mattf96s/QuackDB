@@ -1,6 +1,6 @@
 {
   "name": "@quackdb/web",
-  "description": "An offline DuckDB playground",
+  "description": "QuackDB - An online DuckDB SQL playground and editor",
   "private": true,
   "version": "0.0.0",
   "sideEffects": false,
