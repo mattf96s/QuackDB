@@ -14,7 +14,4 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["@duckdb/duckdb-wasm"],
   },
-  build: {
-    cssMinify: import.meta.env?.MODE === "production",
-  },
 });

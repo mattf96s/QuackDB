@@ -2,7 +2,7 @@
   "name": "@quackdb/web",
   "description": "QuackDB - An online DuckDB SQL playground and editor",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.2",
   "sideEffects": false,
   "type": "module",
   "engines": {
