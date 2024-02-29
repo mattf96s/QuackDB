@@ -1,7 +1,7 @@
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
   root: true,
-  env: { browser: true, es2020: true },
+  env: { browser: true, es2024: true, worker: true },
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
@@ -76,15 +76,6 @@ module.exports = {
         fixStyle: "inline-type-imports",
       },
     ],
-    // 'simple-import-sort/imports': [
-    //   'warn',
-    //   {
-    //     groups: [
-    //       ['^\\u0000', '^(react|react-dom)', '^node:', '^@?\\w', '^', '^\\.'],
-    //     ],
-    //   },
-    // ],
-    // 'simple-import-sort/exports': 'warn',
     "unused-imports/no-unused-vars": [
       "warn",
       { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }

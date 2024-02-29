@@ -19,15 +19,6 @@ import { Suspense, memo, useEffect, type ReactNode } from "react";
 export const Route = createRootRoute({
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
-  headers: () => {
-    // add headers to allow shared array buffer and cors
-    return {
-      "Access-Control-Allow-Origin": "*",
-      "Cross-Origin-Opener-Policy": "same-origin",
-      "Cross-Origin-Embedder-Policy": "require-corp",
-      "Cross-Origin-Resource-Policy": "cross-origin",
-    };
-  },
 });
 
 function ProgressBar() {
@@ -40,8 +31,9 @@ function ProgressBar() {
   return null;
 }
 
-const Analytics = memo(function Analytics() {
+function Analytics() {
   const router = useRouter();
+
   router.subscribe("onLoad", () => {
     const url = window.location.href;
     Fathom.trackPageview({
@@ -66,7 +58,7 @@ const Analytics = memo(function Analytics() {
   }, []);
 
   return null;
-});
+}
 
 function Layout(props: { children: ReactNode }) {
   const isSmallerScreen = useBreakpoint("md");
@@ -101,6 +93,8 @@ function Layout(props: { children: ReactNode }) {
             pauseWhenPageIsHidden
             visibleToasts={3}
             expand
+            duration={0}
+            position="bottom-right"
           />
         </LayoutContainer>
       </SidebarProvider>
@@ -113,7 +107,9 @@ function Shell(props: { children: ReactNode }) {
     <ThemeProvider>
       <Layout>{props.children}</Layout>
       <ProgressBar />
-      <Analytics />
+      <Suspense>
+        <Analytics />
+      </Suspense>
     </ThemeProvider>
   );
 }

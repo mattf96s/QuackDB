@@ -50,11 +50,11 @@ export default function Settings() {
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
+          size="icon"
         >
           <Icon
             name="Settings2"
-            size={16}
+            className="size-4"
           />
         </Button>
       </PopoverTrigger>
