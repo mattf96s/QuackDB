@@ -3,6 +3,11 @@ export default {
     "tailwindcss/nesting": {},
     tailwindcss: {},
     autoprefixer: {},
-    cssnano: import.meta.env?.MODE === "production" ? {} : false,
+    cssnano:
+      import.meta.env?.MODE === "production"
+        ? {
+          preset: "default",
+        }
+        : false,
   },
-}
+};

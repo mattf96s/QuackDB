@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 interface ImportMetaEnv {
-  readonly STAGE: string
-  readonly REGION: string
-  readonly NODE_ENV: string
+  readonly VITE_STAGE: string
+  readonly VITE_REGION: string
+  readonly VITE_NODE_ENV: string
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv

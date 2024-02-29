@@ -1,14 +1,16 @@
 import "@/styles/globals.css";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
 import "nprogress/nprogress.css";
 import { StrictMode } from "react";
 import * as ReactDOM from "react-dom/client";
-import { createRouter, RouterProvider } from "@tanstack/react-router";
+import NotFound from "./components/NotFound";
 import { routeTree } from "./routeTree.gen";
 
 // Set up a Router instance
 const router = createRouter({
   routeTree,
   defaultPreload: "intent",
+  globalNotFound: NotFound,
 });
 
 // Register things for typesafety

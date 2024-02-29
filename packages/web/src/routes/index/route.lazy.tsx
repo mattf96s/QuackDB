@@ -19,7 +19,7 @@ import { SessionProvider } from "@/context/session/provider";
 import useBreakpoint from "@/hooks/use-breakpoints";
 import { cn } from "@/lib/utils";
 import {
-  createFileRoute,
+  createLazyFileRoute,
   useRouter,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
@@ -29,22 +29,15 @@ import { Panel, PanelGroup } from "react-resizable-panels";
 import { toast } from "sonner";
 import { useSpinDelay } from "spin-delay";
 import EditorPanel from "./-components/editor-panel";
+import PendingComponent from "./-components/pending";
 import Settings from "./-components/settings";
 import Sidepanel from "./-components/sidepanel";
 import { PanelProvider } from "./-context/panel/provider";
 
-export const Route = createFileRoute("/")({
+export const Route = createLazyFileRoute("/")({
   component: PlaygroundContainer,
   errorComponent: ErrorComponent,
-  headers: () => {
-    // add headers to allow shared array buffer and cors
-    return {
-      "Access-Control-Allow-Origin": "*",
-      "Cross-Origin-Opener-Policy": "same-origin",
-      "Cross-Origin-Embedder-Policy": "require-corp",
-      "Cross-Origin-Resource-Policy": "same-site",
-    };
-  },
+  pendingComponent: PendingComponent,
 });
 
 function ErrorComponent(props: ErrorComponentProps) {
