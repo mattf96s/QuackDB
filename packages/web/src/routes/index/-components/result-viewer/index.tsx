@@ -14,7 +14,7 @@ const LazyJSONViewer = lazy(() =>
 
 const LazyChartViewer = lazy(() =>
   import("./-components/chart").then((module) => ({
-    default: module.ChartViewer,
+    default: module.ChartContainer,
   })),
 );
 

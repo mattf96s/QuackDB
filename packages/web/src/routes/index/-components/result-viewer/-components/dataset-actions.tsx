@@ -49,7 +49,9 @@ export default function DatasetActions() {
     async (format: "CSV" | "PARQUET" | "JSON" | "ARROW") => {
       if (!db) return;
       if (!lastRunSQL) return;
+
       setIsExporting(true);
+
       let downloadUrl: string | undefined; // need to release the object URL after the download
 
       try {
@@ -107,7 +109,7 @@ export default function DatasetActions() {
           description: `Your data has been exported as ${format.toLowerCase()}`,
         });
 
-        await _db.dropFile(`${tableName}.${format.toLowerCase()}`);
+        await _db.dropFile(`output.${format.toLowerCase()}`);
       } catch (e) {
         console.error("Failed to export data: ", e);
         toast.error("Failed to export data", {
@@ -153,9 +155,9 @@ export default function DatasetActions() {
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
                 <DropdownMenuItem
-                  onSelect={(e) => {
+                  onSelect={async (e) => {
                     e.preventDefault();
-                    onExport("PARQUET");
+                    await onExport("PARQUET");
                   }}
                   disabled={isExporting}
                 >
