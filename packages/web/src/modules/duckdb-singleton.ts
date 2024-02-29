@@ -639,8 +639,6 @@ export class DuckDBInstance {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   async query<T extends TypeMap = any>(query: string, params?: T[]) {
     const conn = await this.#connect();
     try {
@@ -659,6 +657,22 @@ export class DuckDBInstance {
       return results;
     } catch (e) {
       console.error("Error in query: ", e);
+      throw e;
+    } finally {
+      await this.#cleanupConnection(conn);
+    }
+  }
+
+  /**
+   * Run a query
+   */
+
+  async exec(query: string) {
+    const conn = await this.#connect();
+    try {
+      await conn.query(query);
+    } catch (e) {
+      console.error("Error in exec: ", e);
       throw e;
     } finally {
       await this.#cleanupConnection(conn);
@@ -751,6 +765,75 @@ export class DuckDBInstance {
     } catch (e) {
       console.error("Error in validateQuery: ", e);
       return false;
+    }
+  }
+
+  /**
+   * Export a table to a file. (WIP)
+   */
+  async export({
+    tableName,
+    filename,
+    format,
+  }: {
+    tableName: string;
+    filename: string;
+    format: "CSV" | "PARQUET" | "JSON" | "ARROW" | "DUCKDB";
+  }) {
+    const conn = await this.#connect();
+
+    try {
+      switch (format) {
+        case "PARQUET": {
+          await conn.query(
+            `COPY (SELECT * FROM '${tableName}') TO '${filename}.parquet' (FORMAT 'parquet');`,
+          );
+          break;
+        }
+        case "CSV": {
+          await conn.query(
+            `COPY (SELECT * FROM '${tableName}') TO '${filename}.csv' (FORMAT 'csv');`,
+          );
+          break;
+        }
+        case "JSON": {
+          await conn.query(
+            `COPY (SELECT * FROM '${tableName}') TO '${filename}.json' (FORMAT 'json');`,
+          );
+          break;
+        }
+        case "ARROW": {
+          await conn.query(
+            `COPY (SELECT * FROM '${tableName}') TO '${filename}.arrow' (FORMAT 'arrow');`,
+          );
+          break;
+        }
+        case "DUCKDB": {
+          await conn.query(
+            `COPY (SELECT * FROM '${tableName}') TO '${filename}.db' (FORMAT 'duckdb');`,
+          );
+          break;
+        }
+        default:
+          break;
+      }
+
+      const db = await this._getDB();
+
+      const buffer = await db.copyFileToBuffer(
+        `${filename}.${format.toLowerCase()}`,
+      );
+
+      // Generate a download link (ensure to revoke the object URL after the download).
+      // We could use window.showSaveFilePicker() but it is only supported in Chrome.
+      const link = URL.createObjectURL(new Blob([buffer]));
+
+      return link;
+    } catch (e) {
+      console.error("Error in export: ", e);
+      throw e;
+    } finally {
+      await this.#cleanupConnection(conn);
     }
   }
 }

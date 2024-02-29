@@ -4,14 +4,26 @@ import path from "path";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+
+const file = fileURLToPath(new URL("package.json", import.meta.url));
+const json = readFileSync(file, "utf8");
+const version = JSON.parse(json);
+
 export default defineConfig({
   plugins: [tsconfigPaths(), react(), TanStackRouterVite()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
     },
+    dedupe: ["monaco-editor", "vscode"],
   },
-  optimizeDeps: {
-    exclude: ["@duckdb/duckdb-wasm"],
+  define: {
+    __pkg__: version,
+  },
+  assetsInclude: ["**/*.wasm"],
+  build: {
+    target: "esnext",
   },
 });

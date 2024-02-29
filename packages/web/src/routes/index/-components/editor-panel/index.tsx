@@ -11,8 +11,8 @@ import { Range, type editor } from "monaco-editor";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useSpinDelay } from "spin-delay";
+import ResultsView from "../result-viewer";
 import OpenFileTabs from "./components/open-files";
-import ResultsView from "./components/results-viewer";
 
 function EditorPanel() {
   return (
