@@ -11,7 +11,6 @@ import { useConfig } from "@/context/config/useConfig";
 import { DbProvider } from "@/context/db/provider";
 import { EditorSettingsProvider } from "@/context/editor-settings/provider";
 import { EditorProvider } from "@/context/editor/provider";
-import { useEditor } from "@/context/editor/useEditor";
 import { QueryProvider } from "@/context/query/provider";
 import { useQuery } from "@/context/query/useQuery";
 import { useFileDrop } from "@/context/session/hooks/useAddFile.tsx";
@@ -23,13 +22,11 @@ import {
   useRouter,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
+import { useState } from "react";
 import { Panel, PanelGroup } from "react-resizable-panels";
-import { toast } from "sonner";
-import { useSpinDelay } from "spin-delay";
 import EditorPanel from "./-components/editor-panel";
 import PendingComponent from "./-components/pending";
+import Toolbar from "./-components/query-toolbar";
 import Settings from "./-components/settings";
 import Sidepanel from "./-components/sidepanel";
 import { PanelProvider } from "./-context/panel/provider";
@@ -82,7 +79,7 @@ function ErrorComponent(props: ErrorComponentProps) {
 
 function NavBar() {
   return (
-    <div className="fixed left-16 right-0 top-0 z-40 hidden h-16 shrink-0 items-center gap-x-4 border bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 md:flex lg:px-8">
+    <div className="fixed left-16 right-0 top-0 z-40 hidden h-16 shrink-0 items-center gap-x-4 bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 md:flex lg:px-8">
       <div className="flex items-center justify-evenly gap-2">
         <h1 className="text-lg font-semibold">QuackDB</h1>
         <Icon
@@ -96,8 +93,8 @@ function NavBar() {
 
           <Toolbar />
           <Settings />
+          <ThemeToggler />
         </div>
-        <ThemeToggler />
       </div>
     </div>
   );
@@ -311,99 +308,5 @@ function MobileSidePanel(props: {
         {props.children}
       </SheetContent>
     </Sheet>
-  );
-}
-
-function Toolbar() {
-  const { status, onCancelQuery, onRunQuery } = useQuery();
-  const { editorRef } = useEditor();
-
-  // run the whole file contents rather than the selected text;
-  // Don't wait;
-
-  const onRun = useCallback(async () => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    const editor = editorRef.current?.getEditor();
-    if (!editor) {
-      toast.warning("Editor not ready yet", {
-        description: "Please wait a moment and try again.",
-      });
-      return;
-    }
-
-    const query = editor?.getModel()?.getValue();
-
-    if (!query) {
-      toast.warning("No query to run", {
-        description: "Please write a query and try again.",
-      });
-      return;
-    }
-
-    signal.addEventListener("abort", () => {
-      onCancelQuery("cancelled");
-      toast.info("Query cancelled", {
-        description: "The query was cancelled.",
-      });
-    });
-
-    // cleanup query to remove comments and empty lines
-    const cleanedQuery = query
-      .split("\n")
-      .filter((line) => !line.trim().startsWith("--"))
-      .join("\n");
-
-    await onRunQuery(cleanedQuery);
-
-    return () => {
-      controller.abort();
-    };
-  }, [editorRef, onCancelQuery, onRunQuery]);
-
-  useHotkeys(
-    "mod+enter",
-    () => {
-      if (status === "RUNNING") {
-        onCancelQuery("cancelled");
-      } else {
-        onRun();
-      }
-    },
-    [status, onCancelQuery, onRun],
-  );
-
-  const isLoading = useSpinDelay(status === "RUNNING", {
-    delay: 0,
-    minDuration: 200,
-  });
-
-  if (isLoading) {
-    return (
-      <Button
-        size="sm"
-        onClick={() => onCancelQuery("cancelled")}
-        className="h-7 w-20"
-        variant="destructive"
-      >
-        Cancel
-      </Button>
-    );
-  }
-
-  return (
-    <Button
-      onClick={onRun}
-      variant="success"
-      size="sm"
-      className="h-7 w-20"
-    >
-      Run
-      <Icon
-        name="Play"
-        className="ml-2 size-4"
-      />
-    </Button>
   );
 }

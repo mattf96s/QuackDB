@@ -1,10 +1,8 @@
 "use client";
 
-import React from "react";
-import { SunIcon, MoonIcon } from "@radix-ui/react-icons";
-
-import { Button } from "./ui/button";
+import { MoonIcon, SunIcon } from "@radix-ui/react-icons";
 import { useTheme } from "./theme-provider";
+import { Button } from "./ui/button";
 
 export function ThemeToggler() {
   const { theme, setTheme } = useTheme();
@@ -12,10 +10,14 @@ export function ThemeToggler() {
   return (
     <Button
       size="icon"
-      variant="ghost"
+      variant="outline"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
     >
-      {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+      {theme === "dark" ? (
+        <MoonIcon className="size-4" />
+      ) : (
+        <SunIcon className="size-4" />
+      )}
     </Button>
   );
 }
