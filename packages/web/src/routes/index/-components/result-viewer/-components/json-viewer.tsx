@@ -8,16 +8,14 @@ import { Await, defer } from "@tanstack/react-router";
 import { Suspense, memo, useEffect, useMemo } from "react";
 
 export const JSONViewer = memo(function JSONViewer() {
-  const { rows } = useQuery();
+  const { rows, count } = useQuery();
   const { theme } = useTheme();
-  const { count: _count, limit, offset, onSetCount } = usePagination();
-
-  const rowsCount = rows.length;
+  const { limit, offset, onSetCount } = usePagination();
 
   // Update the count when we receive data (don't like this pattern...)
   useEffect(() => {
-    onSetCount(rowsCount);
-  }, [onSetCount, rowsCount]);
+    onSetCount(count);
+  }, [onSetCount, count]);
 
   const isDark = theme === "dark";
 

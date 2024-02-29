@@ -1,12 +1,20 @@
 import DataGrid from "@/components/data-grid";
 import PaginationToolbar from "@/components/paginator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { usePagination } from "@/context/pagination/usePagination";
 import { useQuery } from "@/context/query/useQuery";
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import EmptyResults from "./empty";
 
 export const TableViewer = memo(function TableViewer() {
   const { rows, schema, meta, count } = useQuery();
+
+  const { onSetCount } = usePagination();
+
+  // Update the count when we receive data (don't like this pattern...)
+  useEffect(() => {
+    onSetCount(count);
+  }, [onSetCount, count]);
 
   const noQuery = rows.length === 0 && schema.length === 0;
 

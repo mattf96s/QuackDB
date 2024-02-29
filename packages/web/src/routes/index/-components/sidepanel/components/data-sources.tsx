@@ -111,14 +111,34 @@ function DatesetItem(props: SourceEntry) {
 
   const { ext, mimeType, path } = props;
 
-  const pathWithoutExt = path.slice(0, path.length - ext.length - 1); // remove the dot too
+  let pathWithoutExt = path.slice(0, path.length - ext.length - 1); // remove the dot too
+
+  /* 
+    Unquoted identifiers need to conform to a number of rules:
+    They must not be a reserved keyword (see duckdb_keywords()), e.g., SELECT 123 AS SELECT will fail.
+    They must not start with a number or special character, e.g., SELECT 123 AS 1col is invalid.
+    They cannot contain whitespaces (including tabs and newline characters).
+  */
+
+  // remove any special characters
+  pathWithoutExt = pathWithoutExt.replace(/[^a-zA-Z0-9_]/g, "_");
+  // remove any leading numbers
+  pathWithoutExt = pathWithoutExt.replace(/^[0-9]+/, "_");
+  // remove any leading special characters
+  pathWithoutExt = pathWithoutExt.replace(/^[^a-zA-Z_]+/, "_");
+  // remove whitespaces
+  pathWithoutExt = pathWithoutExt.replace(/\s+/g, "_");
+  // remove tabs
+  pathWithoutExt = pathWithoutExt.replace(/\t+/g, "_");
+  // remove newlines
+  pathWithoutExt = pathWithoutExt.replace(/\n+/g, "_");
 
   const onCopy = async () => {
     let snippet = "";
 
     switch (mimeType) {
       case "application/json": {
-        snippet = `CREATE OR REPLACE TABLE ${pathWithoutExt} AS SELECT * FROM read_json_auto('${path}');\nSUMMARIZE ${pathWithoutExt};`;
+        snippet = `CREATE OR REPLACE TABLE '${pathWithoutExt}' AS SELECT * FROM read_json_auto('${path}');\nSUMMARIZE ${pathWithoutExt};`;
         break;
       }
       case "application/parquet": {
