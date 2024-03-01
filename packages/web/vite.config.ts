@@ -1,6 +1,7 @@
 import { TanStackRouterVite } from "@tanstack/router-vite-plugin";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
@@ -12,7 +13,7 @@ const json = readFileSync(file, "utf8");
 const version = JSON.parse(json);
 
 export default defineConfig({
-  plugins: [tsconfigPaths(), react(), TanStackRouterVite()],
+  plugins: [tsconfigPaths(), react(), TanStackRouterVite(), visualizer()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
@@ -21,9 +22,5 @@ export default defineConfig({
   },
   define: {
     __pkg__: version,
-  },
-  assetsInclude: ["**/*.wasm"],
-  build: {
-    target: "esnext",
   },
 });

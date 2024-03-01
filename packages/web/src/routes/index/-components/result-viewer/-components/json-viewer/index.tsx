@@ -1,11 +1,16 @@
-import { getHighlighter } from "@/components/code-highlighter";
+import CopyToClipboard from "@/components/copy-to-clipboard";
 import PaginationToolbar from "@/components/paginator";
 import { useTheme } from "@/components/theme-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePagination } from "@/context/pagination/usePagination";
 import { useQuery } from "@/context/query/useQuery";
-import { Await, defer } from "@tanstack/react-router";
-import { Suspense, memo, useEffect, useMemo } from "react";
+import { Suspense, lazy, memo, useCallback, useEffect, useMemo } from "react";
+
+const LazyShiki = lazy(() =>
+  import("./lazy-shiki").then((module) => ({
+    default: module.default,
+  })),
+);
 
 export const JSONViewer = memo(function JSONViewer() {
   const { rows, count } = useQuery();
@@ -24,13 +29,20 @@ export const JSONViewer = memo(function JSONViewer() {
     [rows, offset, limit],
   );
 
+  const lazyCopy = useCallback(() => JSON.stringify(rows, null, 2), [rows]);
+
   return (
     <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4 pb-20">
-      <ScrollArea className="h-full border">
-        <JsonContent
-          json={json}
-          isDark={isDark}
-        />
+      <ScrollArea className="relative h-full border">
+        <Suspense>
+          <LazyShiki
+            json={json}
+            isDark={isDark}
+          />
+          <div className="absolute right-2 top-2">
+            <CopyToClipboard value={lazyCopy} />
+          </div>
+        </Suspense>
       </ScrollArea>
       <div className="flex w-full justify-end">
         <PaginationToolbar />
@@ -38,29 +50,3 @@ export const JSONViewer = memo(function JSONViewer() {
     </div>
   );
 });
-
-async function highlightJson(json: string, isDark: boolean) {
-  const shiki = await getHighlighter();
-
-  const html = shiki.codeToHtml(json, {
-    lang: "json",
-    theme: isDark ? "vitesse-dark" : "github-light",
-  });
-
-  return (
-    <div
-      className="overflow-x-auto font-mono text-sm"
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  );
-}
-
-function JsonContent({ isDark, json }: { isDark: boolean; json: string }) {
-  const promise = defer(highlightJson(json, isDark));
-
-  return (
-    <Suspense>
-      <Await promise={promise}>{(p) => p}</Await>
-    </Suspense>
-  );
-}

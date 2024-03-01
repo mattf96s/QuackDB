@@ -45,13 +45,13 @@ export default function EditorSources() {
   };
 
   return (
-    <div className="flex w-full flex-col pt-2">
+    <div className="flex w-full flex-col">
       <div className="flex w-full items-center justify-between">
-        <div className="flex grow">
+        <div className="flex grow items-center">
           <Button
             onClick={onToggle}
             variant="ghost"
-            className="flex w-full items-center justify-start gap-1 hover:bg-transparent"
+            className="flex w-full items-center justify-start gap-1 rounded-none hover:bg-transparent"
           >
             <Icon
               name="ChevronDown"
@@ -67,6 +67,7 @@ export default function EditorSources() {
           <SourcesToolbar />
         </div>
       </div>
+
       <div
         className={cn(
           "flex w-full flex-col gap-1 py-1 pr-8",

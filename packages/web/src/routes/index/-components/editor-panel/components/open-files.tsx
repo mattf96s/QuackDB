@@ -1,5 +1,4 @@
 import Icon from "@/components/icon";
-import { Separator } from "@/components/ui/separator";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
 
@@ -18,8 +17,8 @@ export default function OpenFileTabs() {
   };
 
   return (
-    <div className="flex h-8 max-h-8 flex-[0_0_auto] flex-row justify-between overflow-auto overflow-y-hidden bg-muted">
-      <div className="flex size-full items-center">
+    <div className="flex max-h-9 min-h-9 flex-row justify-between overflow-hidden overflow-x-auto bg-[#ececec] dark:bg-background">
+      <div className="flex size-full items-center border-b">
         {editors
           .filter((editor) => editor.isOpen)
           .map((editor) => {
@@ -30,8 +29,9 @@ export default function OpenFileTabs() {
               <div
                 role="button"
                 className={cn(
-                  "flex h-8 flex-[0_0_auto] cursor-pointer flex-row flex-nowrap items-center gap-[1ch] bg-secondary p-[0.5rem_1ch] text-foreground transition-colors",
-                  isCurrent && "bg-foreground text-secondary",
+                  "flex h-full cursor-pointer flex-row flex-nowrap items-center gap-1 rounded-none border-x border-t border-t-transparent bg-[#ececec] pl-2 first:border-l-0 hover:bg-[#d9d9d9] dark:bg-background dark:text-foreground dark:hover:bg-[#1f1f1f]",
+                  isCurrent &&
+                    "border-t-slate-500 bg-background hover:bg-background dark:border-t-blue-600 dark:bg-[#1e1e1e] dark:text-secondary-foreground dark:hover:bg-[#1e1e1e] ",
                 )}
                 data-current={isCurrent || undefined}
                 key={editor.path}
@@ -39,7 +39,7 @@ export default function OpenFileTabs() {
               >
                 <Icon
                   name="Code2"
-                  className="size-5"
+                  className="mr-1 size-4"
                 />
                 <span className="text-sm">{editor.path}</span>
 
@@ -50,9 +50,9 @@ export default function OpenFileTabs() {
                     onCloseEditor(editor.path);
                   }}
                   className={cn(
-                    "rounded-sm bg-inherit px-0.5 py-0 hover:bg-gray-200 dark:hover:bg-gray-200/10",
+                    "h-full bg-inherit px-2 hover:bg-gray-200 dark:hover:bg-gray-200/10",
                     isCurrent &&
-                      "hover:bg-background/30 dark:hover:bg-gray-200",
+                      "hover:bg-secondary dark:hover:bg-muted-foreground/10",
                   )}
                 >
                   <Icon
@@ -65,11 +65,10 @@ export default function OpenFileTabs() {
             );
           })}
 
-        <div className="flex h-8 items-center">
+        <div className="ml-auto flex h-full items-center">
           <AddNewFileButton />
         </div>
       </div>
-      <Separator orientation="vertical" />
     </div>
   );
 }
@@ -80,7 +79,7 @@ function AddNewFileButton() {
   return (
     <button
       onClick={onAddEditor}
-      className="flex size-8 items-center justify-center hover:bg-gray-200"
+      className="flex h-9 w-12 items-center justify-center rounded-none hover:bg-secondary dark:hover:bg-gray-200/10"
       type="button"
     >
       <Icon

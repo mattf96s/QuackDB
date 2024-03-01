@@ -103,6 +103,7 @@ export default function Toolbar() {
       <MenubarMenu>
         <div className="inline-flex h-8 items-center overflow-hidden rounded-sm bg-[#30a46c] text-white shadow-sm">
           <button
+            type="button"
             onClick={onRun}
             className="inline-flex h-8 items-center justify-center whitespace-nowrap px-3 text-xs font-semibold transition-colors hover:bg-[#2b9a66] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
           >

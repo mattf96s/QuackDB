@@ -17,7 +17,7 @@ import OpenFileTabs from "./components/open-files";
 function EditorPanel() {
   return (
     <PanelGroup
-      className="flex w-full flex-col"
+      className="flex size-full flex-col"
       direction="vertical"
     >
       <Panel
@@ -175,7 +175,7 @@ function CurrentEditor() {
         className="h-full border-t-0"
         options={{
           padding: {
-            top: 16,
+            top: 10,
             bottom: 16,
           },
         }}

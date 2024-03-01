@@ -1,10 +1,10 @@
-import * as React from "react";
+import { cn } from "@/lib/utils";
 import {
   Link,
   type LinkProps as TanstackLinkProps,
 } from "@tanstack/react-router";
 import { type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
+import * as React from "react";
 import { buttonVariants } from "../button";
 
 export type LinkProps = TanstackLinkProps & VariantProps<typeof buttonVariants>;
