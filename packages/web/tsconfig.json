@@ -5,9 +5,9 @@
     "./src/routeTree.gen.ts"
   ],
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.js",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.js",
   ],
   "compilerOptions": {
     /* Base Options: */
@@ -22,11 +22,12 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "types": [
-      "@types/wicg-file-system-access"
+      "@types/wicg-file-system-access",
+      "vite/client"
     ],
     "useDefineForClassFields": true,
     "lib": [
-      "ES2022",
+      "esnext",
       "DOM",
       "DOM.Iterable",
       "WebWorker"
@@ -37,6 +38,7 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "jsx": "preserve",
+    "sourceMap": true,
     /* Paths */
     "baseUrl": ".",
     "paths": {

@@ -6,14 +6,22 @@ import EditorSources from "./components/editor-files";
 import QueryHistory from "./components/query-history";
 import ComponentWrapper from "./components/wrapper";
 
+type SidepanelProps = {
+  isCollapsed: boolean;
+};
+
 /**
  * Left hand side panel which holds the data sources, editor sources and query history.
  *
  * NB: This panel controls the vertical resizing *within* the sidepanel.
  * The horizontal resizing between the side panel and the editor panel is in the parent panel.
  */
-export default function Sidepanel() {
+export default function Sidepanel(props: SidepanelProps) {
   const { sessionId } = useSession();
+  const { isCollapsed } = props;
+
+  if (isCollapsed) return null;
+
   return (
     <PanelGroup
       direction="vertical"

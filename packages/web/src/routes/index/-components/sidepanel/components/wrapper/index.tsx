@@ -40,9 +40,9 @@ function Content(props: ComponentWrapperProps) {
     <Panel
       id={id}
       order={order}
-      minSize={5}
+      minSize={4.6} // so it aligns with the other UI elements. The panel handle create a line that looks like a border which confuses things.
+      collapsedSize={4.6}
       maxSize={80} // NB: otherwise the middle panel gets into a weird state whereby it can't be imperatively expanded once collapsed if both the middle and bottom panels are collapsed.
-      collapsedSize={5}
       ref={ref} // imperative api: https://react-resizable-panels.vercel.app/examples/imperative-panel-api
       collapsible
       onCollapse={() => onToggleIsCollapse(true)}

@@ -93,10 +93,12 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-}
 
-code {
-  @apply font-mono;
+  pre.shiki {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: var(--font-jetbrains-mono);
+  }
 }
 
 @media (max-width: 640px) {

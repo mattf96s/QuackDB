@@ -638,10 +638,11 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
       theme={isDark ? "vs-dark" : "vs-light"}
       options={{
         fontFamily: "'jetbrains-mono'",
-        smoothScrolling: false,
+        smoothScrolling: true,
         automaticLayout: true,
-        fontSize: 16,
+        //fontSize: 16,
         minimap: { enabled: false },
+        scrollBeyondLastColumn: 0,
         wordWrap: "on",
         wrappingIndent: "same",
         wrappingStrategy: "advanced",
@@ -649,6 +650,11 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         "semanticHighlighting.enabled": true,
         renderLineHighlightOnlyWhenFocus: true,
         tabCompletion: "on",
+        scrollbar: {
+          alwaysConsumeMouseWheel: false,
+          vertical: "auto",
+          useShadows: false,
+        },
 
         // scrollbar: { vertical: "auto", horizontal: "auto" },
         lineNumbers: "on",
@@ -659,11 +665,11 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
         foldingStrategy: "auto",
         foldingHighlight: true,
 
-        renderLineHighlight: "all",
+        //renderLineHighlight: "all",
         renderWhitespace: "none",
 
         quickSuggestions: true,
-        quickSuggestionsDelay: 100,
+
         language,
       }}
       {...props}

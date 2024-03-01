@@ -6,7 +6,7 @@ export default {
     return {
       name: "quackdb",
       region: "eu-west-1",
-      profile: 'quackdb'
+      profile: "quackdb",
     };
   },
   stacks(app) {
@@ -18,5 +18,5 @@ export default {
       runtime: "nodejs20.x",
     });
     app.stack(Web);
-  }
+  },
 } satisfies SSTConfig;

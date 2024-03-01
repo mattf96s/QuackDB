@@ -1,11 +1,9 @@
 import NotFound from "@/components/NotFound";
-import Sidebar from "@/components/sidebar";
+import Icon from "@/components/icon";
 import { SidebarProvider } from "@/components/sidebar/context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ConfigProvider } from "@/context/config/provider";
-import useBreakpoint from "@/hooks/use-breakpoints";
-import { cn } from "@/lib/utils";
 import {
   Outlet,
   createRootRoute,
@@ -19,7 +17,20 @@ import { Suspense, memo, useEffect, type ReactNode } from "react";
 export const Route = createRootRoute({
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
+  wrapInSuspense: true,
+  pendingComponent: PendingComponent,
 });
+
+function PendingComponent() {
+  return (
+    <div className="flex size-full items-center justify-center bg-background">
+      <Icon
+        name="Loader2"
+        className="size-6 animate-spin"
+      />
+    </div>
+  );
+}
 
 function ProgressBar() {
   const isLoading = useRouterState({ select: (s) => s.status === "pending" });
@@ -61,19 +72,12 @@ function Analytics() {
 }
 
 function Layout(props: { children: ReactNode }) {
-  const isSmallerScreen = useBreakpoint("md");
   return (
     <ConfigProvider>
       <SidebarProvider>
         <LayoutContainer>
-          <Sidebar />
-          <div className="w-full pl-0 lg:pl-16">
-            <main
-              className={cn(
-                "fixed inset-x-0 bottom-0 top-16 lg:left-16 lg:w-[calc(100vw-64px)]",
-                isSmallerScreen && "left-0 top-0 w-full",
-              )}
-            >
+          <div className="w-full">
+            <main className="fixed inset-x-0 bottom-0 top-16 w-full">
               <div className="flex size-full flex-col">
                 <ContentShell>
                   <Suspense fallback={<p>loading...</p>}>
@@ -83,9 +87,6 @@ function Layout(props: { children: ReactNode }) {
               </div>
             </main>
           </div>
-
-          {/* Start rendering router matches */}
-          {/* <TanStackRouterDevtools position="bottom-right" /> */}
 
           {/* should be inside LayoutContainer incase we change tailwind things */}
           <Toaster

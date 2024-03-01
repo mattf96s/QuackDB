@@ -10,6 +10,7 @@ import { StackContext, StaticSite } from "sst/constructs";
 
 export function Web({ stack, app }: StackContext) {
   const web = new StaticSite(stack, "web", {
+    waitForInvalidation: app.stage === "production",
     path: "packages/web/",
     buildOutput: "dist",
     buildCommand: "npm run build",

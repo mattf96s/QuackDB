@@ -1,35 +1,35 @@
 import ErrorNotification from "@/components/error";
 import Icon from "@/components/icon";
-import PanelHandle from "@/components/panel-handle";
-import { ThemeToggler } from "@/components/theme-toggle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StyledLink } from "@/components/ui/link";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useConfig } from "@/context/config/useConfig";
 import { DbProvider } from "@/context/db/provider";
 import { EditorSettingsProvider } from "@/context/editor-settings/provider";
 import { EditorProvider } from "@/context/editor/provider";
 import { QueryProvider } from "@/context/query/provider";
 import { useQuery } from "@/context/query/useQuery";
-import { useFileDrop } from "@/context/session/hooks/useAddFile.tsx";
 import { SessionProvider } from "@/context/session/provider";
-import useBreakpoint from "@/hooks/use-breakpoints";
 import { cn } from "@/lib/utils";
 import {
+  Link,
   createLazyFileRoute,
   useRouter,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useState } from "react";
-import { Panel, PanelGroup } from "react-resizable-panels";
-import EditorPanel from "./-components/editor-panel";
+import { Suspense, lazy, useState } from "react";
 import PendingComponent from "./-components/pending";
 import Toolbar from "./-components/query-toolbar";
 import Settings from "./-components/settings";
-import Sidepanel from "./-components/sidepanel";
 import { PanelProvider } from "./-context/panel/provider";
+import logo from "/logo.webp";
+
+const LazyPlayground = lazy(() =>
+  import("./-components/playground").then((module) => ({
+    default: module.default,
+  })),
+);
 
 export const Route = createLazyFileRoute("/")({
   component: PlaygroundContainer,
@@ -51,8 +51,7 @@ function ErrorComponent(props: ErrorComponentProps) {
             variant="outline"
             size="lg"
             href="https://github.com/mattf96s/quackdb/issues/new"
-            // target="_blank"
-            // rel="noopener noreferrer"
+            target="_blank"
             className="flex items-center gap-1"
           >
             Create an issue{" "}
@@ -79,9 +78,21 @@ function ErrorComponent(props: ErrorComponentProps) {
 
 function NavBar() {
   return (
-    <div className="fixed left-16 right-0 top-0 z-40 hidden h-16 shrink-0 items-center gap-x-4 bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 md:flex lg:px-8">
-      <div className="flex items-center justify-evenly gap-2">
-        <h1 className="text-lg font-semibold">QuackDB</h1>
+    <div className="fixed inset-x-0 top-0 hidden h-16 shrink-0 items-center gap-x-4 border-b bg-background px-2 md:flex">
+      <div className="flex min-w-fit items-center justify-evenly gap-3">
+        <Link
+          to="/"
+          className="size-10 overflow-hidden rounded-md border-none bg-background object-cover dark:bg-white/95"
+        >
+          <img
+            width={40}
+            height={40}
+            src={logo}
+            className="size-10"
+            alt="QuackDB logo"
+          />
+        </Link>
+        <h1 className="ml-1 text-xl font-semibold">QuackDB</h1>
         <Icon
           name="Terminal"
           className="size-5"
@@ -90,10 +101,8 @@ function NavBar() {
       <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
         <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
           <QueryMeta />
-
           <Toolbar />
           <Settings />
-          <ThemeToggler />
         </div>
       </div>
     </div>
@@ -109,7 +118,9 @@ function PlaygroundContainer() {
             <EditorSettingsProvider>
               <EditorProvider>
                 <NavBar />
-                <Playground />
+                <Suspense fallback={<PlaygroundSkeleton />}>
+                  <LazyPlayground />
+                </Suspense>
                 <BrowserAlertBar />
               </EditorProvider>
             </EditorSettingsProvider>
@@ -117,6 +128,17 @@ function PlaygroundContainer() {
         </PanelProvider>
       </DbProvider>
     </SessionProvider>
+  );
+}
+
+function PlaygroundSkeleton() {
+  return (
+    <div className="flex size-full items-center justify-center bg-background">
+      <Icon
+        name="Loader2"
+        className="size-6 animate-spin"
+      />
+    </div>
   );
 }
 
@@ -159,95 +181,6 @@ function BrowserAlertBar() {
   );
 }
 
-function Playground() {
-  const {
-    isDragActive,
-    ref,
-    onDragEnter,
-    onDragLeave,
-    onDragOver,
-    onFileDrop,
-  } = useFileDrop();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const isSmallerScreen = useBreakpoint("md");
-
-  if (isSmallerScreen) {
-    return (
-      <>
-        <div className="inline-flex h-16 w-full items-center justify-between px-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setMobileMenuOpen((s) => !s)}
-          >
-            <Icon
-              name="Menu"
-              className="size-5"
-            />
-          </Button>
-          <div className="inline-flex items-center gap-2">
-            <Toolbar />
-            <Settings />
-            <ThemeToggler />
-          </div>
-        </div>
-        <PanelGroup
-          className="rounded-none"
-          direction="vertical"
-          id="_mobile-layout-panel-group"
-        >
-          <EditorPanel />
-        </PanelGroup>
-        <MobileSidePanel
-          isOpen={mobileMenuOpen}
-          onOpenChange={(open) => setMobileMenuOpen(open)}
-        >
-          <Sidepanel />
-        </MobileSidePanel>
-      </>
-    );
-  }
-  return (
-    <div
-      onDrop={onFileDrop}
-      onDragOver={onDragOver}
-      onDragEnter={onDragEnter}
-      onDragLeave={onDragLeave}
-      ref={ref}
-      className={cn(
-        "flex size-full bg-inherit",
-        isDragActive &&
-          "bg-gray-100 transition-colors duration-200 ease-in-out dark:bg-gray-800",
-      )}
-    >
-      {/* Panel provider is custom context while PanelGroup is unrelated component; poor naming. */}
-
-      <PanelGroup
-        className="h-[calc(100vh-64px)] rounded-none"
-        direction="horizontal"
-        autoSaveId="_desktop-layout-panel-group"
-      >
-        <Panel
-          collapsedSize={5}
-          defaultSize={15}
-          minSize={5}
-          className="max-h-full"
-        >
-          <Sidepanel />
-        </Panel>
-        <PanelHandle />
-        <Panel
-          minSize={15}
-          className="max-h-full max-w-full"
-        >
-          <EditorPanel />
-        </Panel>
-      </PanelGroup>
-    </div>
-  );
-}
-
 function QueryMeta() {
   const { meta, status } = useQuery();
 
@@ -262,7 +195,7 @@ function QueryMeta() {
       >
         <Icon
           name="Loader2"
-          className="size-4 animate-spin"
+          className="size-5 animate-spin"
         />
       </Badge>
     );
@@ -287,26 +220,5 @@ function QueryMeta() {
         {formattedTime}s
       </Badge>
     </>
-  );
-}
-
-function MobileSidePanel(props: {
-  children: React.ReactNode;
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const { isOpen, onOpenChange } = props;
-  return (
-    <Sheet
-      open={isOpen}
-      onOpenChange={onOpenChange}
-    >
-      <SheetContent
-        forceMount
-        side="right"
-      >
-        {props.children}
-      </SheetContent>
-    </Sheet>
   );
 }
