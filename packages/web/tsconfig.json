@@ -2,6 +2,10 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "**/.server/**/*.ts",
+    "**/.server/**/*.tsx",
+    "**/.client/**/*.ts",
+    "**/.client/**/*.tsx",
     "env.d.ts",
     "sst-env.d.ts",
   ],
@@ -10,25 +14,17 @@
     "dist",
   ],
   "compilerOptions": {
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2022",
-    ],
     "types": [
       "@remix-run/node",
       "vite/client",
-      "node",
       "@types/wicg-file-system-access",
+      "react/canary",
+      "react-dom/canary"
     ],
-    "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "target": "ES2022",
-    "strict": true,
     "allowJs": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -38,7 +34,20 @@
         "./app/*"
       ]
     },
-    // Vite takes care of building everything, not tsc.
-    "noEmit": true
+    /* strictness */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    /* transpiling */
+    "moduleResolution": "Bundler",
+    "module": "ESNext",
+    "noEmit": true,
+    "isolatedModules": true,
+    /* where our code runs */
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ]
   }
 }

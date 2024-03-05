@@ -10,7 +10,9 @@
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "sst bind 'cross-env NODE_ENV=production node ./server.js'",
     "typecheck": "tsc",
-    "knip": "knip"
+    "knip": "knip",
+    "clean": "rimraf build",
+    "nuke": "pnpm run clean && rimraf node_modules package-lock.json && pnpm i"
   },
   "dependencies": {
     "@apache-arrow/esnext-esm": "^15.0.0",
@@ -71,9 +73,9 @@
     "match-sorter": "^6.3.4",
     "monaco-editor": "0.46.0",
     "morgan": "^1.10.0",
-    "react": "18.3.0-canary-f0e808e5b-20240214",
+    "react": "18.3.0-canary-01ab35a9a-20240228",
     "react-day-picker": "^8.10.0",
-    "react-dom": "18.3.0-canary-f0e808e5b-20240214",
+    "react-dom": "18.3.0-canary-01ab35a9a-20240228",
     "react-error-boundary": "^4.0.13",
     "react-hook-form": "^7.51.0",
     "react-hotkeys-hook": "^4.5.0",
@@ -100,6 +102,7 @@
     "@tailwindcss/typography": "^0.5.10",
     "@types/compression": "^1.7.5",
     "@types/dompurify": "^3.0.5",
+    "@types/eslint": "^8.56.5",
     "@types/express": "^4.17.21",
     "@types/morgan": "^1.9.9",
     "@types/node": "20.11.19",
@@ -110,7 +113,6 @@
     "@typescript-eslint/parser": "^6.21.0",
     "autoprefixer": "^10.4.18",
     "cross-env": "^7.0.3",
-    "cssnano": "^6.0.5",
     "eslint": "^8.57.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
@@ -122,6 +124,8 @@
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.11",
+    "rollup-plugin-visualizer": "^5.12.0",
+    "source-map-support": "^0.5.21",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3",
     "vite": "^5.1.5",
@@ -129,8 +133,8 @@
     "vite-tsconfig-paths": "^4.3.1"
   },
   "overrides": {
-    "react": "18.3.0-canary-f0e808e5b-20240214",
-    "react-dom": "18.3.0-canary-f0e808e5b-20240214",
+    "react": "18.3.0-canary-01ab35a9a-20240228",
+    "react-dom": "18.3.0-canary-01ab35a9a-20240228",
     "@duckdb/duckdb-wasm": "next"
   },
   "engines": {

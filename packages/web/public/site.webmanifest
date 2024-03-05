@@ -13,13 +13,12 @@
             "type": "image/png"
         }
     ],
-    "theme_color": "#ffffff",
-    "background_color": "#ffffff",
-    "orientation": "any",
+    "theme_color": "#6dd0fa",
+    "background_color": "#0a0a0a",
     "display": "standalone",
     "dir": "auto",
-    "lang": "en-ZA",
+    "lang": "en-US",
     "name": "QuackDB",
     "short_name": "QuackDB",
-    "start_url": "https://quackdb.com/"
+    "start_url": "/"
 }

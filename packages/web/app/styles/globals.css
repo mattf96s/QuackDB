@@ -60,11 +60,12 @@
     font-family: "geist-sans";
     font-weight: 300 900;
     font-display: swap;
+    font-style: normal;
     src: url("/fonts/Geist/GeistVariableVF.woff2") format("woff2");
   }
   @font-face {
     font-family: "jetbrains-mono";
-    font-weight: 300 900;
+    font-weight: 300 800;
     font-style: normal;
     font-display: swap;
     font-stretch: normal;
@@ -73,7 +74,7 @@
 
   @font-face {
     font-family: "jetbrains-mono";
-    font-weight: 300 900;
+    font-weight: 300 800;
     font-style: italic;
     font-display: swap;
     font-stretch: normal;

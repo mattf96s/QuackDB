@@ -1,29 +1,19 @@
-import { useLocation } from "@remix-run/react";
-import { load, trackPageview } from "fathom-client";
-import { useEffect } from "react";
-
-const isProduction = () => {
-  const { hostname } = window.location;
-  return hostname === "quackdb.com";
-};
+import { load } from "fathom-client";
+import { useEffect, useRef } from "react";
 
 export default function Analytics() {
-  const location = useLocation();
-  const { pathname, search } = location;
+  const isLoadedRef = useRef(false);
 
   useEffect(() => {
-    if (!isProduction()) return;
+    if (isLoadedRef.current) return;
 
     load("OSRZURZO", {
       includedDomains: ["quackdb.com"],
       excludedDomains: ["localhost"],
+      spa: "history",
     });
+    isLoadedRef.current = true;
   }, []);
-
-  useEffect(() => {
-    if (!isProduction()) return;
-    trackPageview();
-  }, [pathname, search]);
 
   return null;
 }
