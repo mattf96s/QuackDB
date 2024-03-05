@@ -20,6 +20,7 @@ module.exports = {
     es2023: true,
     worker: true
   },
+  reportUnusedDisableDirectives: true,
 
   // Base config
   extends: [

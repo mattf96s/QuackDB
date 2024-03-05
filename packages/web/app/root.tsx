@@ -22,9 +22,14 @@ import GlobalLoader from "./components/global-loader";
 import { Toaster } from "./components/ui/sonner";
 
 import clsx from "clsx";
-import { Suspense } from "react";
 import Icon from "./components/icon";
 import { themeSessionResolver } from "./sessions.server";
+
+const preloadedFonts = [
+  "Geist/GeistVariableVF.woff2",
+  "JetBrainsMono/JetBrainsMono-Italic[wght].woff2",
+  "JetBrainsMono/JetBrainsMono[wght].woff2",
+];
 
 export const links: LinksFunction = () => [
   {
@@ -39,6 +44,12 @@ export const links: LinksFunction = () => [
     sizes: "16x16",
     href: "/favicon-16x16.png",
   },
+  ...preloadedFonts.map((font) => ({
+    rel: "preload",
+    as: "font",
+    href: `/fonts/${font}`,
+    crossOrigin: "anonymous" as const,
+  })),
   { rel: "manifest", href: "/site.webmanifest" },
 ];
 
@@ -106,11 +117,13 @@ export const meta: MetaFunction = () => [
   },
 ];
 
-// Return the theme from the session storage using the loader
 export async function loader({ request }: LoaderFunctionArgs) {
   const { getTheme } = await themeSessionResolver(request);
+  const url = new URL(request.url);
   return {
     theme: getTheme(),
+    host: url.host,
+    isProduction: url.host === "app.quackdb.com",
   };
 }
 
@@ -152,13 +165,11 @@ export function LayoutInner(props: { children: React.ReactNode }) {
 
         <div vaul-drawer-wrapper="">
           <div className="relative flex h-svh w-svw flex-col bg-background">
-            <main className="flex-1">
-              <Suspense fallback={<FallBack />}>{props.children}</Suspense>
-            </main>
+            <main className="flex-1">{props.children}</main>
           </div>
         </div>
 
-        <Analytics />
+        {data.isProduction && <Analytics />}
         <ScrollRestoration />
         <Scripts />
         <Toaster />
