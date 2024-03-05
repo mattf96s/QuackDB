@@ -1,1 +1,0 @@
-export { SidebarProvider } from "./provider";

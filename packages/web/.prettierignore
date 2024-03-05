@@ -1,4 +1,2 @@
 node_modules
 dist
-./src/routeTree.gen.ts
-./src/components/monaco/syntax/index.ts
