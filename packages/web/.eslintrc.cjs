@@ -1,85 +1,128 @@
+/**
+ * This is intended to be a basic starting point for linting in your app.
+ * It relies on recommended configs out of the box for simplicity, but you can
+ * and should modify this configuration to best suit your team's needs.
+ */
+
+
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
   root: true,
-  env: { browser: true, es2024: true, worker: true },
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    "plugin:react-hooks/recommended",
-    "plugin:react/recommended",
-    "plugin:tailwindcss/recommended"
-  ],
-  "plugins": ['react-refresh', 'unused-imports', 'react', 'react-hooks', "tailwindcss"],
-  "rules": {
-    "tailwindcss/no-custom-classname": "off",
-    "tailwindcss/classnames-order": "off"
-  },
-  ignorePatterns: ['dist', '.eslintrc.cjs'],
-  parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
     ecmaFeatures: {
       jsx: true,
-    }
+    },
   },
+  env: {
+    browser: true,
+    es2023: true,
+    worker: true
+  },
+
+  // Base config
+  extends: [
+    "eslint:recommended"
+  ],
   overrides: [
+    // React
     {
-      files: ['*.ts', '*.tsx', '*.js'],
-      parser: '@typescript-eslint/parser',
-      parserOptions: {
-        project: ['tsconfig.json'],
-        tsconfigRootDir: __dirname,
+      files: ["**/*.{js,jsx,ts,tsx}"],
+      plugins: ["react", "jsx-a11y"],
+      extends: [
+        "plugin:react/recommended",
+        "plugin:react/jsx-runtime",
+        "plugin:react-hooks/recommended",
+        "plugin:jsx-a11y/recommended",
+      ],
+      settings: {
+        react: {
+          version: "detect",
+        },
+        formComponents: ["Form"],
+        linkComponents: [
+          { name: "Link", linkAttribute: "to" },
+          { name: "NavLink", linkAttribute: "to" },
+        ],
+        "import/resolver": {
+          typescript: {},
+        },
+      },
+      rules: {
+        "react/prop-types": "off",
+        "react/react-in-jsx-scope": "off",
+        "react/display-name": "off",
+        "react/jsx-uses-react": "off",
+        "react/jsx-uses-vars": "off",
+        "react/function-component-definition": [
+          "error",
+          {
+            namedComponents: "function-declaration",
+            unnamedComponents: "arrow-function",
+          },
+        ],
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "error",
+      },
+    },
+
+    // Typescript
+    {
+      files: ["**/*.{ts,tsx}"],
+      plugins: ["@typescript-eslint", "import"],
+      parser: "@typescript-eslint/parser",
+      settings: {
+        "import/internal-regex": "^~/",
+        "import/resolver": {
+          node: {
+            extensions: [".ts", ".tsx"],
+          },
+          typescript: {
+            alwaysTryTypes: true,
+          },
+        },
+
+      },
+      extends: [
+        "plugin:@typescript-eslint/recommended",
+        "plugin:import/recommended",
+        "plugin:import/typescript",
+      ],
+      rules: {
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": [
+          "warn",
+          { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
+        ],
+        "@typescript-eslint/consistent-type-imports": [
+          "warn",
+          {
+            prefer: "type-imports",
+            disallowTypeAnnotations: true,
+            fixStyle: "inline-type-imports",
+          },
+        ]
+      }
+    },
+
+    // tailwind
+    {
+      files: ["**/*.{jsx,tsx}"],
+      plugins: ["tailwindcss"],
+      settings: {
+        config: "./tailwind.config.js",
+        "callees": ["cn", "cva"],
+      },
+
+    },
+
+    // Node
+    {
+      files: [".eslintrc.cjs", "server.js"],
+      env: {
+        node: true,
       },
     },
   ],
-
-  settings: {
-    react: {
-      version: "detect",
-    },
-    "tailwindcss": {
-      "callees": ["cn", "cva"],
-      "config": "tailwind.config.js",
-    },
-  },
-  rules: {
-    // react
-    "react/function-component-definition": [
-      "error",
-      {
-        namedComponents: "function-declaration",
-        unnamedComponents: "arrow-function",
-      },
-    ],
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "error",
-    "react/prop-types": "off",
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true },
-    ],
-    "react/display-name": "off",
-    "react/react-in-jsx-scope": "off",
-    // typescript
-    "no-unused-vars": "off",
-    "unused-imports/no-unused-imports": "error",
-    "@typescript-eslint/no-unused-vars": [
-      "warn",
-      { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
-    ],
-    "@typescript-eslint/consistent-type-imports": [
-      "warn",
-      {
-        prefer: "type-imports",
-        disallowTypeAnnotations: true,
-        fixStyle: "inline-type-imports",
-      },
-    ],
-    "unused-imports/no-unused-vars": [
-      "warn",
-      { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
-    ],
-    "no-constant-condition": ["error", { "checkLoops": false }]
-  }
-}
+};

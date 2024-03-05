@@ -21,6 +21,5 @@
     "lang": "en-ZA",
     "name": "QuackDB",
     "short_name": "QuackDB",
-    "start_url": "https://app.quackdb.com/",
-    "scope": "/"
+    "start_url": "https://quackdb.com/"
 }

@@ -1,26 +1,31 @@
-import { TanStackRouterVite } from "@tanstack/router-vite-plugin";
-import react from "@vitejs/plugin-react";
-import path from "path";
-import { visualizer } from "rollup-plugin-visualizer";
+import { vitePlugin as remix } from "@remix-run/dev";
+import { installGlobals } from "@remix-run/node";
 import { defineConfig } from "vite";
+import envOnly from "vite-env-only";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-import { readFileSync } from "fs";
-import { fileURLToPath } from "url";
-
-const file = fileURLToPath(new URL("package.json", import.meta.url));
-const json = readFileSync(file, "utf8");
-const version = JSON.parse(json);
+installGlobals();
 
 export default defineConfig({
-  plugins: [tsconfigPaths(), react(), TanStackRouterVite(), visualizer()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "src"),
+  plugins: [
+    envOnly(),
+    tsconfigPaths(),
+    remix({
+      serverModuleFormat: "esm",
+
+      future: {
+        v3_throwAbortReason: true,
+        v3_fetcherPersist: true,
+        v3_relativeSplatPath: true,
+      },
+    }),
+  ],
+  optimizeDeps: {
+    esbuildOptions: {
+      target: "esnext",
     },
-    dedupe: ["monaco-editor", "vscode"],
-  },
-  define: {
-    __pkg__: version,
+  }, // Needed for SST: https://github.com/remix-run/remix/issues/7969#issuecomment-1916042039
+  server: {
+    port: 3000,
   },
 });

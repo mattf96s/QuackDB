@@ -1,51 +1,44 @@
 {
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "env.d.ts",
+    "sst-env.d.ts",
+  ],
   "exclude": [
     "node_modules",
     "dist",
-    "./src/routeTree.gen.ts"
-  ],
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.js",
   ],
   "compilerOptions": {
-    /* Base Options: */
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "target": "ESNext",
-    "allowJs": true,
-    "resolveJsonModule": true,
-    "moduleDetection": "force",
-    "isolatedModules": true,
-    // strictness
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "types": [
-      "@types/wicg-file-system-access",
-      "vite/client"
-    ],
-    "useDefineForClassFields": true,
     "lib": [
-      "esnext",
       "DOM",
       "DOM.Iterable",
-      "WebWorker"
+      "ES2022",
     ],
+    "types": [
+      "@remix-run/node",
+      "vite/client",
+      "node",
+      "@types/wicg-file-system-access",
+    ],
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
     "module": "ESNext",
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "jsx": "preserve",
-    "sourceMap": true,
-    /* Paths */
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "target": "ES2022",
+    "strict": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
+      "~/*": [
+        "./app/*"
       ]
     },
-    "verbatimModuleSyntax": true,
-  },
+    // Vite takes care of building everything, not tsc.
+    "noEmit": true
+  }
 }
