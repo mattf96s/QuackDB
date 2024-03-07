@@ -14,5 +14,10 @@ export default function Icon({ name, ...props }: IconProps) {
   // eslint-disable-next-line import/namespace
   const LucideIcon = icons[name];
 
-  return <LucideIcon {...props} />;
+  return (
+    <LucideIcon
+      size={16}
+      {...props}
+    />
+  );
 }

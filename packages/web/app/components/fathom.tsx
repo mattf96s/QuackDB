@@ -10,7 +10,7 @@ export default function Analytics() {
     load("OSRZURZO", {
       includedDomains: ["quackdb.com"],
       excludedDomains: ["localhost"],
-      spa: "history",
+      spa: "auto",
     });
     isLoadedRef.current = true;
   }, []);

@@ -1,4 +1,4 @@
-// // https://github.com/deephaven/web-client-ui/blob/main/packages/code-studio/public/download/serviceWorker.js
+// https://github.com/deephaven/web-client-ui/blob/main/packages/code-studio/public/download/serviceWorker.js
 // /* eslint-disable no-restricted-globals */
 // /* eslint-disable no-console */
 

@@ -11,7 +11,7 @@ import {
   CACHE_KEYS,
   type FetchResultsReturn,
   type QueryMeta,
-} from "~/constants";
+} from "~/constants.client";
 import { getArrowTableSchema } from "~/utils/arrow/helpers";
 import { getColumnType } from "~/utils/duckdb/helpers/getColumnType";
 

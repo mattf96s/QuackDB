@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import type { Source } from "~/constants";
+import type { Source } from "~/constants.client";
 import { useSession } from "~/context/session/useSession";
 import { DuckDBInstance } from "~/modules/duckdb-singleton";
 import { DBContext } from "./context";

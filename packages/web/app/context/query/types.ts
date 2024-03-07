@@ -1,4 +1,4 @@
-import type { FetchResultsReturn } from "~/constants";
+import type { FetchResultsReturn } from "~/constants.client";
 
 /**
  * The state of the query context.

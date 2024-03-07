@@ -5,7 +5,7 @@ import { z } from "zod";
 import Icon from "~/components/icon";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { IDB_KEYS, queryMetaSchema, type QueryMeta } from "~/constants";
+import { IDB_KEYS, queryMetaSchema, type QueryMeta } from "~/constants.client";
 import { useQuery } from "~/context/query/useQuery";
 import { useCopyToClipboard } from "~/hooks/use-copy-to-clipboard";
 import { cn } from "~/lib/utils";

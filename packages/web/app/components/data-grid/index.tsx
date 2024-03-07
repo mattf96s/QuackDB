@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import type { FetchResultsReturn } from "~/constants";
+import type { FetchResultsReturn } from "~/constants.client";
 import { usePagination } from "~/context/pagination/usePagination";
 import { getColumnType } from "~/utils/duckdb/helpers/getColumnType";
 

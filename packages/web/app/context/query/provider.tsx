@@ -7,7 +7,7 @@ import {
   queryMetaSchema,
   type FetchResultsReturn,
   type QueryMeta,
-} from "~/constants";
+} from "~/constants.client";
 import { useDB } from "~/context/db/useDB";
 import useAbortController from "~/hooks/use-abortable";
 import { QueryContext } from "./context";

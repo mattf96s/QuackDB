@@ -1,7 +1,8 @@
 /// <reference lib="webworker" />
-import { type Editor, type FileEntry, type Source } from "@/constants";
+
 import * as Comlink from "comlink";
 import { clear } from "idb-keyval";
+import { type Editor, type FileEntry, type Source } from "~/constants.client";
 import { newfileContents } from "./data/newfile-content";
 import type {
   AddDataSourceProps,
@@ -16,8 +17,9 @@ type SessionFiles = Pick<
   "directoryHandle" | "sources" | "editors" | "sessionId"
 >;
 
-// ------- Get session directory handle ------- //
-
+/**
+ * Helper to get the session directory handle.
+ */
 const getSessionDirectory = async (sessionId: string) => {
   const root = await navigator.storage.getDirectory();
 
@@ -276,6 +278,7 @@ const onAddDataSource = async ({ entries, sessionId }: AddDataSourceBase) => {
 
     // use the pre-processed filename from the client.
     const meta = getMimeType(filenameRaw);
+
     if (!meta) continue;
 
     const filename = await findUniqueName(directory, filenameRaw);
@@ -295,9 +298,7 @@ const onAddDataSource = async ({ entries, sessionId }: AddDataSourceBase) => {
         const source: FileEntry<"SOURCE"> = {
           path: filename,
           kind: "SOURCE",
-          // @ts-expect-error: TODO: fix this
           mimeType: meta.mimeType,
-          // @ts-expect-error: TODO: fix this
           ext: meta.ext,
           handle: draftHandle,
         };
@@ -330,11 +331,8 @@ const onAddDataSource = async ({ entries, sessionId }: AddDataSourceBase) => {
 
         const source: FileEntry<"SOURCE"> = {
           path: filename,
-          // @ts-expect-error: TODO: fix this
           kind: meta.kind,
-          // @ts-expect-error: TODO: fix this
           mimeType: meta.mimeType,
-          // @ts-expect-error: TODO: fix this
           ext: meta.ext,
           handle: draftHandle,
         };
@@ -366,11 +364,8 @@ const onAddDataSource = async ({ entries, sessionId }: AddDataSourceBase) => {
 
         const source: FileEntry<"SOURCE"> = {
           path: filename,
-          // @ts-expect-error: TODO: fix this
           kind: meta.kind,
-          // @ts-expect-error: TODO: fix this
           mimeType: meta.mimeType,
-          // @ts-expect-error: TODO: fix this
           ext: meta.ext,
           handle: draftHandle, // not the original file handle we received.
         };
@@ -400,11 +395,8 @@ const onAddDataSource = async ({ entries, sessionId }: AddDataSourceBase) => {
 
         const source: FileEntry<"SOURCE"> = {
           path: filename,
-          // @ts-expect-error: TODO: fix this
           kind: meta.kind,
-          // @ts-expect-error: TODO: fix this
           mimeType: meta.mimeType,
-          // @ts-expect-error: TODO: fix this
           ext: meta.ext,
           handle: draftHandle,
         };
@@ -477,12 +469,17 @@ const onAddEditor = async (sessionId: string) => {
       handle: draftHandle,
     };
 
-    postMessage({
-      type: "ADD_EDITOR_COMPLETE",
-      payload: entry,
-    });
+    const serialized = JSON.stringify(entry);
+    console.log(serialized);
+    const deserialized = JSON.parse(serialized);
+    console.log(deserialized);
 
-    return entry;
+    // postMessage({
+    //   type: "ADD_EDITOR_COMPLETE",
+    //   payload: entry,
+    // });
+
+    return Comlink.transfer(entry, [entry]);
   } catch (e) {
     console.error("Error adding editor file: ", e);
     postMessage({
