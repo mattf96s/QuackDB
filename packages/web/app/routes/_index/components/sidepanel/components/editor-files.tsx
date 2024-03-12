@@ -1,7 +1,8 @@
-import { Pencil2Icon } from "@radix-ui/react-icons";
-import { ChevronDown, Dot, Plus } from "lucide-react";
+import { PopoverAnchor, PopoverTrigger } from "@radix-ui/react-popover";
+import { ChevronDown, DatabaseZap, Dot, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +22,9 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "~/components/ui/context-menu";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Popover, PopoverContent } from "~/components/ui/popover";
 import type { CodeEditor } from "~/context/session/types";
 import { useSession } from "~/context/session/useSession";
 import { cn } from "~/lib/utils";
@@ -69,7 +73,7 @@ export default function EditorSources() {
 
       <div
         className={cn(
-          "flex w-full flex-col gap-1 py-1 pr-8",
+          "flex w-full flex-col space-y-1.5 py-1 pl-4 pr-8",
           isCollapsed && "hidden",
         )}
       >
@@ -122,6 +126,8 @@ function DeleteEditorModal(props: DeleteModalProps) {
 }
 
 function CodeEditorItem(editor: CodeEditor) {
+  const [isEditing, setIsEditing] = useState(false);
+
   const { dispatch } = useSession();
   const [showDelete, setShowDelete] = useState(false);
 
@@ -139,51 +145,63 @@ function CodeEditorItem(editor: CodeEditor) {
   };
 
   const { isFocused } = editor;
+
   return (
     <>
       <ContextMenu key={editor.path}>
         <ContextMenuTrigger className="w-full">
           <Button
             className={cn(
-              "mx-5 flex h-6 w-full items-center justify-between gap-2 p-2 pl-0",
+              "flex h-6 w-full items-center justify-between gap-2 overflow-hidden p-2",
               isFocused && "bg-secondary",
             )}
             variant="ghost"
             onClick={onOpenFile}
           >
             <div className="inline-flex items-center gap-1">
-              <Pencil2Icon className="size-4" />
+              <DatabaseZap
+                className={cn(
+                  "mr-0.5 size-4 shrink-0",
+                  editor.isDirty && "text-orange-700 dark:text-yellow-500",
+                )}
+              />
+
               <span
                 className={cn(
                   "truncate font-normal",
-                  // editor.isDirty && "text-yellow-700",
+                  editor.isDirty && "text-orange-700 dark:text-yellow-500",
                 )}
               >
                 {editor.path}
               </span>
             </div>
-            {editor.isOpen && <Dot className="size-4" />}
+
+            {editor.isDirty && (
+              <Dot
+                className={cn("size-8 text-orange-700 dark:text-yellow-500")}
+              />
+            )}
           </Button>
         </ContextMenuTrigger>
         <ContextMenuContent className="w-64">
           <ContextMenuItem
             inset
-            onClick={() => setShowDelete(true)}
+            onSelect={() => setShowDelete(true)}
           >
             Open
             <ContextMenuShortcut>⌘O</ContextMenuShortcut>
           </ContextMenuItem>
-          {/* #TODO */}
+
           <ContextMenuItem
-            disabled
+            onSelect={() => setIsEditing(true)}
             inset
           >
             Rename
-            <ContextMenuShortcut>⌘R</ContextMenuShortcut>
           </ContextMenuItem>
+
           <ContextMenuSeparator />
           <ContextMenuItem
-            onClick={() => setShowDelete(true)}
+            onSelect={() => setShowDelete(true)}
             inset
           >
             Delete
@@ -192,6 +210,15 @@ function CodeEditorItem(editor: CodeEditor) {
         </ContextMenuContent>
       </ContextMenu>
 
+      {/* rename popover */}
+      <RenamePopover
+        filename={editor.path}
+        isOpen={isEditing}
+        onOpenChange={(open) => setIsEditing(open)}
+      >
+        <span />
+      </RenamePopover>
+
       {/* delete editor modal */}
       <DeleteEditorModal
         isOpen={showDelete}
@@ -199,6 +226,109 @@ function CodeEditorItem(editor: CodeEditor) {
         path={editor.path}
       />
     </>
+  );
+}
+
+type RenamePopoverProps = {
+  filename: string;
+  children: React.ReactNode;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+const filenameSchema = z.string().endsWith(".sql");
+
+function RenamePopover(props: RenamePopoverProps) {
+  const { filename, children, isOpen, onOpenChange } = props;
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { onRenameEditor } = useSession();
+
+  const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const newName = formData.get("file") as string;
+
+    const validation = filenameSchema.safeParse(newName);
+    if (!validation.success) {
+      toast.error("Invalid file name", {
+        description: "File name must end with .sql",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      await onRenameEditor(filename, newName);
+      toast.success("File renamed", {
+        description: `File ${filename} renamed to ${newName}`,
+      });
+      onOpenChange(false);
+    } catch (e) {
+      toast.error("Failed to rename file");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  return (
+    <Popover
+      open={isOpen}
+      onOpenChange={onOpenChange}
+      modal
+    >
+      <PopoverAnchor asChild>
+        <PopoverTrigger>{children}</PopoverTrigger>
+      </PopoverAnchor>
+      <PopoverContent className="w-80">
+        <form
+          method="post"
+          onSubmit={onSubmitHandler}
+          id="rename-form"
+        >
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <h4 className="font-medium leading-none">Rename</h4>
+              <p className="text-sm text-muted-foreground">
+                Include the file extension.
+              </p>
+            </div>
+            <div className="grid gap-2">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label
+                  form="rename-form"
+                  htmlFor="file"
+                >
+                  File
+                </Label>
+                <Input
+                  id="file"
+                  name="file"
+                  defaultValue={filename}
+                  className="col-span-3 h-8"
+                  form="rename-form"
+                />
+              </div>
+            </div>
+            <Button
+              form="rename-form"
+              size="sm"
+              type="submit"
+              disabled={isLoading}
+            >
+              Save changes
+              {isLoading && (
+                <Loader2
+                  size={16}
+                  className="ml-2 animate-spin"
+                />
+              )}
+            </Button>
+          </div>
+        </form>
+      </PopoverContent>
+    </Popover>
   );
 }
 

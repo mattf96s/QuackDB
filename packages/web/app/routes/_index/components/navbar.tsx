@@ -18,7 +18,7 @@ export default function NavBar() {
           className="size-5"
         />
       </div>
-      <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
+      <div className="ml-auto flex w-full items-center space-x-2 pr-2 sm:justify-end">
         <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
           <QueryMeta />
           <Toolbar />

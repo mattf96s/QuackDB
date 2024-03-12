@@ -685,6 +685,73 @@ async function onBurstCache({
   }
 }
 
+// ------- Rename editor file ------- //
+
+async function onRenameEditor({
+  sessionId,
+  path,
+  newPath,
+}: {
+  sessionId: string;
+  path: string;
+  newPath: string;
+}) {
+  postMessage({
+    type: "RENAME_EDITOR_START",
+    payload: {
+      sessionId,
+      path,
+      newPath,
+    },
+  });
+
+  try {
+    const directory = await getSessionDirectory(sessionId);
+
+    const file = await directory.getFileHandle(path, { create: false });
+
+    // @ts-expect-error - TS doesn't have the correct type for move.
+    await file.move(directory, newPath);
+
+    postMessage({
+      type: "RENAME_EDITOR_COMPLETE",
+      payload: {
+        sessionId,
+        path,
+        newPath,
+        error: null,
+      },
+    });
+
+    return {
+      sessionId,
+      path,
+      newPath,
+      error: null,
+      handle: file,
+    };
+  } catch (e) {
+    console.error(`Error renaming editor file: ${path} to ${newPath}`, e);
+    postMessage({
+      type: "RENAME_EDITOR_ERROR",
+      payload: {
+        sessionId,
+        path,
+        newPath,
+        error: e instanceof Error ? e.message : "Unknown error",
+      },
+    });
+
+    return {
+      sessionId,
+      path,
+      newPath,
+      error: e instanceof Error ? e.message : "Unknown error",
+      handle: null,
+    };
+  }
+}
+
 // ----------------------------//
 
 const methods = {
@@ -694,6 +761,7 @@ const methods = {
   onDeleteEditor,
   onSaveEditor,
   onBurstCache,
+  onRenameEditor,
 };
 
 export type SessionWorker = typeof methods;
