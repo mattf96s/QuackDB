@@ -11,12 +11,12 @@ export function Web({ stack, app }: StackContext) {
     nodejs: {
       loader: {
         ".ttf": "file",
+        ".wasm": "file",
       },
       splitting: true,
       esbuild: {
         target: "esnext",
         format: "esm",
-        ignoreAnnotations: true,
       },
     },
     ...(app.stage === "production"
