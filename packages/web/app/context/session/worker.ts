@@ -752,6 +752,59 @@ async function onRenameEditor({
   }
 }
 
+// ------- Delete data source ------- //
+
+async function onDeleteDataSource({
+  sessionId,
+  path,
+}: {
+  sessionId: string;
+  path: string;
+}) {
+  postMessage({
+    type: "DELETE_SOURCE_START",
+    payload: {
+      sessionId,
+      path,
+    },
+  });
+
+  try {
+    const directory = await getSessionDirectory(sessionId);
+    await directory.removeEntry(path, { recursive: true });
+    postMessage({
+      type: "DELETE_SOURCE_COMPLETE",
+      payload: {
+        sessionId,
+        path,
+        error: null,
+      },
+    });
+
+    return {
+      sessionId,
+      path,
+      error: null,
+    };
+  } catch (e) {
+    console.error(`Error deleting data source: ${path} `, e);
+    postMessage({
+      type: "DELETE_SOURCE_ERROR",
+      payload: {
+        sessionId,
+        path,
+        error: e instanceof Error ? e.message : "Unknown error",
+      },
+    });
+
+    return {
+      sessionId,
+      path,
+      error: e instanceof Error ? e.message : "Unknown error",
+    };
+  }
+}
+
 // ----------------------------//
 
 const methods = {
@@ -762,6 +815,7 @@ const methods = {
   onSaveEditor,
   onBurstCache,
   onRenameEditor,
+  onDeleteDataSource,
 };
 
 export type SessionWorker = typeof methods;

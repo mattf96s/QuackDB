@@ -5,6 +5,7 @@ import { useCallback, type MouseEventHandler } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { toast } from "sonner";
 import { useSpinDelay } from "spin-delay";
+import { Tag } from "~/components/tag";
 import {
   Menubar,
   MenubarContent,
@@ -118,16 +119,67 @@ export default function Toolbar() {
           </MenubarTrigger>
         </div>
         <MenubarContent className="mr-12">
-          <MenubarItem disabled>Save Query</MenubarItem>
+          <MenubarItem
+            disabled
+            className="inline-flex items-center"
+          >
+            <span className="mr-2">Import Session</span>
+            <Tag
+              color="amber"
+              variant="small"
+            >
+              soon
+            </Tag>
+          </MenubarItem>
           <MenubarSeparator />
           <MenubarSub>
             <MenubarSubTrigger>Export</MenubarSubTrigger>
             <MenubarSubContent>
-              <MenubarItem disabled>CSV</MenubarItem>
-              <MenubarItem disabled>Parquet</MenubarItem>
-              <MenubarItem disabled>JSON</MenubarItem>
-              <MenubarItem disabled>DuckDB</MenubarItem>
-              <MenubarItem disabled>SQL</MenubarItem>
+              <MenubarItem disabled>
+                <span className="mr-2">CSV</span>
+                <Tag
+                  color="amber"
+                  variant="small"
+                >
+                  soon
+                </Tag>
+              </MenubarItem>
+              <MenubarItem disabled>
+                <span className="mr-2">Parquet</span>
+                <Tag
+                  color="amber"
+                  variant="small"
+                >
+                  soon
+                </Tag>
+              </MenubarItem>
+              <MenubarItem disabled>
+                <span className="mr-2">JSON</span>
+                <Tag
+                  color="amber"
+                  variant="small"
+                >
+                  soon
+                </Tag>
+              </MenubarItem>
+              <MenubarItem disabled>
+                <span className="mr-2">DuckDB</span>
+                <Tag
+                  color="amber"
+                  variant="small"
+                >
+                  soon
+                </Tag>
+              </MenubarItem>
+              <MenubarItem disabled>
+                <span className="mr-2">SQL</span>
+                <Tag
+                  color="amber"
+                  variant="small"
+                >
+                  soon
+                </Tag>
+              </MenubarItem>
               <ExportToCopy />
             </MenubarSubContent>
           </MenubarSub>
@@ -141,9 +193,7 @@ function ExportToCopy() {
   const { table } = useQuery();
 
   const onCopy: MouseEventHandler<HTMLDivElement> = useCallback(
-    async (e) => {
-      e.preventDefault();
-
+    async (_e) => {
       try {
         const rows = table.toArray().map((row) => row.toJSON());
         const dataset = JSON.stringify(rows, null, 2);

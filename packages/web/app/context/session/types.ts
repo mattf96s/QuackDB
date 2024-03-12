@@ -59,6 +59,7 @@ export type SessionMethods = {
   onCloseEditor: (path: string) => Promise<void>;
   onBurstCache: () => Promise<void>;
   onRenameEditor: (path: string, newPath: string) => Promise<void>;
+  onDeleteDataSource: (path: string) => Promise<void>;
 };
 
 export type SessionContextValue = SessionState & SessionMethods;

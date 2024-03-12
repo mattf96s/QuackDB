@@ -1,10 +1,10 @@
 import { useLocalStorage } from "@uidotdev/usehooks";
+import { Loader2 } from "lucide-react";
 import { Suspense, lazy } from "react";
 import ErrorNotification from "~/components/error";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { PaginationProvider } from "~/context/pagination/provider";
 import { useQuery } from "~/context/query/useQuery";
-import DatasetActions from "./components/dataset-actions";
 
 const LazyJSONViewer = lazy(() =>
   import("./components/json-viewer").then((module) => ({
@@ -59,9 +59,9 @@ export default function ResultsView() {
                 </TabsTrigger>
               ))}
             </TabsList>
-            <div className="inline-flex items-center gap-1">
+            {/* <div className="inline-flex items-center gap-1">
               <DatasetActions />
-            </div>
+            </div> */}
           </div>
           {error && (
             <div className="w-full px-4 py-10">
@@ -76,7 +76,7 @@ export default function ResultsView() {
             value="table"
             className="h-full flex-col border-none p-0 data-[state=active]:flex"
           >
-            <Suspense fallback={<p>Loading...</p>}>
+            <Suspense fallback={<Fallback />}>
               <LazyTableViewer />
             </Suspense>
           </TabsContent>
@@ -84,7 +84,7 @@ export default function ResultsView() {
             value="chart"
             className="h-full flex-col border-none p-0 data-[state=active]:flex"
           >
-            <Suspense fallback={<p>Loading...</p>}>
+            <Suspense fallback={<Fallback />}>
               <LazyChartViewer />
             </Suspense>
           </TabsContent>
@@ -92,12 +92,20 @@ export default function ResultsView() {
             value="json"
             className="h-full flex-col border-none p-0 data-[state=active]:flex"
           >
-            <Suspense fallback={<p>Loading...</p>}>
+            <Suspense fallback={<Fallback />}>
               <LazyJSONViewer />
             </Suspense>
           </TabsContent>
         </Tabs>
       </div>
     </PaginationProvider>
+  );
+}
+
+function Fallback() {
+  return (
+    <span className="m-2">
+      <Loader2 className="size-5 animate-spin" />
+    </span>
   );
 }
