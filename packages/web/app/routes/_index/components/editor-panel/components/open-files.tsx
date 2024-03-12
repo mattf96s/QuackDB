@@ -19,8 +19,8 @@ export default function OpenFileTabs() {
   };
 
   return (
-    <div className="flex max-h-9 min-h-9 flex-row justify-between overflow-hidden overflow-x-auto bg-[#ececec] dark:bg-background">
-      <div className="flex size-full items-center border-b">
+    <div className="flex max-h-9 min-h-9 flex-row justify-between overflow-hidden overflow-x-auto bg-[#f3f3f3] dark:bg-background">
+      <div className="flex size-full items-center">
         {editors
           .filter((editor) => editor.isOpen)
           .map((editor) => {
@@ -30,9 +30,9 @@ export default function OpenFileTabs() {
               <div
                 role="button"
                 className={cn(
-                  "flex h-full cursor-pointer flex-row flex-nowrap items-center gap-1 rounded-none border-x border-t border-t-transparent bg-[#ececec] pl-2 first:border-l-0 hover:bg-[#d9d9d9] dark:bg-background dark:text-foreground dark:hover:bg-[#1f1f1f]",
+                  "flex h-full cursor-pointer flex-row flex-nowrap items-center gap-1 rounded-none border-x border-t border-t-transparent bg-[#ececec] pl-2 text-[#3d3d3d] first:border-l-0 hover:bg-[#d9d9d9] dark:bg-background dark:text-foreground dark:hover:bg-[#1f1f1f]",
                   isCurrent &&
-                    "border-t-slate-500 bg-background hover:bg-background dark:border-t-blue-600 dark:bg-[#1e1e1e] dark:text-secondary-foreground dark:hover:bg-[#1e1e1e] ",
+                    "border-t-0 bg-white text-[#3d3d3d] hover:bg-background dark:border-t dark:border-t-blue-600 dark:bg-[#1e1e1e] dark:text-secondary-foreground dark:hover:bg-[#1e1e1e] ",
                 )}
                 data-current={isCurrent || undefined}
                 key={editor.path}

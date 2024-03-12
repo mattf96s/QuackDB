@@ -58,6 +58,7 @@ export type SessionMethods = {
   onSaveEditor: (props: SaveEditorProps) => Promise<void>;
   onCloseEditor: (path: string) => Promise<void>;
   onBurstCache: () => Promise<void>;
+  onRenameEditor: (path: string, newPath: string) => Promise<void>;
 };
 
 export type SessionContextValue = SessionState & SessionMethods;
@@ -162,7 +163,17 @@ type RESET_SESSION = {
   type: "RESET_SESSION";
 };
 
+type RENAME_EDITOR = {
+  type: "RENAME_EDITOR";
+  payload: {
+    path: string;
+    newPath: string;
+    handle: FileSystemFileHandle;
+  };
+};
+
 export type Action =
+  | RENAME_EDITOR
   | AddSources
   | RemoveSource
   | OpenEditor

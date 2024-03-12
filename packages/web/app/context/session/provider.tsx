@@ -39,6 +39,25 @@ function reducer(state: SessionState, action: Action): SessionState {
         ),
       };
     }
+    case "RENAME_EDITOR": {
+      const { path, newPath, handle } = action.payload;
+      const index = state.editors.findIndex((editor) => editor.path === path);
+      if (index === -1) return { ...state };
+      const editor = state.editors[index];
+      if (!editor) return { ...state };
+      return {
+        ...state,
+        editors: [
+          ...state.editors.slice(0, index),
+          {
+            ...editor,
+            path: newPath,
+            handle,
+          },
+          ...state.editors.slice(index + 1),
+        ],
+      };
+    }
     case "UPDATE_EDITOR": {
       const { path, content } = action.payload;
       const index = state.editors.findIndex((editor) => editor.path === path);
@@ -641,6 +660,43 @@ function SessionProvider({ children }: SessionProviderProps) {
     }
   }, [session]);
 
+  // rename the editor
+
+  const onRenameEditor: SessionMethods["onRenameEditor"] = useCallback(
+    async (path, newPath) => {
+      if (!proxyRef.current) return;
+
+      const { sessionId } = session;
+
+      try {
+        const result = await proxyRef.current.onRenameEditor({
+          sessionId,
+          path,
+          newPath,
+        });
+
+        if (result.error) throw result.error;
+        if (!result.handle) throw new Error("Failed to rename editor");
+
+        dispatch({
+          type: "RENAME_EDITOR",
+          payload: {
+            path,
+            newPath,
+            handle: result.handle,
+          },
+        });
+      } catch (e) {
+        console.error("Failed to rename editor: ", e);
+        toast.error("Failed to rename the editor", {
+          description: e instanceof Error ? e.message : undefined,
+        });
+        return;
+      }
+    },
+    [session],
+  );
+
   const value = useMemo(
     () => ({
       ...session,
@@ -652,6 +708,7 @@ function SessionProvider({ children }: SessionProviderProps) {
       onSaveEditor,
       onCloseEditor,
       onBurstCache,
+      onRenameEditor,
     }),
     [
       onSessionChange,
@@ -662,6 +719,7 @@ function SessionProvider({ children }: SessionProviderProps) {
       onSaveEditor,
       onCloseEditor,
       onBurstCache,
+      onRenameEditor,
     ],
   );
 
