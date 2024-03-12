@@ -16,20 +16,13 @@ import {
   ThemeProvider,
   useTheme,
 } from "remix-themes";
-import "~/styles/globals.css";
+import styles from "~/styles/globals.css?url";
 import Analytics from "./components/fathom";
 import GlobalLoader from "./components/global-loader";
 import { Toaster } from "./components/ui/sonner";
 
 import clsx from "clsx";
-import Icon from "./components/icon";
 import { themeSessionResolver } from "./sessions.server";
-
-const preloadedFonts = [
-  "Geist/GeistVariableVF.woff2",
-  "JetBrainsMono/JetBrainsMono-Italic[wght].woff2",
-  "JetBrainsMono/JetBrainsMono[wght].woff2",
-];
 
 export const links: LinksFunction = () => [
   {
@@ -44,12 +37,7 @@ export const links: LinksFunction = () => [
     sizes: "16x16",
     href: "/favicon-16x16.png",
   },
-  ...preloadedFonts.map((font) => ({
-    rel: "preload",
-    as: "font",
-    href: `/fonts/${font}`,
-    crossOrigin: "anonymous" as const,
-  })),
+  { rel: "stylesheet", href: styles },
   { rel: "manifest", href: "/site.webmanifest" },
 ];
 
@@ -63,57 +51,6 @@ export const meta: MetaFunction = () => [
     name: "description",
     content:
       "QuackDB is a user-friendly, open-source online DuckDB SQL playground and editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
-  },
-  {
-    name: "keywords",
-    content:
-      "QuackDB, DuckDB, SQL, SQL playground, SQL editor, SQL online, SQL online editor, SQL online playground, SQL online editor, SQL online playground, SQL online playground and editor, SQL playground and editor, SQL playground editor, SQL editor playground, SQL editor online, SQL playground",
-  },
-  {
-    "script:ld+json": {
-      type: "application/ld+json",
-      innerHTML: JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        applicationCategory: "BrowserApplication",
-        name: "QuackDB",
-        url: "https://quackdb.com",
-        screenshot: "https://quackdb.com/screenshot.jpg",
-        image: "https://quackdb.com/screenshot.jpg",
-        description:
-          "QuackDB is a user-friendly, open-source online DuckDB SQL playground and editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
-        author: {
-          "@type": "Person",
-          name: "Matthew Fainman",
-        },
-      }),
-    },
-  },
-  {
-    "script:ld+json": {
-      type: "application/ld+json",
-      innerHTML: JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        name: "QuackDB",
-        url: "https://quackdb.com",
-        description:
-          "QuackDB is a user-friendly, open-source online DuckDB SQL playground and editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
-      }),
-    },
-  },
-  {
-    "script:ld+json": {
-      type: "application/ld+json",
-      innerHTML: JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "SoftwareSourceCode",
-        name: "QuackDB",
-        codeRepository: "https://github.com/mattf96s/QuackDB",
-        programmingLanguage: "TypeScript",
-        applicationCategory: "BrowserApplication",
-      }),
-    },
   },
 ];
 
@@ -159,7 +96,7 @@ export function LayoutInner(props: { children: React.ReactNode }) {
       </head>
       <body
         className="min-h-screen bg-background font-sans antialiased"
-        suppressHydrationWarning // only goes one layer deep. Probably grammarly.
+        suppressHydrationWarning // only goes one level deep
       >
         <GlobalLoader />
 
@@ -175,19 +112,6 @@ export function LayoutInner(props: { children: React.ReactNode }) {
         <Toaster />
       </body>
     </html>
-  );
-}
-
-function FallBack() {
-  return (
-    <div className="flex size-full items-center justify-center bg-background">
-      <span>
-        <Icon
-          name="Loader2"
-          className="mr-3 h-5 w-5 animate-spin"
-        />
-      </span>
-    </div>
   );
 }
 

@@ -11,7 +11,7 @@ import EmptyResults from "./empty";
 
 export const TableViewer = memo(function TableViewer() {
   const [view, setView] = useState<"table" | "list">("table");
-  const { rows, schema, meta, count } = useQuery();
+  const { table, meta, count } = useQuery();
 
   const { onSetCount } = usePagination();
 
@@ -20,7 +20,7 @@ export const TableViewer = memo(function TableViewer() {
     onSetCount(count);
   }, [onSetCount, count]);
 
-  const noQuery = rows.length === 0 && schema.length === 0;
+  const noQuery = table.numRows === 0 && table.numCols === 0;
 
   return (
     <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4 pb-20">
@@ -29,8 +29,7 @@ export const TableViewer = memo(function TableViewer() {
         {view === "table" && (
           <DataGrid
             count={count}
-            rows={rows}
-            schema={schema}
+            table={table}
             meta={meta}
           />
         )}

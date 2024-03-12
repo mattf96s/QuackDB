@@ -1,7 +1,7 @@
 import { Pencil2Icon } from "@radix-ui/react-icons";
+import { ChevronDown, Dot, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import Icon from "~/components/icon";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,8 +53,7 @@ export default function EditorSources() {
             variant="ghost"
             className="flex w-full items-center justify-start gap-1 rounded-none hover:bg-transparent"
           >
-            <Icon
-              name="ChevronDown"
+            <ChevronDown
               className={cn(
                 "size-5",
                 isCollapsed && "-rotate-90 transition-transform",
@@ -163,12 +162,7 @@ function CodeEditorItem(editor: CodeEditor) {
                 {editor.path}
               </span>
             </div>
-            {editor.isOpen && (
-              <Icon
-                name="Dot"
-                className="size-4"
-              />
-            )}
+            {editor.isOpen && <Dot className="size-4" />}
           </Button>
         </ContextMenuTrigger>
         <ContextMenuContent className="w-64">
@@ -225,10 +219,7 @@ function SourcesToolbar() {
         variant="ghost"
         onClick={onAddEditor}
       >
-        <Icon
-          name="Plus"
-          size={16}
-        />
+        <Plus size={16} />
       </Button>
     </>
   );

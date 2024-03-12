@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDown, CopyCheck, Database, Plus } from "lucide-react";
 import { useCallback, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import Icon from "~/components/icon";
 import { Button } from "~/components/ui/button";
 import {
   ContextMenu,
@@ -73,8 +73,8 @@ export default function DataSources() {
             variant="ghost"
             className="flex w-full items-center justify-start gap-1 hover:bg-transparent"
           >
-            <Icon
-              name="ChevronDown"
+            <ChevronDown
+              name="chevron-down"
               className={cn(
                 "size-5",
                 isCollapsed && "-rotate-90 transition-transform",
@@ -186,15 +186,11 @@ function DatesetItem(props: SourceEntry) {
           variant="ghost"
           onClick={onCopy}
         >
-          <Icon
-            name="Database"
-            className="size-4"
-          />
+          <Database className="size-4" />
           <span className="truncate font-normal">{path}</span>
           {isCopied && (
             <span className="absolute inset-y-0 right-0">
-              <Icon
-                name="CopyCheck"
+              <CopyCheck
                 size={16}
                 className="bg-transparent text-green-700"
               />
@@ -348,10 +344,7 @@ function SourcesToolbar() {
             variant="ghost"
             size="xs"
           >
-            <Icon
-              name="Plus"
-              size={16}
-            />
+            <Plus size={16} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent

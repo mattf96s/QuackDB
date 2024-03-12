@@ -1,4 +1,4 @@
-import type { DuckDBInstance } from "@/modules/duckdb-singleton";
+import { type DuckDBInstance } from "~/modules/duckdb-singleton";
 
 /**
  * Get completions for the given SQL string at the given cursor position.

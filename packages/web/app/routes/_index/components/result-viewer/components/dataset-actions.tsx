@@ -1,6 +1,6 @@
+import { Loader2, MoreVertical } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import Icon from "~/components/icon";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -133,10 +133,7 @@ export default function DatasetActions() {
           size="icon"
           variant="outline"
         >
-          <Icon
-            name="MoreVertical"
-            size={16}
-          />
+          <MoreVertical size={16} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
@@ -163,10 +160,7 @@ export default function DatasetActions() {
                 >
                   Parquet{" "}
                   {isExporting && (
-                    <Icon
-                      name="Loader2"
-                      className="ml-2 size-4 animate-spin"
-                    />
+                    <Loader2 className="ml-2 size-4 animate-spin" />
                   )}
                 </DropdownMenuItem>
                 <DropdownMenuItem disabled>JSON</DropdownMenuItem>

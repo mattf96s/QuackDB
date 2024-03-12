@@ -92,6 +92,7 @@ module.exports = {
       ],
       rules: {
         "no-unused-vars": "off",
+        "no-constant-condition": "off",
         "@typescript-eslint/no-unused-vars": [
           "warn",
           { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }

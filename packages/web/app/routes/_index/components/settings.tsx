@@ -1,5 +1,5 @@
+import { Settings2, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import Icon from "~/components/icon";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,10 +52,7 @@ export default function Settings() {
           variant="outline"
           size="icon"
         >
-          <Icon
-            name="Settings2"
-            className="size-4"
-          />
+          <Settings2 className="size-4" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -155,10 +152,7 @@ function ClearSession() {
             variant="destructive"
             size="sm"
           >
-            <Icon
-              name="Trash2"
-              size={16}
-            />
+            <Trash2 size={16} />
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>

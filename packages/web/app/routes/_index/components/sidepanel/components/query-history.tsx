@@ -1,14 +1,15 @@
 import { motion } from "framer-motion";
 import { del, get } from "idb-keyval";
+import { ChevronDown, ChevronRight, CopyCheck, History } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import Icon from "~/components/icon";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { IDB_KEYS, queryMetaSchema, type QueryMeta } from "~/constants";
+import { IDB_KEYS } from "~/constants.client";
 import { useQuery } from "~/context/query/useQuery";
 import { useCopyToClipboard } from "~/hooks/use-copy-to-clipboard";
 import { cn } from "~/lib/utils";
+import { queryMetaSchema, type QueryMeta } from "~/types/query";
 import { useWrapper } from "./wrapper/context/useWrapper";
 /**
  * Note: idb-keyval is probably the wrong tool for anything more advanced than this.
@@ -85,8 +86,7 @@ export default function QueryHistory() {
             variant="ghost"
             className="flex w-full items-center justify-start gap-1 hover:bg-transparent"
           >
-            <Icon
-              name="ChevronDown"
+            <ChevronDown
               className={cn(
                 "size-5",
                 isCollapsed && "-rotate-90 transition-transform",
@@ -102,10 +102,7 @@ export default function QueryHistory() {
             onClick={onClearHistory}
             disabled={runs.length === 0}
           >
-            <Icon
-              name="History"
-              size={16}
-            />
+            <History size={16} />
           </Button>
         </div>
       </div>
@@ -197,8 +194,7 @@ function RunHoverCard(props: QueryMeta) {
           </span>
           {isCopied && (
             <div className="absolute inset-y-1 right-1">
-              <Icon
-                name="CopyCheck"
+              <CopyCheck
                 className="bg-transparent text-green-700"
                 size={18}
               />
@@ -207,8 +203,7 @@ function RunHoverCard(props: QueryMeta) {
         </div>
       </div>
 
-      <Icon
-        name="ChevronRight"
+      <ChevronRight
         className="size-5 flex-none text-gray-400"
         aria-hidden="true"
       />

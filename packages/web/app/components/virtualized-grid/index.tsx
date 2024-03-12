@@ -9,10 +9,11 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { format } from "date-fns";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import React, { useMemo } from "react";
 import { TableVirtuoso } from "react-virtuoso";
-import Icon from "~/components/icon";
 import { useQuery } from "~/context/query/useQuery";
+import { getArrowTableSchema } from "~/utils/arrow/helpers";
 
 /**
  * Virtualized Tanstack Table. (WIP).
@@ -22,17 +23,19 @@ import { useQuery } from "~/context/query/useQuery";
  * @docs https://virtuoso.dev/tanstack-table-integration/
  */
 export default function VirtualizedGrid() {
-  const { rows: originalRows, schema } = useQuery();
+  const { table: arrowTable } = useQuery();
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const columns: ColumnDef<Record<string, unknown>, any>[] = useMemo(() => {
     // use schema to create columns
+    if (!arrowTable) return [];
+    const schema = getArrowTableSchema(arrowTable);
     return schema.map((s) => ({
       accessorKey: s.name,
       header: s.name,
-      //   #TODO: fix this
+
       cell: (info) => {
         const v = info.getValue();
         if (v instanceof Date) {
@@ -46,10 +49,15 @@ export default function VirtualizedGrid() {
         return <>{v}</>;
       },
     }));
-  }, [schema]);
+  }, [arrowTable]);
+
+  const data = useMemo(() => {
+    if (!arrowTable) return [];
+    return arrowTable.toArray().map((row) => row.toJSON());
+  }, [arrowTable]);
 
   const table = useReactTable({
-    data: originalRows,
+    data,
     columns,
     state: {
       sorting,
@@ -132,15 +140,13 @@ export default function VirtualizedGrid() {
                       )}
                       {{
                         asc: (
-                          <Icon
-                            name="ChevronUp"
+                          <ChevronUp
                             size={16}
                             className="ml-1"
                           />
                         ),
                         desc: (
-                          <Icon
-                            name="ChevronDown"
+                          <ChevronDown
                             size={16}
                             className="ml-1"
                           />

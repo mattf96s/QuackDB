@@ -1,10 +1,10 @@
 import type { OnChange } from "@monaco-editor/react";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
+import { Loader2 } from "lucide-react";
 import { Range, type editor } from "monaco-editor";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useSpinDelay } from "spin-delay";
-import Icon from "~/components/icon";
 import Editor from "~/components/monaco";
 import { formatSQL } from "~/components/monaco/helpers/prettier";
 import { useEditorSettings } from "~/context/editor-settings/useEditor";
@@ -182,8 +182,8 @@ function CurrentEditor() {
       />
       {showLoader && (
         <div className="absolute right-4 top-2 z-10">
-          <Icon
-            name="Loader2"
+          <Loader2
+            name="loader-circle"
             className="size-4 animate-spin text-primary"
           />
         </div>

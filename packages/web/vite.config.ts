@@ -15,6 +15,7 @@ export default defineConfig({
     splitVendorChunkPlugin(),
     remix({
       serverModuleFormat: "esm",
+      ignoredRouteFiles: ["**/*.css"],
       future: {
         v3_throwAbortReason: true,
         v3_fetcherPersist: true,

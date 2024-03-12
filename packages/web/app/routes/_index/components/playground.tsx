@@ -4,9 +4,10 @@ import {
   PanelGroup,
   type ImperativePanelHandle,
 } from "react-resizable-panels";
-import Icon from "~/components/icon";
 import PanelHandle from "~/components/panel-handle";
 
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
+import { FolderClosed, FolderOpen } from "lucide-react";
 import ModeToggle from "~/components/theme-toggle";
 import { Button } from "~/components/ui/button";
 import { useFileDrop } from "~/context/session/hooks/useAddFile.tsx";
@@ -52,10 +53,11 @@ export default function Playground() {
             }
           }}
         >
-          <Icon
-            name={explorerIsOpen ? "FolderOpen" : "FolderClosed"}
-            className="size-5"
-          />
+          {explorerIsOpen ? (
+            <FolderOpen size={16} />
+          ) : (
+            <FolderClosed size={16} />
+          )}
         </Button>
 
         <SidebarLinks />
@@ -107,8 +109,8 @@ function SidebarLinks() {
           href="https://github.com/mattf96s/QuackDB"
           rel="noreferrer"
         >
-          <Icon
-            name="Github"
+          <GitHubLogoIcon
+            name="github"
             className="size-5"
           />
         </a>
