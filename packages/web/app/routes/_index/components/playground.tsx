@@ -12,6 +12,7 @@ import ModeToggle from "~/components/theme-toggle";
 import { Button } from "~/components/ui/button";
 import { useFileDrop } from "~/context/session/hooks/useAddFile.tsx";
 import { cn } from "~/lib/utils";
+import AboutModal from "./about";
 import EditorPanel from "./editor-panel";
 import Sidepanel from "./sidepanel";
 
@@ -115,6 +116,7 @@ function SidebarLinks() {
           />
         </a>
       </Button>
+      <AboutModal />
     </div>
   );
 }
