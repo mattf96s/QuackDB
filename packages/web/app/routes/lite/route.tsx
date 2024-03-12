@@ -1,7 +1,15 @@
+import { type LinksFunction } from "@remix-run/node";
+import { Loader2Icon } from "lucide-react";
 import { Suspense } from "react";
 import { ClientOnly } from "remix-utils/client-only";
-import Icon from "~/components/icon";
+import styles from "~/styles/dockview.css?url";
+import NavBar from "./components/navbar";
 import Playground from "./components/playground";
+
+export const links: LinksFunction = () => {
+  return [{ rel: "stylesheet", href: styles }];
+};
+
 /**
  * There is a bug in Safari which means FileSystemHandles are not structure cloned correctly.
  * This is route is a limited playground as a fallback.
@@ -13,9 +21,12 @@ export default function Component() {
         {/* Could just be an SPA if we wanted. */}
         <ClientOnly fallback={<PlaygroundSkeleton />}>
           {() => (
-            <Suspense fallback={<PlaygroundSkeleton />}>
-              <Playground />
-            </Suspense>
+            <>
+              <NavBar />
+              <Suspense fallback={<PlaygroundSkeleton />}>
+                <Playground />
+              </Suspense>
+            </>
           )}
         </ClientOnly>
       </Suspense>
@@ -26,10 +37,7 @@ export default function Component() {
 function PlaygroundSkeleton() {
   return (
     <div className="flex size-full items-center justify-center bg-background">
-      <Icon
-        name="Loader2"
-        className="size-6 animate-spin"
-      />
+      <Loader2Icon className="size-6 animate-spin" />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -7,14 +8,23 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import type { FetchResultsReturn } from "~/constants.client";
 import { usePagination } from "~/context/pagination/usePagination";
+import { type QueryResponse } from "~/types/query";
+import { getArrowTableSchema } from "~/utils/arrow/helpers";
 import { getColumnType } from "~/utils/duckdb/helpers/getColumnType";
 
-export default function DataGrid(props: FetchResultsReturn) {
-  const { rows, schema } = props;
-
+export default function DataGrid(props: QueryResponse) {
   const { limit, offset } = usePagination();
+  const { schema, rows } = useMemo(() => {
+    if (!props.table || props.table.numRows === 0)
+      return { schema: [], rows: [] };
+    const rows = props.table
+      .slice(offset, offset + limit)
+      .toArray()
+      .map((row) => row.toJSON());
+    const schema = getArrowTableSchema(props.table);
+    return { schema, rows };
+  }, [props, limit, offset]);
 
   return (
     <Table>
@@ -27,7 +37,7 @@ export default function DataGrid(props: FetchResultsReturn) {
       </TableHeader>
 
       <TableBody>
-        {rows.slice(offset, offset + limit).map((row, i) => (
+        {rows.map((row, i) => (
           <TableRow key={i}>
             {Object.entries(row).map(([column, value]) => {
               const type =

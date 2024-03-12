@@ -13,7 +13,6 @@ export async function describeColumns(props: DescribeColumnsProps) {
   const res = await conn.query(`DESCRIBE '${table}'`);
   const columns = res.toArray();
 
-  // @ts-expect-error: TODO: fix this
   return columns.map(({ column_name, column_type }) => {
     return {
       name: column_name,

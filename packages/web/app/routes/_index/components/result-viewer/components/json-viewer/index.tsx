@@ -13,7 +13,7 @@ const LazyShiki = lazy(() =>
 );
 
 export const JSONViewer = memo(function JSONViewer() {
-  const { rows, count } = useQuery();
+  const { table, count } = useQuery();
   const [theme] = useTheme();
   const { limit, offset, onSetCount } = usePagination();
 
@@ -25,12 +25,20 @@ export const JSONViewer = memo(function JSONViewer() {
 
   const isDark = theme === "dark";
 
-  const json = useMemo(
-    () => JSON.stringify(rows.slice(offset, offset + limit), null, 2),
-    [rows, offset, limit],
-  );
+  const json = useMemo(() => {
+    if (!table || table.numRows === 0) return "[]";
+    const rows = table
+      .slice(offset, offset + limit)
+      .toArray()
+      .map((row) => row.toJSON());
+    return JSON.stringify(rows, null, 2);
+  }, [table, offset, limit]);
 
-  const lazyCopy = useCallback(() => JSON.stringify(rows, null, 2), [rows]);
+  const lazyCopy = useCallback(() => {
+    if (!table || table.numRows === 0) return "[]";
+    const rows = table.toArray().map((row) => row.toJSON());
+    return JSON.stringify(rows, null, 2);
+  }, [table]);
 
   return (
     <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4 pb-20">

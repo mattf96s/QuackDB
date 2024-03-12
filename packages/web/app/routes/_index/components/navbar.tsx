@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
+import { Loader2, Loader2Icon, Terminal } from "lucide-react";
 import { Suspense } from "react";
-import Icon from "~/components/icon";
 import { Badge } from "~/components/ui/badge";
 import { useQuery } from "~/context/query/useQuery";
 import { cn } from "~/lib/utils";
@@ -13,8 +13,8 @@ export default function NavBar() {
       <div className="flex h-full items-center justify-evenly gap-3">
         <HomeIcon />
         <h1 className="ml-1 text-xl font-semibold">QuackDB</h1>
-        <Icon
-          name="Terminal"
+        <Terminal
+          name="terminal"
           className="size-5"
         />
       </div>
@@ -38,10 +38,7 @@ function HomeIcon() {
       <Suspense
         fallback={
           <span className="m-auto size-9 rounded-full">
-            <Icon
-              name="Loader2"
-              className="size-5 animate-spin"
-            />
+            <Loader2Icon className="size-5 animate-spin" />
           </span>
         }
       >
@@ -67,10 +64,7 @@ function QueryMeta() {
         variant="secondary"
         className="text-xs tabular-nums text-muted-foreground"
       >
-        <Icon
-          name="Loader2"
-          className="size-5 animate-spin"
-        />
+        <Loader2 className="size-5 animate-spin" />
       </Badge>
     );
   }

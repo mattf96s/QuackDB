@@ -1,6 +1,6 @@
+import { Loader2 } from "lucide-react";
 import { Suspense, lazy } from "react";
 import { ClientOnly } from "remix-utils/client-only";
-import Icon from "~/components/icon";
 import { DbProvider } from "~/context/db/provider";
 import { EditorSettingsProvider } from "~/context/editor-settings/provider";
 import { EditorProvider } from "~/context/editor/provider";
@@ -48,8 +48,8 @@ export default function Component() {
 function PlaygroundSkeleton() {
   return (
     <div className="flex size-full items-center justify-center bg-background">
-      <Icon
-        name="Loader2"
+      <Loader2
+        name="loader-circle"
         className="size-6 animate-spin"
       />
     </div>

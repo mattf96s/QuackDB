@@ -2,8 +2,8 @@
 // https://github.com/mxkaske/mxkaske.dev/blob/main/components/craft/fancy-multi-select.tsx
 // https://craft.mxkaske.dev/post/fancy-multi-select
 import { Command as CommandPrimitive } from "cmdk";
+import { X } from "lucide-react";
 import * as React from "react";
-import Icon from "~/components/icon";
 import { Badge } from "~/components/ui/badge";
 import { Command, CommandGroup, CommandItem } from "~/components/ui/command";
 
@@ -108,10 +108,7 @@ export function FancyMultiSelect() {
                   }}
                   onClick={() => handleUnselect(framework)}
                 >
-                  <Icon
-                    name="X"
-                    className="size-3 text-muted-foreground hover:text-foreground"
-                  />
+                  <X className="size-3 text-muted-foreground hover:text-foreground" />
                 </button>
               </Badge>
             );

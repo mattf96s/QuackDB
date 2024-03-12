@@ -1,4 +1,4 @@
-import Icon from "~/components/icon";
+import { Loader2 } from "lucide-react";
 
 export async function loader() {
   throw new Response("Not found", { status: 404 });
@@ -9,10 +9,7 @@ export function ErrorBoundary() {
   return (
     <div className="flex size-full items-center justify-center bg-background">
       <span>
-        <Icon
-          name="Loader2"
-          className="mr-3 h-5 w-5 animate-spin"
-        />
+        <Loader2 className="mr-3 h-5 w-5 animate-spin" />
       </span>
     </div>
   );

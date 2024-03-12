@@ -1,7 +1,7 @@
-import Icon from "~/components/icon";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 
 import { motion } from "framer-motion";
+import { AlertOctagon, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "remix-themes";
 import { useQuery } from "~/context/query/useQuery";
@@ -40,10 +40,7 @@ export default function ErrorNotification(props: { error: string }) {
       <ScrollArea className="flex h-full max-h-72 flex-col gap-4 overflow-y-auto">
         <AlertTitle>
           <div className="inline-flex items-center gap-2">
-            <Icon
-              name="AlertOctagon"
-              className="size-4"
-            />
+            <AlertOctagon className="size-4" />
             <p className="text-base">Error</p>
           </div>
         </AlertTitle>
@@ -57,8 +54,7 @@ export default function ErrorNotification(props: { error: string }) {
             className="flex items-center gap-1 text-xs font-semibold"
           >
             <span>Details</span>
-            <Icon
-              name="ChevronDown"
+            <ChevronDown
               className={cn("size-4", isOpen ? "rotate-180" : "rotate-0")}
             />
           </button>

@@ -1,15 +1,16 @@
+import { Table } from "apache-arrow";
 import { get, set } from "idb-keyval";
 import { useCallback, useMemo, useReducer } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import {
-  IDB_KEYS,
-  queryMetaSchema,
-  type FetchResultsReturn,
-  type QueryMeta,
-} from "~/constants.client";
+import { IDB_KEYS } from "~/constants.client";
 import { useDB } from "~/context/db/useDB";
 import useAbortController from "~/hooks/use-abortable";
+import {
+  queryMetaSchema,
+  type QueryMeta,
+  type QueryResponse,
+} from "~/types/query";
 import { QueryContext } from "./context";
 import type { QueryContextValue, QueryState } from "./types";
 
@@ -26,7 +27,7 @@ type QueryAction =
     }
   | {
       type: "RUN_STOP";
-      payload: FetchResultsReturn;
+      payload: QueryResponse;
     };
 
 function queryReducer(state: QueryState, action: QueryAction): QueryState {
@@ -53,13 +54,12 @@ function queryReducer(state: QueryState, action: QueryAction): QueryState {
 const initialState: QueryState = {
   sql: "",
   status: "IDLE",
-  rows: [],
-  schema: [],
-  meta: undefined,
+  table: new Table(),
+  meta: null,
   count: 0,
 };
 
-async function onStoreRun(payload: FetchResultsReturn) {
+async function onStoreRun(payload: QueryResponse) {
   try {
     const newRunValidation = queryMetaSchema.safeParse(payload.meta);
     if (!newRunValidation.success) return;
@@ -136,7 +136,7 @@ function QueryProvider(props: QueryProviderProps) {
 
         const results = await Promise.race([doQuery, isCancelledPromise]);
 
-        const payload = results as FetchResultsReturn;
+        const payload = results as QueryResponse;
 
         // store the query in indexeddb
         await onStoreRun(payload);
@@ -163,9 +163,16 @@ function QueryProvider(props: QueryProviderProps) {
         type: "RUN_STOP",
         payload: {
           count: 0,
-          rows: [],
-          schema: [],
-          meta: undefined,
+          table: new Table(),
+          meta: {
+            cacheHit: false,
+            hash: "",
+            created: new Date().toISOString(),
+            error: null,
+            executionTime: 0,
+            sql: "",
+            status: "CANCELLED",
+          },
         },
       });
     },

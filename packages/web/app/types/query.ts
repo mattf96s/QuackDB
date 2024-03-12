@@ -1,4 +1,4 @@
-import { type Table } from "@apache-arrow/esnext-esm";
+import { type Table } from "apache-arrow";
 import { z } from "zod";
 
 /**

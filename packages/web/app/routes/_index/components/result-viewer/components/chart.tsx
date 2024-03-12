@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useQuery } from "~/context/query/useQuery";
+import { getArrowTableSchema } from "~/utils/arrow/helpers";
 import EmptyResults from "./empty";
 
 export const ChartContainer = memo(function ChartContainer() {
@@ -28,18 +29,19 @@ export const ChartContainer = memo(function ChartContainer() {
  * WIP
  */
 function ChartViewer() {
-  const { rows, schema } = useQuery();
+  const { table } = useQuery();
 
   const { _dispatch } = useChart();
 
   useEffect(() => {
+    const schema = getArrowTableSchema(table);
     if (!schema.length) return;
 
     _dispatch({
       type: "INITIALIZE",
       payload: {
         data: {
-          rows,
+          rows: table.toArray(),
           columns: schema,
         },
 
@@ -49,9 +51,9 @@ function ChartViewer() {
         },
       },
     });
-  }, [_dispatch, rows, schema]);
+  }, [_dispatch, table]);
 
-  if (!rows.length || !schema.length) {
+  if (table.numRows === 0) {
     return <EmptyResults />;
   }
 

@@ -1,9 +1,10 @@
-import type { Editor, FileEntry, Source } from "@/constants";
+import { type CodeSource } from "~/types/files/code-source";
+import { type Dataset } from "~/types/files/dataset";
 
 /**
  * Each code file and its state including within the tabs.
  */
-export type CodeEditor = Editor & {
+export type CodeEditor = CodeSource & {
   isOpen: boolean;
   isFocused: boolean;
   isSaved: boolean;
@@ -19,7 +20,7 @@ export type SessionState = {
   sessionId: string;
   directoryHandle: FileSystemDirectoryHandle | null;
   editors: CodeEditor[];
-  sources: Source[];
+  sources: Dataset[];
 };
 
 type DataSource =
@@ -51,7 +52,7 @@ export type SessionMethods = {
   dispatch: React.Dispatch<Action> | null;
   onAddDataSources: (
     props: AddDataSourceProps,
-  ) => Promise<FileEntry<"SOURCE">[] | undefined>;
+  ) => Promise<Dataset[] | undefined>;
   onAddEditor: () => Promise<void>;
   onDeleteEditor: (path: string) => Promise<void>;
   onSaveEditor: (props: SaveEditorProps) => Promise<void>;
@@ -76,7 +77,7 @@ export type SaveEditorResponse = SaveEditorProps & {
 
 type AddSources = {
   type: "ADD_SOURCES";
-  payload: Source[];
+  payload: Dataset[];
 };
 
 type RemoveSource = {

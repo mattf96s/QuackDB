@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
-import type { Source } from "~/constants.client";
 import { useSession } from "~/context/session/useSession";
 import { DuckDBInstance } from "~/modules/duckdb-singleton";
+import { type Dataset } from "~/types/files/dataset";
 import { DBContext } from "./context";
 
 type DBProviderProps = { children: React.ReactNode };
@@ -53,7 +53,7 @@ function DbProvider(props: DBProviderProps) {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const addSources = async (sources: Source[]) => {
+    const addSources = async (sources: Dataset[]) => {
       try {
         for await (const source of sources) {
           if (signal.aborted) break;

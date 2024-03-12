@@ -24,12 +24,6 @@ import { Toaster } from "./components/ui/sonner";
 import clsx from "clsx";
 import { themeSessionResolver } from "./sessions.server";
 
-const preloadedFonts = [
-  "Geist/GeistVariableVF.woff2",
-  "JetBrainsMono/JetBrainsMono-Italic[wght].woff2",
-  "JetBrainsMono/JetBrainsMono[wght].woff2",
-];
-
 export const links: LinksFunction = () => [
   {
     rel: "icon",
@@ -44,12 +38,6 @@ export const links: LinksFunction = () => [
     href: "/favicon-16x16.png",
   },
   { rel: "stylesheet", href: styles },
-  ...preloadedFonts.map((font) => ({
-    rel: "preload",
-    as: "font",
-    href: `/fonts/${font}`,
-    crossOrigin: "anonymous" as const,
-  })),
   { rel: "manifest", href: "/site.webmanifest" },
 ];
 

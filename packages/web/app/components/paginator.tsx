@@ -1,4 +1,9 @@
-import Icon from "~/components/icon";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   Select,
@@ -48,10 +53,7 @@ export default function PaginationToolbar() {
           onClick={goToFirstPage}
           disabled={!canGoPrev}
         >
-          <Icon
-            name="ChevronsLeft"
-            className="size-4"
-          />
+          <ChevronsLeft className="size-4" />
         </Button>
         <Button
           size="icon"
@@ -59,10 +61,7 @@ export default function PaginationToolbar() {
           onClick={onPrevPage}
           disabled={!canGoPrev}
         >
-          <Icon
-            name="ChevronLeft"
-            className="size-4"
-          />
+          <ChevronLeft className="size-4" />
         </Button>
 
         <Button
@@ -71,10 +70,7 @@ export default function PaginationToolbar() {
           onClick={onNextPage}
           disabled={!canGoNext}
         >
-          <Icon
-            name="ChevronRight"
-            className="size-4"
-          />
+          <ChevronRight className="size-4" />
         </Button>
 
         <Button
@@ -83,10 +79,7 @@ export default function PaginationToolbar() {
           onClick={goToLastPage}
           disabled={!canGoNext}
         >
-          <Icon
-            name="ChevronsRight"
-            className="size-4"
-          />
+          <ChevronsRight className="size-4" />
         </Button>
       </div>
     </div>

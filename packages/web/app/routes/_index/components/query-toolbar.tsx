@@ -1,6 +1,6 @@
-import Icon from "~/components/icon";
 import { Button } from "~/components/ui/button";
 
+import { ChevronDown } from "lucide-react";
 import { useCallback, type MouseEventHandler } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { toast } from "sonner";
@@ -114,10 +114,7 @@ export default function Toolbar() {
             className="h-full"
           />
           <MenubarTrigger className="inline-flex size-full items-center justify-center rounded-none px-1.5 hover:bg-[#2b9a66]">
-            <Icon
-              name="ChevronDown"
-              size={16}
-            />
+            <ChevronDown size={16} />
           </MenubarTrigger>
         </div>
         <MenubarContent className="mr-12">
@@ -141,13 +138,14 @@ export default function Toolbar() {
 }
 
 function ExportToCopy() {
-  const { rows } = useQuery();
+  const { table } = useQuery();
 
   const onCopy: MouseEventHandler<HTMLDivElement> = useCallback(
     async (e) => {
       e.preventDefault();
 
       try {
+        const rows = table.toArray().map((row) => row.toJSON());
         const dataset = JSON.stringify(rows, null, 2);
         await navigator.clipboard.writeText(dataset);
         toast.success("Copied to clipboard", {
@@ -160,7 +158,7 @@ function ExportToCopy() {
         });
       }
     },
-    [rows],
+    [table],
   );
 
   return <MenubarItem onClick={onCopy}>Copy Rows</MenubarItem>;

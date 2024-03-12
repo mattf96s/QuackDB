@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/interactive-supports-focus */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import Icon from "~/components/icon";
+import { Code2, Plus, X } from "lucide-react";
 import { useSession } from "~/context/session/useSession";
 import { cn } from "~/lib/utils";
 
@@ -38,10 +38,7 @@ export default function OpenFileTabs() {
                 key={editor.path}
                 onClick={() => onOpenEditor(editor.path)}
               >
-                <Icon
-                  name="Code2"
-                  className="mr-1 size-4"
-                />
+                <Code2 className="mr-1 size-4" />
                 <span className="text-sm">{editor.path}</span>
 
                 <button
@@ -56,8 +53,7 @@ export default function OpenFileTabs() {
                       "hover:bg-secondary dark:hover:bg-muted-foreground/10",
                   )}
                 >
-                  <Icon
-                    name="X"
+                  <X
                     className="size-4"
                     type="close"
                   />
@@ -83,10 +79,7 @@ function AddNewFileButton() {
       className="flex h-9 w-12 items-center justify-center rounded-none hover:bg-secondary dark:hover:bg-gray-200/10"
       type="button"
     >
-      <Icon
-        name="Plus"
-        className="size-5"
-      />
+      <Plus className="size-5" />
     </button>
   );
 }

@@ -1,11 +1,6 @@
 // https://github.com/observablehq/stdlib/blob/main/src/arrow.js
 
-import type {
-  DataType,
-  Field,
-  RecordBatch,
-  Table,
-} from "@apache-arrow/esnext-esm";
+import type { DataType, Field, RecordBatch, Table } from "apache-arrow";
 
 // Returns true if the vaue is an Apache Arrow table. This uses a “duck” test
 // (instead of strict instanceof) because we want it to work with a range of

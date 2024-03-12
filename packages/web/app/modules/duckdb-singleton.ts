@@ -1,17 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type {
-  AsyncRecordBatchStreamReader,
-  RecordBatch,
-  StructRow,
-  TypeMap,
-} from "@apache-arrow/esnext-esm";
 import type { AsyncDuckDB } from "@duckdb/duckdb-wasm";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import {
-  CACHE_KEYS,
-  type FetchResultsReturn,
-  type QueryMeta,
-} from "~/constants.client";
+  Table,
+  type AsyncRecordBatchStreamReader,
+  type RecordBatch,
+  type StructRow,
+  type TypeMap,
+} from "apache-arrow";
+import { CACHE_KEYS } from "~/constants.client";
+import { type QueryMeta, type QueryResponse } from "~/types/query";
 import { getArrowTableSchema } from "~/utils/arrow/helpers";
 import { getColumnType } from "~/utils/duckdb/helpers/getColumnType";
 
@@ -25,42 +23,31 @@ type MakeDBProps = {
  * Note: getJsDelivrBundles is much quicker than using the MANUAL_BUNDLES method.
  */
 const makeDB = async ({ logLevel = duckdb.LogLevel.DEBUG }: MakeDBProps) => {
-  let worker_url: string | undefined;
+  // Select a bundle based on browser checks
+  const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
 
-  try {
-    // Select a bundle based on browser checks
-    const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
+  // Select a bundle based on browser checks
+  const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
 
-    // Select a bundle based on browser checks
-    const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+  const worker_url = URL.createObjectURL(
+    new Blob([`importScripts("${bundle.mainWorker}");`], {
+      type: "text/javascript",
+    }),
+  );
 
-    const worker_url = URL.createObjectURL(
-      new Blob([`importScripts("${bundle.mainWorker}");`], {
-        type: "text/javascript",
-      }),
-    );
+  // Instantiate the asynchronus version of DuckDB-wasm
+  const worker = new Worker(worker_url);
+  const logger = new duckdb.ConsoleLogger(logLevel);
+  const db = new duckdb.AsyncDuckDB(logger, worker);
+  URL.revokeObjectURL(worker_url);
+  await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
 
-    // Instantiate the asynchronus version of DuckDB-wasm
-    const worker = new Worker(worker_url);
-    const logger = new duckdb.ConsoleLogger(logLevel);
-    const db = new duckdb.AsyncDuckDB(logger, worker);
-    URL.revokeObjectURL(worker_url);
-    await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+  await db.open({
+    filesystem: { allowFullHTTPReads: true },
+    query: { castBigIntToDouble: true },
+  });
 
-    await db.open({
-      filesystem: { allowFullHTTPReads: true },
-      query: { castBigIntToDouble: true },
-    });
-
-    return db;
-  } catch (e) {
-    console.error("Failed to create DB: ", e);
-    throw e;
-  } finally {
-    if (worker_url) {
-      URL.revokeObjectURL(worker_url);
-    }
-  }
+  return db;
 };
 
 /**
@@ -445,15 +432,14 @@ export class DuckDBInstance {
     const cleanup = this.#cleanupConnection.bind(this, connection);
 
     let reader: AsyncRecordBatchStreamReader<T>;
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+
     let batch: IteratorResult<RecordBatch<T>, any>;
     try {
       if (params && params.length > 0) {
         const statement = await connection.prepare(query);
-        // @ts-expect-error: duckdb / arrow version mismatch
+
         reader = await statement.send(...params);
       } else {
-        // @ts-expect-error: duckdb / arrow version mismatch
         reader = await connection.send(query);
       }
       batch = await reader.next();
@@ -496,7 +482,7 @@ export class DuckDBInstance {
   }: {
     query: string;
     forceCache?: boolean;
-  }): Promise<FetchResultsReturn> {
+  }): Promise<QueryResponse> {
     // measure the time it takes to run the query
     const t1 = performance.now();
 
@@ -540,7 +526,7 @@ export class DuckDBInstance {
         }
       }
 
-      const queryResults = await conn.query(query);
+      const table = await conn.query(query);
 
       //  https://github.com/evidence-dev/evidence/blob/5603970a6c99acf00b9f04deaea5890766a08908/packages/duckdb/index.cjs#L139C3-L157C6
 
@@ -565,14 +551,6 @@ export class DuckDBInstance {
       //   },
       // );
 
-      // @ts-expect-error: duckdb / arrow version mismatch
-      const schema = getArrowTableSchema(queryResults);
-
-      const rows = queryResults.toArray().map((row) => row.toJSON()) as Record<
-        string,
-        unknown
-      >[];
-
       const t2 = performance.now();
       const executionTime = t2 - t1;
 
@@ -586,11 +564,10 @@ export class DuckDBInstance {
         created: new Date().toISOString(),
       };
 
-      const results: FetchResultsReturn = {
-        rows,
-        schema,
+      const results: QueryResponse = {
+        table,
         meta,
-        count: rows.length,
+        count: table.numRows,
       };
 
       if (!shouldCache) return results;
@@ -618,9 +595,8 @@ export class DuckDBInstance {
       const t2 = performance.now();
       const executionTime = t2 - t1;
 
-      const payload: FetchResultsReturn = {
-        rows: [],
-        schema: [],
+      const payload: QueryResponse = {
+        table: new Table(),
         count: 0,
         meta: {
           cacheHit: false,

@@ -1245,7 +1245,10 @@ export class SuggestionMaker {
         query: `SELECT suggestion FROM SQL_AUTO_COMPLETE('${escaped}');`,
       });
 
-      return results.rows.map((row) => `${row.suggestion}`.toUpperCase());
+      return results.table
+        .toArray()
+        .map((r) => r.toJSON())
+        .map((row) => `${row.suggestion}`.toUpperCase());
     } catch (e) {
       console.error("Error in useAutoComplete: ", e);
       return [];
@@ -1258,17 +1261,23 @@ export class SuggestionMaker {
 
   async #getMetaSuggestions(word: string) {
     if (!this.#db) return [];
-    const tableQuery = this.#db.fetchResults({
-      query: `SELECT table_name FROM duckdb_tables() WHERE table_name ILIKE '%${word}%' limit 10;`,
-    });
+    const tableQuery = this.#db
+      .fetchResults({
+        query: `SELECT table_name FROM duckdb_tables() WHERE table_name ILIKE '%${word}%' limit 10;`,
+      })
+      .then((res) => res.table.toArray().map((r) => r.toJSON()));
 
-    const viewQuery = this.#db.fetchResults({
-      query: `SELECT view_name FROM duckdb_views() WHERE view_name ILIKE '%${word}%' limit 10;`,
-    });
+    const viewQuery = this.#db
+      .fetchResults({
+        query: `SELECT view_name FROM duckdb_views() WHERE view_name ILIKE '%${word}%' limit 10;`,
+      })
+      .then((res) => res.table.toArray().map((r) => r.toJSON()));
 
-    const columnNamesQuery = this.#db.fetchResults({
-      query: `SELECT column_name FROM duckdb_columns() WHERE column_name ILIKE '%${word}%' limit 10;`,
-    });
+    const columnNamesQuery = this.#db
+      .fetchResults({
+        query: `SELECT column_name FROM duckdb_columns() WHERE column_name ILIKE '%${word}%' limit 10;`,
+      })
+      .then((res) => res.table.toArray().map((r) => r.toJSON()));
 
     const [tables, views, columns] = await Promise.all([
       tableQuery,
@@ -1277,9 +1286,9 @@ export class SuggestionMaker {
     ]);
 
     return [
-      ...tables.rows.map((row) => `${row.table_name}`.toUpperCase()),
-      ...views.rows.map((row) => `${row.view_name}`.toUpperCase()),
-      ...columns.rows.map((row) => `${row.column_name}`.toUpperCase()),
+      ...tables.map((row) => `${row.table_name}`.toUpperCase()),
+      ...views.map((row) => `${row.view_name}`.toUpperCase()),
+      ...columns.map((row) => `${row.column_name}`.toUpperCase()),
     ];
   }
 
