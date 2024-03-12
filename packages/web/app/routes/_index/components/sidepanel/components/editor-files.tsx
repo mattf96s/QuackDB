@@ -1,5 +1,5 @@
 import { PopoverAnchor, PopoverTrigger } from "@radix-ui/react-popover";
-import { ChevronDown, DatabaseZap, Dot, Loader2, Plus } from "lucide-react";
+import { ChevronDown, Code, Dot, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -19,7 +19,6 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
-  ContextMenuShortcut,
   ContextMenuTrigger,
 } from "~/components/ui/context-menu";
 import { Input } from "~/components/ui/input";
@@ -73,7 +72,7 @@ export default function EditorSources() {
 
       <div
         className={cn(
-          "flex w-full flex-col space-y-1.5 py-1 pl-4 pr-8",
+          "flex w-full flex-col space-y-1 py-1 pl-4 pr-8",
           isCollapsed && "hidden",
         )}
       >
@@ -149,7 +148,7 @@ function CodeEditorItem(editor: CodeEditor) {
   return (
     <>
       <ContextMenu key={editor.path}>
-        <ContextMenuTrigger className="w-full">
+        <ContextMenuTrigger className="w-full data-[state=open]:bg-gray-100 data-[state=open]:dark:bg-gray-900">
           <Button
             className={cn(
               "flex h-6 w-full items-center justify-between gap-2 overflow-hidden p-2",
@@ -159,17 +158,17 @@ function CodeEditorItem(editor: CodeEditor) {
             onClick={onOpenFile}
           >
             <div className="inline-flex items-center gap-1">
-              <DatabaseZap
+              <Code
                 className={cn(
                   "mr-0.5 size-4 shrink-0",
-                  editor.isDirty && "text-orange-700 dark:text-yellow-500",
+                  editor.isDirty && "text-orange-500 dark:text-yellow-500",
                 )}
               />
 
               <span
                 className={cn(
                   "truncate font-normal",
-                  editor.isDirty && "text-orange-700 dark:text-yellow-500",
+                  editor.isDirty && "text-orange-500 dark:text-yellow-500",
                 )}
               >
                 {editor.path}
@@ -178,7 +177,7 @@ function CodeEditorItem(editor: CodeEditor) {
 
             {editor.isDirty && (
               <Dot
-                className={cn("size-8 text-orange-700 dark:text-yellow-500")}
+                className={cn("size-8 text-orange-500 dark:text-yellow-500")}
               />
             )}
           </Button>
@@ -186,10 +185,9 @@ function CodeEditorItem(editor: CodeEditor) {
         <ContextMenuContent className="w-64">
           <ContextMenuItem
             inset
-            onSelect={() => setShowDelete(true)}
+            onSelect={() => onOpenFile()}
           >
             Open
-            <ContextMenuShortcut>⌘O</ContextMenuShortcut>
           </ContextMenuItem>
 
           <ContextMenuItem
@@ -205,12 +203,10 @@ function CodeEditorItem(editor: CodeEditor) {
             inset
           >
             Delete
-            <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
 
-      {/* rename popover */}
       <RenamePopover
         filename={editor.path}
         isOpen={isEditing}
@@ -219,7 +215,6 @@ function CodeEditorItem(editor: CodeEditor) {
         <span />
       </RenamePopover>
 
-      {/* delete editor modal */}
       <DeleteEditorModal
         isOpen={showDelete}
         onOpenChange={(open) => setShowDelete(open)}

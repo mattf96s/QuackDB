@@ -459,6 +459,35 @@ function SessionProvider({ children }: SessionProviderProps) {
     [session.sessionId],
   );
 
+  const onDeleteDataSource: SessionMethods["onDeleteDataSource"] = useCallback(
+    async (path) => {
+      if (!proxyRef.current) return;
+
+      try {
+        const result = await proxyRef.current.onDeleteDataSource({
+          sessionId: session.sessionId,
+          path,
+        });
+
+        if (result.error) throw result.error;
+
+        dispatch({
+          type: "REMOVE_SOURCE",
+          payload: {
+            path,
+          },
+        });
+      } catch (e) {
+        console.error("Failed to delete source: ", e);
+        toast.error("Failed to delete source", {
+          description: e instanceof Error ? e.message : undefined,
+        });
+        return;
+      }
+    },
+    [session.sessionId],
+  );
+
   const onAddEditor = useCallback(async () => {
     if (!proxyRef.current) return;
     if (!session.sessionId) return;
@@ -709,6 +738,7 @@ function SessionProvider({ children }: SessionProviderProps) {
       onCloseEditor,
       onBurstCache,
       onRenameEditor,
+      onDeleteDataSource,
     }),
     [
       onSessionChange,
@@ -720,6 +750,7 @@ function SessionProvider({ children }: SessionProviderProps) {
       onCloseEditor,
       onBurstCache,
       onRenameEditor,
+      onDeleteDataSource,
     ],
   );
 

@@ -4,13 +4,23 @@ import { useCallback, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Tag } from "~/components/tag";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
-  ContextMenuShortcut,
   ContextMenuTrigger,
 } from "~/components/ui/context-menu";
 import {
@@ -45,6 +55,7 @@ import { useSession } from "~/context/session/useSession";
 import { useCopyToClipboard } from "~/hooks/use-copy-to-clipboard";
 import { cn } from "~/lib/utils";
 import { useWrapper } from "./wrapper/context/useWrapper";
+
 export default function DataSources() {
   const { sources } = useSession();
   const { ref, isCollapsed } = useWrapper();
@@ -89,7 +100,7 @@ export default function DataSources() {
       </div>
       <div
         className={cn(
-          "flex w-full flex-col gap-1 py-1",
+          "flex w-full flex-col space-y-1 py-1 pl-4 pr-8",
           isCollapsed && "hidden",
         )}
       >
@@ -108,8 +119,9 @@ type SourceEntry = ReturnType<typeof useSession>["sources"][number];
 
 function DatesetItem(props: SourceEntry) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
+  const [showDelete, setShowDelete] = useState(false);
 
-  const { ext, mimeType, path } = props;
+  const { ext, mimeType, path, handle } = props;
 
   let pathWithoutExt = path.slice(0, path.length - ext.length - 1); // remove the dot too
 
@@ -142,7 +154,7 @@ function DatesetItem(props: SourceEntry) {
         break;
       }
       case "application/parquet": {
-        snippet = `CREATE OR REPLACE VIEW '${pathWithoutExt}' AS SELECT * FROM read_parquet('${path}');\nSUMMARIZE ${pathWithoutExt};`;
+        snippet = `CREATE OR REPLACE TABLE '${pathWithoutExt}' AS SELECT * FROM read_parquet('${path}');\nSUMMARIZE ${pathWithoutExt};`;
         break;
       }
       case "text/csv": {
@@ -178,42 +190,147 @@ function DatesetItem(props: SourceEntry) {
     //   ]);
     // }
   };
+
+  const onDownloadHandler = useCallback(async () => {
+    const saveHandle = await window.showSaveFilePicker({
+      types: [
+        {
+          description: "Datasets",
+          accept: {
+            "application/octet-stream": [".parquet"],
+            "csv/*": [".csv"],
+            "json/*": [".json"],
+            "text/*": [".txt"],
+            "application/vnd.ms-excel": [".xls"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+              [".xlsx"],
+            "text/plain": [".sql"],
+          },
+        },
+      ],
+      startIn: "downloads",
+      suggestedName: path,
+    });
+    if (!saveHandle) return; // user cancelled
+    try {
+      const file = await handle.getFile();
+      const writable = await saveHandle.createWritable();
+      await writable.write(file);
+      await writable.close();
+      toast.success("File downloaded", {
+        description: "The file has been saved to your device.",
+      });
+    } catch (e) {
+      console.error("Failed to download file: ", e);
+      toast.error("Failed to download file", {
+        description: e instanceof Error ? e.message : undefined,
+      });
+    }
+  }, [handle, path]);
   return (
-    <ContextMenu key={path}>
-      <ContextMenuTrigger className="px-8 data-[state=open]:bg-gray-100">
-        <Button
-          className="relative flex h-6 w-full items-center justify-start gap-2 px-0 py-2"
-          variant="ghost"
-          onClick={onCopy}
-        >
-          <Database className="size-4" />
-          <span className="truncate font-normal">{path}</span>
-          {isCopied && (
-            <span className="absolute inset-y-0 right-0">
-              <CopyCheck
-                size={16}
-                className="bg-transparent text-green-700"
-              />
-            </span>
-          )}
-        </Button>
-      </ContextMenuTrigger>
-      <ContextMenuContent className="w-64">
-        <ContextMenuItem inset>
-          Open
-          <ContextMenuShortcut>⌘O</ContextMenuShortcut>
-        </ContextMenuItem>
-        <ContextMenuItem inset>
-          Rename
-          <ContextMenuShortcut>⌘R</ContextMenuShortcut>
-        </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem inset>
-          Delete
-          <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+    <>
+      <ContextMenu key={path}>
+        <ContextMenuTrigger className="w-full data-[state=open]:bg-gray-100 data-[state=open]:dark:bg-gray-900">
+          <Button
+            className={cn(
+              "flex h-6 w-full items-center justify-between gap-2 overflow-hidden p-2",
+            )}
+            variant="ghost"
+            onClick={onCopy}
+          >
+            <div className="relative inline-flex w-full items-center gap-1">
+              <Database className={cn("mr-0.5 size-4 shrink-0")} />
+              <span className="truncate font-normal">{path}</span>
+              {isCopied && (
+                <span className="absolute inset-y-0 right-0 top-0.5">
+                  <CopyCheck
+                    size={16}
+                    className="bg-transparent text-green-700"
+                  />
+                </span>
+              )}
+            </div>
+          </Button>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-64">
+          <ContextMenuItem
+            inset
+            onSelect={onCopy}
+          >
+            Insert Table SQL
+          </ContextMenuItem>
+          <ContextMenuItem
+            inset
+            disabled
+          >
+            <span className="mr-2">Explore Data</span>
+            <Tag
+              color="sky"
+              variant="small"
+            >
+              soon
+            </Tag>
+          </ContextMenuItem>
+          <ContextMenuItem
+            inset
+            onSelect={onDownloadHandler}
+          >
+            Download
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem
+            inset
+            onSelect={() => setShowDelete(true)}
+          >
+            Delete
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+
+      <DeleteEditorModal
+        isOpen={showDelete}
+        onOpenChange={(open) => setShowDelete(open)}
+        path={path}
+      />
+    </>
+  );
+}
+
+type DeleteModalProps = {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  path: string;
+};
+/**
+ * Delete the editor (not close the file).
+ */
+function DeleteEditorModal(props: DeleteModalProps) {
+  const { isOpen, onOpenChange, path } = props;
+
+  const { onDeleteDataSource } = useSession();
+
+  return (
+    <AlertDialog
+      open={isOpen}
+      onOpenChange={onOpenChange}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the file.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={async () => await onDeleteDataSource(path)}
+          >
+            Continue
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 

@@ -6,11 +6,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useSpinDelay } from "spin-delay";
 import Editor from "~/components/monaco";
-import { formatSQL } from "~/components/monaco/helpers/prettier";
 import { useEditorSettings } from "~/context/editor-settings/useEditor";
 import { useEditor } from "~/context/editor/useEditor";
 import { useSession } from "~/context/session/useSession";
 import { cn } from "~/lib/utils";
+import { formatSQL } from "~/utils/sql_fmt";
 import ResultsView from "../result-viewer";
 import OpenFileTabs from "./components/open-files";
 
