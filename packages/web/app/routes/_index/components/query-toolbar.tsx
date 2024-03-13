@@ -1,7 +1,7 @@
 import { Button } from "~/components/ui/button";
 
 import { ChevronDown } from "lucide-react";
-import { useCallback, type MouseEventHandler } from "react";
+import { useCallback, useState, type MouseEventHandler } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { toast } from "sonner";
 import { useSpinDelay } from "spin-delay";
@@ -18,6 +18,7 @@ import {
   MenubarTrigger,
 } from "~/components/ui/menubar";
 import { Separator } from "~/components/ui/separator";
+import { useDB } from "~/context/db/useDB";
 import { useEditor } from "~/context/editor/useEditor";
 import { useQuery } from "~/context/query/useQuery";
 
@@ -135,57 +136,167 @@ export default function Toolbar() {
           <MenubarSub>
             <MenubarSubTrigger>Export</MenubarSubTrigger>
             <MenubarSubContent>
-              <MenubarItem disabled>
-                <span className="mr-2">CSV</span>
-                <Tag
-                  color="amber"
-                  variant="small"
-                >
-                  soon
-                </Tag>
-              </MenubarItem>
-              <MenubarItem disabled>
-                <span className="mr-2">Parquet</span>
-                <Tag
-                  color="amber"
-                  variant="small"
-                >
-                  soon
-                </Tag>
-              </MenubarItem>
-              <MenubarItem disabled>
-                <span className="mr-2">JSON</span>
-                <Tag
-                  color="amber"
-                  variant="small"
-                >
-                  soon
-                </Tag>
-              </MenubarItem>
-              <MenubarItem disabled>
-                <span className="mr-2">DuckDB</span>
-                <Tag
-                  color="amber"
-                  variant="small"
-                >
-                  soon
-                </Tag>
-              </MenubarItem>
-              <MenubarItem disabled>
-                <span className="mr-2">SQL</span>
-                <Tag
-                  color="amber"
-                  variant="small"
-                >
-                  soon
-                </Tag>
-              </MenubarItem>
+              <Exporter ext="CSV" />
+              <Exporter ext="PARQUET" />
+              <Exporter
+                ext="JSON"
+                disabled
+              />
+              <Exporter
+                ext="DuckDB"
+                disabled
+              />
+              <Exporter
+                ext="SQL"
+                disabled
+              />
+
               <ExportToCopy />
             </MenubarSubContent>
           </MenubarSub>
         </MenubarContent>
       </MenubarMenu>
     </Menubar>
+  );
+}
+
+const endsWithNewline = (text: string) => /\n$/.test(text);
+const removeTrailingNewline = (text: string) => {
+  if (endsWithNewline(text)) {
+    return text.slice(0, -1);
+  }
+  return text;
+};
+const removeWhitespace = (text: string) => text.replaceAll(/\s+/g, " ");
+
+const unformatSQL = (sql: string) => {
+  return removeTrailingNewline(removeWhitespace(sql));
+};
+
+type FileExt = "CSV" | "PARQUET" | "JSON" | "ARROW" | "DuckDB" | "SQL";
+type ExporterProps = {
+  ext: FileExt;
+  disabled?: boolean;
+};
+
+function Exporter(props: ExporterProps) {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const { db } = useDB();
+  const { meta } = useQuery();
+
+  const { ext, disabled } = props;
+  const lastRunSQL = meta?.sql;
+
+  const onExport = useCallback(
+    async (format: FileExt) => {
+      if (!db) return;
+      if (!lastRunSQL) return;
+
+      setIsExporting(true);
+
+      let downloadUrl: string | undefined; // need to release the object URL after the download
+
+      toast.info("Exporting data...", {
+        description: `Your data is being exported in the background`,
+      });
+      try {
+        const tableName = "quackdb_export";
+
+        // remove any trailing whitespace and newlines
+        const cleanSQL = unformatSQL(lastRunSQL);
+        const queries = cleanSQL
+          .split(";")
+          .filter((query) => query.trim().length);
+
+        // assume the last query is a SELECT query for exporting
+        const selectQuery = queries[queries.length - 1];
+
+        if (!selectQuery) {
+          throw new Error("No query to export", {
+            cause: `The last query executed was: ${selectQuery}`,
+          });
+        }
+
+        await db.query(
+          `CREATE OR REPLACE TABLE '${tableName}' AS (${selectQuery})`,
+        );
+
+        let sql: string = "";
+        switch (format) {
+          case "PARQUET": {
+            sql = `COPY (SELECT * FROM '${tableName}') TO 'output.${format.toLowerCase()}' (FORMAT 'PARQUET');`;
+            break;
+          }
+          case "CSV": {
+            sql = `COPY '${tableName}' TO 'output.${format.toLowerCase()}' (HEADER, DELIMITER ',');`;
+            break;
+          }
+          default:
+            break;
+        }
+
+        if (!sql) {
+          throw new Error(`Unsupported export format: ${format}`);
+        }
+
+        await db.query(sql);
+        const _db = await db._getDB();
+
+        const buffer = await _db.copyFileToBuffer(
+          `output.${format.toLowerCase()}`,
+        );
+
+        // Generate a download link (ensure to revoke the object URL after the download).
+        // We could use window.showSaveFilePicker() but it is only supported in Chrome.
+        downloadUrl = URL.createObjectURL(new Blob([buffer]));
+
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = `${tableName}.${format.toLowerCase()}`;
+
+        a.click();
+
+        toast.success("Data exported successfully", {
+          description: `Your data has been exported as ${format.toLowerCase()}`,
+        });
+
+        await _db.dropFile(`output.${format.toLowerCase()}`).catch((e) => {
+          console.error("Failed to drop file: ", e);
+        });
+        await db.query(`DROP TABLE '${tableName}'`).catch((e) => {
+          console.error("Failed to drop table: ", e);
+        });
+      } catch (e) {
+        console.error("Failed to export data: ", e);
+        toast.error("Failed to export data", {
+          description:
+            e instanceof Error
+              ? e.message
+              : "Something went wrong. Please try again.",
+        });
+      } finally {
+        if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+        setIsExporting(false);
+      }
+    },
+    [db, lastRunSQL],
+  );
+  return (
+    <MenubarItem
+      disabled={disabled}
+      onSelect={async () => await onExport(ext)}
+    >
+      <span className="mr-2">{ext}</span>
+      {disabled && (
+        <Tag
+          color="amber"
+          variant="small"
+        >
+          soon
+        </Tag>
+      )}
+    </MenubarItem>
   );
 }
 
