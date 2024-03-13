@@ -2,7 +2,7 @@
 
 QuackDB is a privacy-preserving DuckDB SQL playground leveraging the Origin Private File System (OPFS) and Web Workers.
 
-Online demo available at [app.quackdb.com](https://quackdb.com).
+Online demo available at [app.quackdb.com](https://app.quackdb.com).
 
 Note: This project is a work in progress.
 
