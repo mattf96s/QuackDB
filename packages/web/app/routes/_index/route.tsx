@@ -1,3 +1,4 @@
+import { type MetaFunction } from "@remix-run/node";
 import {
   Link,
   useLoaderData,
@@ -59,6 +60,32 @@ export async function clientLoader(_props: ClientLoaderFunctionArgs) {
 export function HydrateFallback() {
   return <PlaygroundSkeleton />;
 }
+
+export const meta: MetaFunction = () => {
+  return [
+    {
+      title: "Playground | QuackDB",
+    },
+    {
+      name: "description",
+      content:
+        "Use the QuackDB Playground to create, edit, and run queries on your data.",
+    },
+    {
+      name: "og:title",
+      content: "Playground | QuackDB",
+    },
+    {
+      name: "og:description",
+      content:
+        "Use the QuackDB Playground to create, edit, and run queries on your data.",
+    },
+    {
+      name: "og:url",
+      content: "https://app.quackdb.com/playground",
+    },
+  ];
+};
 
 const LazyPlayground = lazy(() =>
   import("./components/playground").then((module) => ({
