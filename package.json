@@ -23,11 +23,11 @@
     "deploy-prod": "NODE_ENV=production sst deploy --stage production --profile quackdb"
   },
   "devDependencies": {
-    "sst": "2.40.6",
-    "@biomejs/biome": "^1.5.3",
+    "@biomejs/biome": "^1.6.1",
     "@tsconfig/node20": "^20.1.2",
     "aws-cdk-lib": "2.124.0",
     "constructs": "10.3.0",
+    "sst": "2.40.7",
     "typescript": "^5.4.2"
   },
   "workspaces": [

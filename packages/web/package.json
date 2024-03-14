@@ -17,7 +17,7 @@
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
     "@monaco-editor/react": "^4.6.0",
-    "@observablehq/plot": "^0.6.13",
+    "@observablehq/plot": "^0.6.14",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-aspect-ratio": "^1.0.3",
@@ -65,7 +65,7 @@
     "embla-carousel-react": "^8.0.0",
     "express": "^4.18.3",
     "fathom-client": "^3.6.0",
-    "framer-motion": "^11.0.8",
+    "framer-motion": "^11.0.13",
     "idb-keyval": "^6.2.1",
     "idle-task": "^4.3.0",
     "isbot": "^5.1.1",
@@ -107,8 +107,8 @@
     "@types/express": "^4.17.21",
     "@types/morgan": "^1.9.9",
     "@types/node": "20.11.26",
-    "@types/react": "^18.2.64",
-    "@types/react-dom": "^18.2.21",
+    "@types/react": "^18.2.65",
+    "@types/react-dom": "^18.2.22",
     "@types/wicg-file-system-access": "^2023.10.5",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -120,8 +120,8 @@
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-react": "^7.34.0",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-tailwindcss": "^3.15.0",
-    "knip": "^5.0.3",
+    "eslint-plugin-tailwindcss": "^3.15.1",
+    "knip": "^5.1.0",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.12",
@@ -131,7 +131,7 @@
     "typescript": "^5.4.2",
     "vite": "^5.1.6",
     "vite-env-only": "^2.2.0",
-    "vite-tsconfig-paths": "^4.3.1"
+    "vite-tsconfig-paths": "^4.3.2"
   },
   "overrides": {
     "react": "18.3.0-canary-01ab35a9a-20240228",

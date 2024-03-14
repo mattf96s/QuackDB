@@ -1318,9 +1318,19 @@ export class SuggestionMaker {
 
     return matches.map((match) => ({
       label: `${match}`,
+      filterText: match,
+
       kind: languages.CompletionItemKind.Keyword,
       insertText: `${match}`,
       range,
+      sortText:
+        (["SELECT", "CREATE", "UPDATE", "DELETE"].includes(match) ? "2:" : "") +
+        match,
+
+      documentation: {
+        value: `\`\`\`yaml\nWORD: ${match}\n\`\`\``,
+        kind: "markdown",
+      },
     }));
   }
 }

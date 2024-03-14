@@ -8,7 +8,14 @@ async function isSupported() {
   try {
     const root = await navigator.storage.getDirectory();
     const handle = await root.getDirectoryHandle("__test__", { create: true });
-    return handle;
+    postMessage({
+      type: "success",
+      body: {
+        handle,
+      },
+    });
+
+    return true;
   } catch (e) {
     console.error("Error in worker: ", e);
     return false;

@@ -2,9 +2,9 @@ import { type LinksFunction } from "@remix-run/node";
 import { Loader2Icon } from "lucide-react";
 import { Suspense } from "react";
 import { ClientOnly } from "remix-utils/client-only";
+import * as Card from "~/components/ui/card";
 import styles from "~/styles/dockview.css?url";
 import NavBar from "./components/navbar";
-import Playground from "./components/playground";
 
 export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: styles }];
@@ -24,7 +24,9 @@ export default function Component() {
             <>
               <NavBar />
               <Suspense fallback={<PlaygroundSkeleton />}>
-                <Playground />
+                <ComingSoon />
+                {/* #TODO */}
+                {/* <Playground /> */}
               </Suspense>
             </>
           )}
@@ -38,6 +40,24 @@ function PlaygroundSkeleton() {
   return (
     <div className="flex size-full items-center justify-center bg-background">
       <Loader2Icon className="size-6 animate-spin" />
+    </div>
+  );
+}
+
+function ComingSoon() {
+  return (
+    <div className="p-10">
+      <Card.Card>
+        <Card.CardHeader>
+          <Card.CardTitle>Coming Soon</Card.CardTitle>
+        </Card.CardHeader>
+        <Card.CardContent>
+          <p>
+            We are working on a Safari playground experience. Please check back
+            later.
+          </p>
+        </Card.CardContent>
+      </Card.Card>
     </div>
   );
 }
