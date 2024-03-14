@@ -22,6 +22,7 @@ import GlobalLoader from "./components/global-loader";
 import { Toaster } from "./components/ui/sonner";
 
 import clsx from "clsx";
+import { TailwindIndicator } from "./components/tailwind-indicator";
 import { themeSessionResolver } from "./sessions.server";
 
 export const links: LinksFunction = () => [
@@ -105,7 +106,7 @@ export function LayoutInner(props: { children: React.ReactNode }) {
             <main className="flex-1">{props.children}</main>
           </div>
         </div>
-
+        <TailwindIndicator />
         {data.isProduction && <Analytics />}
         <ScrollRestoration />
         <Scripts />

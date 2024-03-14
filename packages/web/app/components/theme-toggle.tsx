@@ -37,7 +37,7 @@ export default function ModeToggle() {
               },
             }}
             key="moon"
-            className="h-[1.2rem] w-[1.2rem]"
+            className="absolute h-[1.2rem] w-[1.2rem]"
           />
         ) : (
           <MotionSun
