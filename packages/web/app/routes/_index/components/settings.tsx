@@ -1,4 +1,4 @@
-import { Settings2, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   AlertDialog,
@@ -13,19 +13,14 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
 import { Separator } from "~/components/ui/separator";
 import { Switch } from "~/components/ui/switch";
 import { useDB } from "~/context/db/useDB";
 import { useEditorSettings } from "~/context/editor-settings/useEditor";
 import { useSession } from "~/context/session/useSession";
 
-export default function Settings() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function Settings(props: { isOpen: boolean }) {
+  const { isOpen } = props;
   const { db } = useDB();
   const [isCacheEnabled, setIsCacheEnabled] = useState(false);
 
@@ -43,56 +38,40 @@ export default function Settings() {
   };
 
   return (
-    <Popover
-      open={isOpen}
-      onOpenChange={setIsOpen}
-    >
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-        >
-          <Settings2 className="size-4" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-80 rounded-xl border bg-card text-card-foreground shadow"
-        collisionPadding={20}
-      >
-        <div className="col-span-full flex flex-col space-y-1.5 py-2">
-          <p className="font-semibold leading-none tracking-tight">Settings</p>
-          <p className="text-sm text-muted-foreground">
-            Customize the playground.
-          </p>
-        </div>
-        <div className="grid gap-6 pt-4">
-          {/* whether to use cached responses */}
+    <>
+      <div className="col-span-full flex flex-col space-y-1.5 py-2">
+        <p className="font-semibold leading-none tracking-tight">Settings</p>
+        <p className="text-sm text-muted-foreground">
+          Customize the playground.
+        </p>
+      </div>
+      <div className="grid gap-6 pt-4">
+        {/* whether to use cached responses */}
 
-          <div className="flex items-center justify-between space-x-2">
-            <Label
-              htmlFor="cache"
-              className="flex flex-col space-y-1"
-            >
-              <span>Cache</span>
-              <span className="font-normal leading-snug text-muted-foreground">
-                Enable caching of query results to speed up subsequent queries.
-              </span>
-            </Label>
-            <Switch
-              checked={isCacheEnabled}
-              onCheckedChange={onToggleCache}
-              id="cache"
-            />
-          </div>
-          {/* format */}
-          <div className="flex items-center justify-between space-x-2">
-            <FormatOption />
-          </div>
-          <Separator />
-          <ClearSession />
+        <div className="flex items-center justify-between space-x-2">
+          <Label
+            htmlFor="cache"
+            className="flex flex-col space-y-1"
+          >
+            <span>Cache</span>
+            <span className="font-normal leading-snug text-muted-foreground">
+              Enable caching of query results to speed up subsequent queries.
+            </span>
+          </Label>
+          <Switch
+            checked={isCacheEnabled}
+            onCheckedChange={onToggleCache}
+            id="cache"
+          />
         </div>
-      </PopoverContent>
-    </Popover>
+        {/* format */}
+        <div className="flex items-center justify-between space-x-2">
+          <FormatOption />
+        </div>
+        <Separator />
+        <ClearSession />
+      </div>
+    </>
   );
 }
 

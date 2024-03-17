@@ -1,6 +1,6 @@
 import { Button } from "~/components/ui/button";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Play } from "lucide-react";
 import { useCallback, useState, type MouseEventHandler } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { toast } from "sonner";
@@ -109,7 +109,11 @@ export default function Toolbar() {
             onClick={onRun}
             className="inline-flex h-8 items-center justify-center whitespace-nowrap px-3 text-xs font-semibold transition-colors hover:bg-[#2b9a66] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
           >
-            Run Query
+            <span className="hidden sm:block">Run Query</span>
+            <Play
+              size={16}
+              className="block sm:hidden"
+            />
           </button>
           <Separator
             orientation="vertical"
