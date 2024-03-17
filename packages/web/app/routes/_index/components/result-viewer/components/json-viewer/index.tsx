@@ -1,5 +1,4 @@
 import { Suspense, lazy, memo, useCallback, useEffect, useMemo } from "react";
-import { useTheme } from "remix-themes";
 import CopyToClipboard from "~/components/copy-to-clipboard";
 import PaginationToolbar from "~/components/paginator";
 import { ScrollArea } from "~/components/ui/scroll-area";
@@ -7,14 +6,13 @@ import { usePagination } from "~/context/pagination/usePagination";
 import { useQuery } from "~/context/query/useQuery";
 
 const LazyShiki = lazy(() =>
-  import("./lazy-shiki").then((module) => ({
+  import("~/components/lazy-shiki").then((module) => ({
     default: module.default,
   })),
 );
 
 export const JSONViewer = memo(function JSONViewer() {
   const { table, count } = useQuery();
-  const [theme] = useTheme();
   const { limit, offset, onSetCount } = usePagination();
 
   // Update the count when we receive data (don't like this pattern...)
@@ -22,8 +20,6 @@ export const JSONViewer = memo(function JSONViewer() {
   useEffect(() => {
     onSetCount(count);
   }, [onSetCount, count]);
-
-  const isDark = theme === "dark";
 
   const json = useMemo(() => {
     if (!table || table.numRows === 0) return "[]";
@@ -45,8 +41,8 @@ export const JSONViewer = memo(function JSONViewer() {
       <ScrollArea className="relative h-full border">
         <Suspense>
           <LazyShiki
-            json={json}
-            isDark={isDark}
+            text={json}
+            lang="json"
           />
           <div className="absolute right-2 top-2">
             <CopyToClipboard value={lazyCopy} />

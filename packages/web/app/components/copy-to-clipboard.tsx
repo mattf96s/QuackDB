@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
+import { cn } from "~/lib/utils";
 
 type OnCopyToClipboardProps = {
   // allow lazy initialization
   value: string | (() => string);
   timeout?: number;
+  className?: string;
 };
 
 export default function CopyToClipboard(props: OnCopyToClipboardProps) {
@@ -38,7 +40,12 @@ export default function CopyToClipboard(props: OnCopyToClipboardProps) {
     <button
       type="button"
       onClick={onCopy}
-      className="group flex h-auto w-10 cursor-pointer flex-col items-center justify-center rounded-md border border-neutral-200/60 bg-background px-3 pb-1.5 pt-2 text-[0.65rem] font-medium uppercase text-neutral-500 hover:text-neutral-600 focus:outline-none dark:bg-[#121212] dark:hover:text-neutral-400 "
+      className={cn(
+        "group flex h-auto w-8 cursor-pointer flex-col items-center justify-center rounded-md border border-neutral-200/60 bg-background px-3 pb-1.5 pt-2 text-[0.65rem] font-medium uppercase text-neutral-500 shadow-sm hover:text-neutral-600 focus:outline-none dark:bg-[#121212] dark:hover:text-neutral-400",
+        props.className,
+      )}
+      aria-label="Copy to clipboard"
+      onTouchStart={onCopy}
     >
       {!copied && (
         // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
