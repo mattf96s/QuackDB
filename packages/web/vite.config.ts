@@ -30,6 +30,10 @@ export default defineConfig({
   }, // Needed for SST: https://github.com/remix-run/remix/issues/7969#issuecomment-1916042039
   server: {
     port: 3000,
+    headers: {
+      "Cross-Origin-Opener-Policy": " same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+    },
   },
   build: {
     cssMinify: process.env.NODE_ENV === "production",

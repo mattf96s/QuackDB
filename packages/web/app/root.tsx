@@ -44,12 +44,20 @@ export const links: LinksFunction = () => [
 
 export const meta: MetaFunction = () => [
   {
-    name: "title",
-    content: "QuackDB |  Online DuckDB SQL playground and editor",
+    title: "QuackDB | Online DuckDB SQL playground and editor",
   },
   { name: "theme-color", content: "#0a0a0a" },
   {
     name: "description",
+    content:
+      "QuackDB is a user-friendly, open-source online DuckDB SQL playground and editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
+  },
+  {
+    name: "og:title",
+    content: "QuackDB | Online DuckDB SQL playground and editor",
+  },
+  {
+    name: "og:description",
     content:
       "QuackDB is a user-friendly, open-source online DuckDB SQL playground and editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
   },

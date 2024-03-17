@@ -414,8 +414,8 @@ function SessionProvider({ children }: SessionProviderProps) {
    *
    * #TODO: Not implemented yet.
    */
-  const onSessionChange = useCallback((session: string) => {
-    console.log("Session change: ", session);
+  const onSessionChange = useCallback((_session: string) => {
+    return null;
   }, []);
 
   /**

@@ -7,7 +7,6 @@ import {
 import { wrap } from "comlink";
 import { Loader2 } from "lucide-react";
 import { Suspense, lazy, useState } from "react";
-import { ClientOnly } from "remix-utils/client-only";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,7 +44,6 @@ export async function clientLoader(_props: ClientLoaderFunctionArgs) {
     );
     const fn = wrap<IsSupportedWorker>(worker);
     canCloneHandle = await fn();
-    console.log("canCloneHandle", canCloneHandle);
   } catch (e) {
     canCloneHandle = false;
   } finally {
@@ -99,29 +97,23 @@ export default function Component() {
   return (
     <div className="flex size-full flex-col">
       {!data.canCloneHandle && <NotSupportedModal />}
-
       <Suspense fallback={<PlaygroundSkeleton />}>
-        {/* Could just be an SPA if we wanted. */}
-        <ClientOnly fallback={<PlaygroundSkeleton />}>
-          {() => (
-            <SessionProvider>
-              <DbProvider>
-                <PanelProvider>
-                  <QueryProvider>
-                    <EditorSettingsProvider>
-                      <EditorProvider>
-                        <NavBar />
-                        <Suspense fallback={<PlaygroundSkeleton />}>
-                          <LazyPlayground />
-                        </Suspense>
-                      </EditorProvider>
-                    </EditorSettingsProvider>
-                  </QueryProvider>
-                </PanelProvider>
-              </DbProvider>
-            </SessionProvider>
-          )}
-        </ClientOnly>
+        <SessionProvider>
+          <DbProvider>
+            <PanelProvider>
+              <QueryProvider>
+                <EditorSettingsProvider>
+                  <EditorProvider>
+                    <NavBar />
+                    <Suspense fallback={<PlaygroundSkeleton />}>
+                      <LazyPlayground />
+                    </Suspense>
+                  </EditorProvider>
+                </EditorSettingsProvider>
+              </QueryProvider>
+            </PanelProvider>
+          </DbProvider>
+        </SessionProvider>
       </Suspense>
     </div>
   );

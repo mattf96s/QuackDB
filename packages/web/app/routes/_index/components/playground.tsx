@@ -65,7 +65,7 @@ export default function Playground() {
       </div>
 
       <PanelGroup
-        className="h-[calc(100vh-64px)] w-[calc(100vw-56px)] rounded-none"
+        className="h-[calc(100vh-64px)] rounded-none"
         direction="horizontal"
         autoSaveId="_desktop-layout-panel-group"
       >
