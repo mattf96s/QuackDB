@@ -13,8 +13,8 @@ export default function NavBar(props: { children: React.ReactNode }) {
           className="size-5"
         />
       </div>
-      <div className="ml-auto flex w-full items-center space-x-2 pr-2 sm:justify-end">
-        <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
+      <div className="ml-auto flex w-full items-center justify-end space-x-2 pr-2">
+        <div className="ml-auto flex w-full items-center justify-end space-x-2">
           <Suspense>{props.children}</Suspense>
         </div>
       </div>
@@ -26,10 +26,11 @@ function HomeIcon() {
   return (
     <Link
       to="/"
+      aria-label="Home"
       className="relative size-9 overflow-hidden rounded-full border bg-foreground dark:bg-white"
     >
       <img
-        src="logo.webp"
+        src="logo-tiny.webp"
         className="relative -top-[0.5px] size-9 rounded-full bg-white object-cover"
         alt="QuackDB logo"
       />

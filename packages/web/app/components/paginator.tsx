@@ -39,7 +39,7 @@ export default function PaginationToolbar() {
   const pageNumber = totalPages > 0 ? currentPage + 1 : 0;
 
   return (
-    <div className="flex flex-row items-center gap-4">
+    <div className="flex flex-row flex-wrap items-center gap-4">
       <div className="flex items-center gap-2">
         <span className="text-sm text-secondary-foreground">
           {`Page ${pageNumber} of ${totalPages}`}

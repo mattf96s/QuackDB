@@ -35,18 +35,17 @@ export const TableViewer = memo(function TableViewer() {
         )}
         {view === "list" && <VirtualizedGrid />}
       </ScrollArea>
-      <div className="flex h-12 w-full items-center justify-between">
-        <div>
-          <div className="flex items-center space-x-2">
-            <Switch
-              onCheckedChange={(checked) => {
-                setView(checked ? "list" : "table");
-              }}
-              id="beta-list"
-            />
-            <Label htmlFor="beta-list">List view</Label>
-          </div>
+      <div className="flex w-full flex-wrap-reverse items-center justify-between sm:h-12">
+        <div className="flex items-center space-x-2">
+          <Switch
+            onCheckedChange={(checked) => {
+              setView(checked ? "list" : "table");
+            }}
+            id="beta-list"
+          />
+          <Label htmlFor="beta-list">List view</Label>
         </div>
+
         {view === "table" && <PaginationToolbar />}
       </div>
     </div>

@@ -22,10 +22,17 @@ import GlobalLoader from "./components/global-loader";
 import { Toaster } from "./components/ui/sonner";
 
 import clsx from "clsx";
+import { Suspense } from "react";
 import { TailwindIndicator } from "./components/tailwind-indicator";
 import { themeSessionResolver } from "./sessions.server";
 
 export const links: LinksFunction = () => [
+  // favicon
+  {
+    rel: "apple-touch-icon",
+    sizes: "180x180",
+    href: "/apple-touch-icon.png",
+  },
   {
     rel: "icon",
     type: "image/png",
@@ -38,28 +45,41 @@ export const links: LinksFunction = () => [
     sizes: "16x16",
     href: "/favicon-16x16.png",
   },
+  {
+    rel: "mask-icon",
+    href: "/safari-pinned-tab.svg",
+    color: "#fb7f44",
+  },
   { rel: "stylesheet", href: styles },
   { rel: "manifest", href: "/site.webmanifest" },
 ];
 
 export const meta: MetaFunction = () => [
   {
-    title: "QuackDB | Online DuckDB SQL playground and editor",
+    title: "QuackDB | Open-source in-browser DuckDB SQL editor",
   },
   { name: "theme-color", content: "#0a0a0a" },
   {
     name: "description",
     content:
-      "QuackDB is a user-friendly, open-source online DuckDB SQL playground and editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
+      "QuackDB is an open-source in-browser DuckDB SQL editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
   },
   {
     name: "og:title",
-    content: "QuackDB | Online DuckDB SQL playground and editor",
+    content: "QuackDB | Open-source in-browser DuckDB SQL editor",
   },
   {
     name: "og:description",
     content:
-      "QuackDB is a user-friendly, open-source online DuckDB SQL playground and editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
+      "QuackDB is an open-source in-browser DuckDB SQL editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
+  },
+  {
+    name: "msapplication-TileColor",
+    content: "#00aba9",
+  },
+  {
+    name: "theme-color",
+    content: "#000000",
   },
 ];
 
@@ -115,7 +135,11 @@ export function LayoutInner(props: { children: React.ReactNode }) {
           </div>
         </div>
         <TailwindIndicator />
-        {data.isProduction && <Analytics />}
+        {data.isProduction && (
+          <Suspense>
+            <Analytics />
+          </Suspense>
+        )}
         <ScrollRestoration />
         <Scripts />
         <Toaster />
