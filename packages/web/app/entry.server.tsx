@@ -1,10 +1,18 @@
-import { PassThrough } from "node:stream";
-
 import type { AppLoadContext, EntryContext } from "@remix-run/node";
 import { createReadableStreamFromReadable } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
+import { wrapRemixHandleError } from "@sentry/remix";
 import { isbot } from "isbot";
+import { PassThrough } from "node:stream";
 import { renderToPipeableStream } from "react-dom/server";
+import { NonceProvider } from "./utils/nonce-provider";
+
+// Only add server side monitoring to protect client side privacy
+if (process.env.NODE === "production" && process.env.SENTRY_DSN) {
+  import("./utils/sentry/monitoring.server").then(({ init }) => init());
+}
+
+export const handleError = wrapRemixHandleError;
 
 const ABORT_DELAY = 5_000;
 
@@ -13,7 +21,6 @@ export default function handleRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   loadContext: AppLoadContext,
 ) {
   const isBot = isbot(request.headers.get("user-agent"));
@@ -22,14 +29,18 @@ export default function handleRequest(
   const headers = new Headers(responseHeaders);
   headers.set("Content-Type", "text/html; charset=utf-8");
 
+  const nonce = String(loadContext.cspNonce) ?? undefined;
+
   return new Promise((resolve, reject) => {
     let shellRendered = false;
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer
-        context={remixContext}
-        url={request.url}
-        abortDelay={ABORT_DELAY}
-      />,
+      <NonceProvider value={nonce}>
+        <RemixServer
+          context={remixContext}
+          url={request.url}
+          abortDelay={ABORT_DELAY}
+        />
+      </NonceProvider>,
       {
         onAllReady() {
           if (!isBot) return;

@@ -1,48 +1,63 @@
-import { Link } from "@remix-run/react";
-import { Loader2, Terminal } from "lucide-react";
-import { Suspense } from "react";
+import { MoreVertical } from "lucide-react";
+import NavBar from "~/components/navbar";
 import ModeToggle from "~/components/theme-toggle";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "~/components/ui/sheet";
+import Sources from "./sources";
 
-export default function NavBar() {
+export default function Nav() {
   return (
-    <div className="hidden h-16 max-h-16 min-h-16 w-full shrink-0 items-center border-b bg-background px-2 md:flex">
-      <div className="flex h-full items-center justify-evenly gap-3">
-        <HomeIcon />
-        <h1 className="ml-1 text-xl font-semibold">QuackDB</h1>
-        <Terminal
-          name="terminal"
-          className="size-5"
+    <NavBar>
+      <div className="ml-auto flex w-full items-center space-x-4 sm:justify-end">
+        <ModeToggle />
+        <Separator
+          orientation="vertical"
+          className="h-8"
         />
+        <DataSources />
       </div>
-      <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
-        <div className="ml-auto flex w-full items-center space-x-2 sm:justify-end">
-          <p>Query</p>
-          <ModeToggle />
-        </div>
-      </div>
-    </div>
+    </NavBar>
   );
 }
 
-function HomeIcon() {
+function DataSources() {
   return (
-    <Link
-      to="/"
-      className="relative size-9 overflow-hidden rounded-full border bg-foreground dark:bg-white"
-    >
-      <Suspense
-        fallback={
-          <span className="m-auto size-9 rounded-full">
-            <Loader2 className="size-5 animate-spin" />
-          </span>
-        }
-      >
-        <img
-          src="logo.webp"
-          className="relative -top-[0.5px] size-9 rounded-full bg-white object-cover"
-          alt="QuackDB logo"
-        />
-      </Suspense>
-    </Link>
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+        >
+          <MoreVertical size={16} />
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Add Datasources</SheetTitle>
+          <SheetDescription>
+            Add a new datasource to your project.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="space-y-4 py-4">
+          <Sources />
+        </div>
+
+        <SheetFooter>
+          <SheetClose asChild>
+            <Button type="submit">Save changes</Button>
+          </SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
