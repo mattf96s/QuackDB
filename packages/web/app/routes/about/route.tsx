@@ -39,29 +39,7 @@ export default function Component() {
           <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
             Open-source in-browser DuckDB SQL editor
           </h2>
-          <section className="w-full max-w-[80ch]">
-            <p className="text-lg leading-relaxed">
-              {`Our SQL editor is a powerful tool designed to simplify the process of
-          database management. It offers a user-friendly interface, advanced
-          query capabilities, and robust data visualization features. Whether
-          you're a seasoned database administrator or a beginner just getting
-          started, our SQL editor is designed to meet your needs.`}
-            </p>
-            <ul className="mt-4 space-y-2 text-lg leading-relaxed">
-              <li>
-                <strong>Intuitive Interface:</strong> Easily navigate and manage
-                your databases with our clean and intuitive interface.
-              </li>
-              <li>
-                <strong>Advanced Query Capabilities:</strong> Execute complex
-                SQL queries with ease and efficiency.
-              </li>
-              <li>
-                <strong>Data Visualization:</strong> Turn your data into
-                insightful visualizations with our built-in charting tools.
-              </li>
-            </ul>
-          </section>
+          <section className="w-full max-w-[80ch]"></section>
         </div>
       </div>
     </div>

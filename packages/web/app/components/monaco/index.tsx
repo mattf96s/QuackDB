@@ -636,6 +636,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     <MonacoEditor
       className={cn(props.className)}
       onMount={handleEditorDidMount}
+      loading={<p>Loading...</p>}
       //height="90vh"
       defaultLanguage={language}
       theme={isDark ? "vs-dark" : "vs-light"}
@@ -670,9 +671,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 
         //renderLineHighlight: "all",
         renderWhitespace: "none",
-
         quickSuggestions: true,
-
         language,
       }}
       {...props}

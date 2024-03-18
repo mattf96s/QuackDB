@@ -25,9 +25,9 @@ import clsx from "clsx";
 import { Suspense } from "react";
 import { TailwindIndicator } from "./components/tailwind-indicator";
 import { themeSessionResolver } from "./sessions.server";
+import { useNonce } from "./utils/nonce-provider";
 
 export const links: LinksFunction = () => [
-  // favicon
   {
     rel: "apple-touch-icon",
     sizes: "180x180",
@@ -50,8 +50,12 @@ export const links: LinksFunction = () => [
     href: "/safari-pinned-tab.svg",
     color: "#fb7f44",
   },
+  {
+    rel: "manifest",
+    href: "/site.webmanifest",
+    crossOrigin: "use-credentials",
+  },
   { rel: "stylesheet", href: styles },
-  { rel: "manifest", href: "/site.webmanifest" },
 ];
 
 export const meta: MetaFunction = () => [
@@ -108,6 +112,7 @@ export function Layout(props: { children: React.ReactNode }) {
 export function LayoutInner(props: { children: React.ReactNode }) {
   const data = useLoaderData<typeof loader>();
   const [theme] = useTheme();
+  const nonce = useNonce();
   return (
     <html
       lang="en"
@@ -140,9 +145,9 @@ export function LayoutInner(props: { children: React.ReactNode }) {
             <Analytics />
           </Suspense>
         )}
-        <ScrollRestoration />
-        <Scripts />
         <Toaster />
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
       </body>
     </html>
   );
@@ -153,6 +158,14 @@ export default function App() {
 }
 
 export function ErrorBoundary() {
+  return (
+    <Layout>
+      <ErrorComp />
+    </Layout>
+  );
+}
+
+function ErrorComp() {
   const error = useRouteError();
   let status = 500;
   let message = "An unexpected error occurred.";

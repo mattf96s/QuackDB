@@ -28,11 +28,12 @@ export function Web({ stack, app }: StackContext) {
         }
       : {}),
     environment: {
-      VITE_STAGE: stack.stage,
-      VITE_REGION: stack.region,
-      VITE_NODE_ENV: app.mode === "dev" ? "development" : "production",
-      VITE_DOMAIN:
-        app.stage === "production" ? "app.quackdb.com" : "localhost:3000",
+      STAGE: stack.stage,
+      REGION: stack.region,
+      NODE_ENV: app.mode === "dev" ? "development" : "production",
+      DOMAIN: app.stage === "production" ? "app.quackdb.com" : "localhost:3000",
+      SENTRY_DSN:
+        "https://02302d5793d3ca103701cb0b84cff6a0@o4506928409280512.ingest.us.sentry.io/4506928414982144",
     },
     bind: [sessionSecret],
   });
