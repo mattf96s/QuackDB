@@ -1,3 +1,4 @@
+import { captureRemixErrorBoundaryError, withSentry } from "@sentry/remix";
 /* eslint-disable react/no-unknown-property */
 import { type LinksFunction, type LoaderFunctionArgs } from "@remix-run/node";
 import {
@@ -113,6 +114,9 @@ export function LayoutInner(props: { children: React.ReactNode }) {
   const data = useLoaderData<typeof loader>();
   const [theme] = useTheme();
   const nonce = useNonce();
+  const env = {
+    IS_PRODUCTION: data.isProduction,
+  };
   return (
     <html
       lang="en"
@@ -132,8 +136,6 @@ export function LayoutInner(props: { children: React.ReactNode }) {
         className="min-h-screen bg-background font-sans antialiased"
         suppressHydrationWarning // only goes one level deep
       >
-        <GlobalLoader />
-
         <div vaul-drawer-wrapper="">
           <div className="relative flex h-svh w-svw flex-col bg-background">
             <main className="flex-1">{props.children}</main>
@@ -146,6 +148,13 @@ export function LayoutInner(props: { children: React.ReactNode }) {
           </Suspense>
         )}
         <Toaster />
+        <GlobalLoader />
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(env)}`,
+          }}
+        />
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
       </body>
@@ -153,11 +162,15 @@ export function LayoutInner(props: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+function App() {
   return <Outlet />;
 }
 
+export default withSentry(App);
+
 export function ErrorBoundary() {
+  const error = useRouteError();
+  captureRemixErrorBoundaryError(error);
   return (
     <Layout>
       <ErrorComp />

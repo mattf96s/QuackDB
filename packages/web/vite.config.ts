@@ -47,8 +47,5 @@ export default defineConfig({
   },
   build: {
     cssMinify: process.env.NODE_ENV === "production",
-    rollupOptions: {
-      external: [/node:.*/, "stream", "crypto", "fsevents"],
-    },
   },
 });

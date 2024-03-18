@@ -5,14 +5,19 @@
  */
 
 import { RemixBrowser } from "@remix-run/react";
-import { startTransition, StrictMode } from "react";
+import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
+
+// @ts-expect-error: TODO typings
+if (ENV?.MODE === "production") {
+  import("./utils/sentry/monitoring.client").then(({ init }) => init());
+}
 
 startTransition(() => {
   hydrateRoot(
     document,
     <StrictMode>
       <RemixBrowser />
-    </StrictMode>
+    </StrictMode>,
   );
 });

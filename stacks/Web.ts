@@ -12,6 +12,7 @@ export function Web({ stack, app }: StackContext) {
       loader: {
         ".ttf": "file",
         ".wasm": "file",
+        ".node": "file",
       },
       splitting: true,
       esbuild: {
