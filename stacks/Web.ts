@@ -1,9 +1,10 @@
-import { Config, RemixSite, StackContext } from "sst/constructs";
+import { Config, RemixSite, type StackContext } from "sst/constructs";
 
 export function Web({ stack, app }: StackContext) {
   const sessionSecret = new Config.Secret(stack, "SESSION_SECRET");
 
   const site = new RemixSite(stack, "Site", {
+    memorySize: app.stage === "production" ? 1024 : 256,
     waitForInvalidation: app.stage === "production",
     path: "packages/web/",
     runtime: "nodejs20.x",

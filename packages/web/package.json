@@ -142,7 +142,6 @@
     "@duckdb/duckdb-wasm": "next"
   },
   "engines": {
-    "node": ">=20",
-    "pnpm": ">=8.14.0"
+    "node": ">=20"
   }
 }

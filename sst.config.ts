@@ -1,4 +1,4 @@
-import { SSTConfig } from "sst";
+import type { SSTConfig } from "sst";
 import { Web } from "./stacks/Web";
 
 export default {

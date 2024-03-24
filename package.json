@@ -3,7 +3,6 @@
   "version": "0.0.2",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@8.14.0",
   "repository": {
     "url": "https://github.com/mattf96s/quackdb"
   },
