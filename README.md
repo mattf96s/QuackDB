@@ -1,5 +1,7 @@
 # QuackDB - _Online DuckDB SQL Playground (WIP)_
 
+[![Seed Status](https://api.seed.run/quackdb/QuackDB/stages/prod/build_badge)](https://console.seed.run/quackdb/QuackDB)
+
 QuackDB is a privacy-preserving in-browser DuckDB SQL playground and editor. Demo available at [app.quackdb.com](https://app.quackdb.com).
 
 - **In-Browser**: The DuckDB Wasm library is used to run SQL queries in the browser.
