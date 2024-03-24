@@ -7,11 +7,11 @@
     "**/.client/**/*.ts",
     "**/.client/**/*.tsx",
     "env.d.ts",
-    "sst-env.d.ts",
+    "sst-env.d.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist",
+    "dist"
   ],
   "compilerOptions": {
     "types": [
