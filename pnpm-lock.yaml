@@ -124,7 +124,7 @@ importers:
         version: 1.0.7(@types/react-dom@18.2.22)(@types/react@18.2.69)(react-dom@18.3.0-canary-01ab35a9a-20240228)(react@18.3.0-canary-01ab35a9a-20240228)
       '@remix-run/express':
         specifier: ^2.8.1
-        version: 2.8.1(express@4.19.1)(typescript@5.4.3)
+        version: 2.8.1(express@4.19.2)(typescript@5.4.3)
       '@remix-run/node':
         specifier: ^2.8.1
         version: 2.8.1(typescript@5.4.3)
@@ -177,8 +177,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0(react@18.3.0-canary-01ab35a9a-20240228)
       express:
-        specifier: ^4.19.1
-        version: 4.19.1
+        specifier: ^4.19.2
+        version: 4.19.2
       fathom-client:
         specifier: ^3.6.0
         version: 3.6.0
@@ -4699,7 +4699,7 @@ packages:
       esbuild-plugins-node-modules-polyfill: 1.6.3(esbuild@0.17.6)
       execa: 5.1.1
       exit-hook: 2.2.1
-      express: 4.19.1
+      express: 4.19.2
       fs-extra: 10.1.0
       get-port: 5.1.1
       gunzip-maybe: 1.4.2
@@ -4743,7 +4743,7 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@remix-run/express@2.8.1(express@4.19.1)(typescript@5.4.3):
+  /@remix-run/express@2.8.1(express@4.19.2)(typescript@5.4.3):
     resolution: {integrity: sha512-p1eo8uwZk8uLihSDpUnPOPsTDfghWikVPQfa+e0ZMk6tnJCjcpHAyENKDFtn9vDh9h7YNUg6A7+19CStHgxd7Q==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
@@ -4754,7 +4754,7 @@ packages:
         optional: true
     dependencies:
       '@remix-run/node': 2.8.1(typescript@5.4.3)
-      express: 4.19.1
+      express: 4.19.2
       typescript: 5.4.3
     dev: false
 
@@ -6316,7 +6316,7 @@ packages:
       '@babel/plugin-syntax-typescript': 7.24.1(@babel/core@7.24.3)
       '@vanilla-extract/babel-plugin-debug-ids': 1.0.5
       '@vanilla-extract/css': 1.14.1
-      esbuild: 0.17.6
+      esbuild: 0.18.13
       eval: 0.1.8
       find-up: 5.0.0
       javascript-stringify: 2.1.0
@@ -8780,8 +8780,8 @@ packages:
     engines: {node: '>=6'}
     dev: false
 
-  /express@4.19.1:
-    resolution: {integrity: sha512-K4w1/Bp7y8iSiVObmCrtq8Cs79XjJc/RU2YYkZQ7wpUu5ZyZ7MtPHkqoMz4pf+mgXfNvo2qft8D9OnrH2ABk9w==}
+  /express@4.19.2:
+    resolution: {integrity: sha512-5T6nhjsT+EOMzuck8JjBHARTHfMht0POzlA60WV2pMD3gyXw2LZnZ+ueGdNxG+0calOJcWKbpFcuzLZ91YWq9Q==}
     engines: {node: '>= 0.10.0'}
     dependencies:
       accepts: 1.3.8
@@ -13064,7 +13064,7 @@ packages:
       dendriform-immer-patch-optimiser: 2.1.3(immer@9.0.21)
       dotenv: 16.4.5
       esbuild: 0.18.13
-      express: 4.19.1
+      express: 4.19.2
       fast-jwt: 3.3.3
       get-port: 6.1.2
       glob: 10.3.10
