@@ -8,8 +8,7 @@ import { RemixBrowser } from "@remix-run/react";
 import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 
-// @ts-expect-error: TODO typings
-if (ENV?.MODE === "production") {
+if (ENV.STAGE === "production" && ENV.SENTRY_DSN) {
   import("./utils/sentry/monitoring.client").then(({ init }) => init());
 }
 

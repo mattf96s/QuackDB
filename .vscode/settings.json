@@ -21,9 +21,9 @@
   "files.associations": {
     "*.css": "tailwindcss",
     "*.postcss": "tailwindcss",
-    "*.pcss": "tailwindcss",
+    "*.pcss": "tailwindcss"
   },
-  "diffEditor.ignoreTrimWhitespace": false, // https://github.com/cpojer/dotfiles/blob/main/vscode/User/settings.json
+  "diffEditor.ignoreTrimWhitespace": true, // https://github.com/cpojer/dotfiles/blob/main/vscode/User/settings.json
   "editor.minimap.enabled": false,
   "tailwindCSS.classAttributes": [
     "class",
