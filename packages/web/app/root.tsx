@@ -1,17 +1,17 @@
-import { captureRemixErrorBoundaryError, withSentry } from "@sentry/remix";
 /* eslint-disable react/no-unknown-property */
-import { type LinksFunction, type LoaderFunctionArgs } from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Links,
   Meta,
+  type MetaFunction,
   Outlet,
   Scripts,
   ScrollRestoration,
   isRouteErrorResponse,
   useLoaderData,
   useRouteError,
-  type MetaFunction,
 } from "@remix-run/react";
+import { captureRemixErrorBoundaryError, withSentry } from "@sentry/remix";
 import {
   PreventFlashOnWrongTheme,
   ThemeProvider,
@@ -26,6 +26,7 @@ import clsx from "clsx";
 import { Suspense } from "react";
 import { TailwindIndicator } from "./components/tailwind-indicator";
 import { themeSessionResolver } from "./sessions.server";
+import { getEnv } from "./utils/env.server";
 import { useNonce } from "./utils/nonce-provider";
 
 export const links: LinksFunction = () => [
@@ -94,7 +95,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return {
     theme: getTheme(),
     host: url.host,
-    isProduction: url.host === "app.quackdb.com",
+    ENV: getEnv(),
   };
 }
 
@@ -114,9 +115,9 @@ export function LayoutInner(props: { children: React.ReactNode }) {
   const data = useLoaderData<typeof loader>();
   const [theme] = useTheme();
   const nonce = useNonce();
-  const env = {
-    IS_PRODUCTION: data.isProduction,
-  };
+
+  const isProduction = data.ENV.STAGE === "production";
+
   return (
     <html
       lang="en"
@@ -142,7 +143,7 @@ export function LayoutInner(props: { children: React.ReactNode }) {
           </div>
         </div>
         <TailwindIndicator />
-        {data.isProduction && (
+        {isProduction && (
           <Suspense>
             <Analytics />
           </Suspense>
@@ -151,8 +152,9 @@ export function LayoutInner(props: { children: React.ReactNode }) {
         <GlobalLoader />
         <script
           nonce={nonce}
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
           dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify(env)}`,
+            __html: `window.ENV = ${JSON.stringify(ENV)}`,
           }}
         />
         <ScrollRestoration nonce={nonce} />

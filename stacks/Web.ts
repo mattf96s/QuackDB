@@ -2,6 +2,7 @@ import { Config, RemixSite, type StackContext } from "sst/constructs";
 
 export function Web({ stack, app }: StackContext) {
   const sessionSecret = new Config.Secret(stack, "SESSION_SECRET");
+  const sentryAuthToken = new Config.Secret(stack, "SENTRY_AUTH_TOKEN");
 
   const site = new RemixSite(stack, "Site", {
     memorySize: app.stage === "production" ? 1024 : 256,
@@ -37,7 +38,7 @@ export function Web({ stack, app }: StackContext) {
       SENTRY_DSN:
         "https://02302d5793d3ca103701cb0b84cff6a0@o4506928409280512.ingest.us.sentry.io/4506928414982144",
     },
-    bind: [sessionSecret],
+    bind: [sessionSecret, sentryAuthToken],
   });
 
   stack.addOutputs({
