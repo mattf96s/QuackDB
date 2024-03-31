@@ -101,7 +101,7 @@ app.use(
         'frame-src': ["'self'"],
         'img-src': ["'self'", 'data:'],
         "report-uri":
-          isProduction && SENTRY_DSN ? "https://o4506928409280512.ingest.us.sentry.io/api/4506928414982144/security/?sentry_key=02302d5793d3ca103701cb0b84cff6a0" : null,
+          isProduction ? 'https://o4506928409280512.ingest.us.sentry.io/api/4506928414982144/security/?sentry_key=02302d5793d3ca103701cb0b84cff6a0' : null,
         'script-src': [
           "'strict-dynamic'",
           "'self'",
