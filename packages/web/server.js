@@ -2,21 +2,23 @@ import { createRequestHandler as _createRequestHandler } from "@remix-run/expres
 import { installGlobals } from "@remix-run/node";
 import * as Sentry from "@sentry/remix";
 import compression from "compression";
-import crypto from "crypto";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
+import crypto from "node:crypto";
 import sourceMapSupport from "source-map-support";
 
 sourceMapSupport.install();
 installGlobals();
 
 const MODE = process.env.NODE_ENV;
-const isProduction = MODE === "production";
-// const SENTRY_DSN = process.env.SENTRY_DSN;
+const STAGE = process.env.STAGE;
+
+const isProduction = STAGE === "production";
+const SENTRY_DSN = process.env.SENTRY_DSN;
 
 const createRequestHandler =
-  MODE === "production"
+  isProduction
     ? Sentry.wrapExpressCreateRequestHandler(_createRequestHandler)
     : _createRequestHandler;
 
@@ -91,7 +93,7 @@ app.use(
       directives: {
         'connect-src': [
           MODE === 'development' ? 'ws:' : null,
-          MODE === 'production' && process.env.SENTRY_DSN ? '*.ingest.sentry.io' : null,
+          isProduction && SENTRY_DSN ? '*.ingest.sentry.io' : null,
           'cdn.jsdelivr.net',
           '*.duckdb.org',
           "'self'",
@@ -99,7 +101,7 @@ app.use(
         'frame-src': ["'self'"],
         'img-src': ["'self'", 'data:'],
         "report-uri":
-          MODE === 'production' ? "https://o4506928409280512.ingest.us.sentry.io/api/4506928414982144/security/?sentry_key=02302d5793d3ca103701cb0b84cff6a0" : null,
+          isProduction && SENTRY_DSN ? "https://o4506928409280512.ingest.us.sentry.io/api/4506928414982144/security/?sentry_key=02302d5793d3ca103701cb0b84cff6a0" : null,
         'script-src': [
           "'strict-dynamic'",
           "'self'",

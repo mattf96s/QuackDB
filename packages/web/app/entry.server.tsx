@@ -5,10 +5,14 @@ import { wrapRemixHandleError } from "@sentry/remix";
 import { isbot } from "isbot";
 import { PassThrough } from "node:stream";
 import { renderToPipeableStream } from "react-dom/server";
+import { getEnv, init } from "./utils/env.server";
 import { NonceProvider } from "./utils/nonce-provider";
 
+init();
+global.ENV = getEnv();
+
 // Only add server side monitoring to protect client side privacy
-if (process.env.NODE === "production" && process.env.SENTRY_DSN) {
+if (ENV.STAGE === "production" && ENV.SENTRY_DSN) {
   import("./utils/sentry/monitoring.server").then(({ init }) => init());
 }
 

@@ -4,6 +4,8 @@ import { useEffect } from "react";
 
 export function init() {
   Sentry.init({
+    dsn: ENV.SENTRY_DSN,
+    environment: ENV.STAGE,
     enabled: false,
     beforeSend(event) {
       if (event.request?.url) {
@@ -20,8 +22,6 @@ export function init() {
     },
     autoSessionTracking: false,
     sendClientReports: false,
-
-    dsn: "https://02302d5793d3ca103701cb0b84cff6a0@o4506928409280512.ingest.us.sentry.io/4506928414982144",
     tracesSampleRate: 1,
     replaysOnErrorSampleRate: 1,
     integrations: [
