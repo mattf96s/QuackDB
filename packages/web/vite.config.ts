@@ -5,9 +5,6 @@ import { defineConfig, splitVendorChunkPlugin } from "vite";
 import envOnly from "vite-env-only";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-const isProduction = process.env.STAGE === "production";
-const SENTRY_AUTH_TOKEN = process.env.SENTRY_AUTH_TOKEN;
-
 // Remix run uses vite-plugin-arraybuffer which might be useful for the tff file issues when deploying monaco editor.
 
 installGlobals();
@@ -26,12 +23,12 @@ export default defineConfig({
         v3_relativeSplatPath: true,
       },
     }),
-    isProduction
+    process.env.STAGE === "production"
       ? sentryVitePlugin({
           org: "f-jrq",
           project: "javascript-remix",
           telemetry: false,
-          authToken: SENTRY_AUTH_TOKEN,
+          authToken: process.env.SENTRY_AUTH_TOKEN,
         })
       : null,
   ],
@@ -48,6 +45,7 @@ export default defineConfig({
     },
   },
   build: {
-    cssMinify: isProduction,
+    sourcemap: true,
+    cssMinify: process.env.STAGE === "production",
   },
 });
