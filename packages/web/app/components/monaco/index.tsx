@@ -4,12 +4,12 @@ import MonacoEditor, {
   type OnMount,
 } from "@monaco-editor/react";
 import {
+  type IDisposable,
   KeyCode,
   KeyMod,
   Range,
-  languages,
-  type IDisposable,
   type editor,
+  languages,
 } from "monaco-editor";
 import "monaco-editor/esm/vs/basic-languages/sql/sql.contribution";
 import {
@@ -23,6 +23,7 @@ import { useTheme } from "remix-themes";
 import { useDB } from "~/context/db/useDB";
 import { useQuery } from "~/context/query/useQuery";
 import { cn } from "~/lib/utils";
+import { formatSQL } from "~/utils/sql_fmt";
 import { SuggestionMaker } from "./suggestions";
 import { sqlConf, sqlDef } from "./syntax";
 
@@ -128,6 +129,57 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     // });
   };
 
+  // formatter
+  useEffect(() => {
+    const disposables: IDisposable[] = [];
+
+    if (!editorRef.current) return;
+    if (!monacoRef.current) return;
+    if (!isReady) return;
+
+    disposables.push(
+      monacoRef.current.languages.registerDocumentFormattingEditProvider(
+        "sql",
+        {
+          async provideDocumentFormattingEdits(model, _options) {
+            const formatted = await formatSQL(model.getValue());
+            return [
+              {
+                range: model.getFullModelRange(),
+                text: formatted,
+              },
+            ];
+          },
+        },
+      ),
+    );
+
+    // define a range formatting provider
+    // select some codes and right click those codes
+    // you contextmenu will have an "Format Selection" action
+    disposables.push(
+      monacoRef.current.languages.registerDocumentRangeFormattingEditProvider(
+        "sql",
+        {
+          async provideDocumentRangeFormattingEdits(model, range, _options) {
+            const formatted = await formatSQL(model.getValueInRange(range));
+            return [
+              {
+                range: range,
+                text: formatted,
+              },
+            ];
+          },
+        },
+      ),
+    );
+
+    return () => {
+      // biome-ignore lint/complexity/noForEach: <explanation>
+      disposables.forEach((disposable) => disposable.dispose());
+    };
+  }, [isReady]);
+
   useEffect(() => {
     const disposables: IDisposable[] = [];
 
@@ -186,7 +238,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
       // biome-ignore lint/complexity/noForEach: <explanation>
       disposables.forEach((disposable) => disposable.dispose());
     };
-  }, [db, isReady, language, onRunQuery]);
+  }, [isReady, language, onRunQuery]);
 
   // completions
 
@@ -243,6 +295,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     );
 
     return () => {
+      // biome-ignore lint/complexity/noForEach: <explanation>
       disposables.forEach((disposable) => disposable.dispose());
     };
   }, [db, isReady, language]);
@@ -264,7 +317,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     disposables.push(
       monacoRef.current.languages.registerCompletionItemProvider("sql", {
         triggerCharacters: [":"],
-        provideCompletionItems: function (model, position) {
+        provideCompletionItems: (model, position) => {
           const lineUntilPosition = model.getValueInRange({
             startLineNumber: position.lineNumber,
             startColumn: 1,
@@ -515,6 +568,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     );
 
     return () => {
+      // biome-ignore lint/complexity/noForEach: <explanation>
       disposables.forEach((disposable) => disposable.dispose());
     };
   }, [db, isReady]);
