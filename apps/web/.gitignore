@@ -3,7 +3,9 @@ node_modules
 /.cache
 /build
 .env
-
+.vercel
+.env.*
+.DS_Store
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -1,9 +1,9 @@
-import type { MetaFunction } from "@remix-run/node";
 import {
   type ClientLoaderFunctionArgs,
   Link,
   useLoaderData,
 } from "@remix-run/react";
+import type { MetaFunction } from "@vercel/remix";
 import { wrap } from "comlink";
 import { Loader2 } from "lucide-react";
 import { Suspense, lazy, useState } from "react";
