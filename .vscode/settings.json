@@ -1,23 +1,9 @@
 {
-  "search.exclude": {
-    "**/.sst": true,
-    "**/.git": true,
-    "**/.github": true,
-    "**/.nuxt": true,
-    "**/.output": true,
-    "**/.pnpm": true,
-    "**/.vscode": true,
-    "**/.yarn": true,
-    "**/bower_components": true,
-    "**/dist/**": true,
-    "**/logs": true,
-    "**/node_modules": true,
-    "**/out/**": true,
-    "**/package-lock.json": true,
-    "**/pnpm-lock.yaml": true,
-    "**/tmp": true,
-    "**/yarn.lock": true
-  },
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
   "files.associations": {
     "*.css": "tailwindcss",
     "*.postcss": "tailwindcss",
@@ -30,14 +16,6 @@
     "className",
     "ngClass",
     "\\w+ClassName"
-  ],
-  "eslint.workingDirectories": [
-    {
-      "pattern": "apps/*/"
-    },
-    {
-      "pattern": "packages/*/"
-    }
   ],
   "tailwindCSS.experimental.classRegex": [
     [
@@ -98,5 +76,14 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "[properties]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[dotenv]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }

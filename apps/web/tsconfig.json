@@ -6,8 +6,7 @@
     "**/.server/**/*.tsx",
     "**/.client/**/*.ts",
     "**/.client/**/*.tsx",
-    "env.d.ts",
-    "sst-env.d.ts"
+    "env.d.ts"
   ],
   "exclude": [
     "node_modules",
@@ -15,11 +14,7 @@
   ],
   "compilerOptions": {
     "types": [
-      "@remix-run/node",
-      "vite/client",
-      "@types/wicg-file-system-access",
-      "react/canary",
-      "react-dom/canary"
+      "@types/wicg-file-system-access"
     ],
     "esModuleInterop": true,
     "jsx": "react-jsx",

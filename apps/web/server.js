@@ -17,18 +17,17 @@ const STAGE = process.env.STAGE;
 const isProduction = STAGE === "production";
 const SENTRY_DSN = process.env.SENTRY_DSN;
 
-const createRequestHandler =
-  isProduction
-    ? Sentry.wrapExpressCreateRequestHandler(_createRequestHandler)
-    : _createRequestHandler;
+const createRequestHandler = isProduction
+  ? Sentry.wrapExpressCreateRequestHandler(_createRequestHandler)
+  : _createRequestHandler;
 
 const viteDevServer = isProduction
   ? undefined
   : await import("vite").then((vite) =>
-    vite.createServer({
-      server: { middlewareMode: true },
-    }),
-  );
+      vite.createServer({
+        server: { middlewareMode: true },
+      }),
+    );
 
 async function getBuild() {
   return viteDevServer
@@ -67,11 +66,11 @@ if (viteDevServer) {
     "/assets",
     express.static("build/client/assets", { immutable: true, maxAge: "1y" }),
   );
-}
 
-// Everything else (like favicon.ico) is cached for an hour. You may want to be
-// more aggressive with this caching.
-app.use(express.static("build/client", { maxAge: "1h" }));
+  // Everything else (like favicon.ico) is cached for an hour. You may want to be
+  // more aggressive with this caching.
+  app.use(express.static("build/client", { maxAge: "1h" }));
+}
 
 morgan.token("url", (req) => decodeURIComponent(req.url ?? ""));
 
@@ -84,6 +83,7 @@ app.use((_, res, next) => {
 
 app.use(
   helmet({
+    xPoweredBy: false,
     referrerPolicy: { policy: "same-origin" },
     crossOriginEmbedderPolicy: "require-corp",
     crossOriginOpenerPolicy: "same-origin",
@@ -91,18 +91,19 @@ app.use(
       // NOTE: Remove reportOnly when you're ready to enforce this CSP
       reportOnly: true,
       directives: {
-        'connect-src': [
-          MODE === 'development' ? 'ws:' : null,
-          isProduction && SENTRY_DSN ? '*.ingest.sentry.io' : null,
-          'cdn.jsdelivr.net',
-          '*.duckdb.org',
+        "connect-src": [
+          MODE === "development" ? "ws:" : null,
+          isProduction && SENTRY_DSN ? "*.ingest.sentry.io" : null,
+          "cdn.jsdelivr.net",
+          "*.duckdb.org",
           "'self'",
         ].filter(Boolean),
-        'frame-src': ["'self'"],
-        'img-src': ["'self'", 'data:'],
-        "report-uri":
-          isProduction ? 'https://o4506928409280512.ingest.us.sentry.io/api/4506928414982144/security/?sentry_key=02302d5793d3ca103701cb0b84cff6a0' : null,
-        'script-src': [
+        "frame-src": ["'self'"],
+        "img-src": ["'self'", "data:"],
+        "report-uri": isProduction
+          ? "https://o4506928409280512.ingest.us.sentry.io/api/4506928414982144/security/?sentry_key=02302d5793d3ca103701cb0b84cff6a0"
+          : null,
+        "script-src": [
           "'strict-dynamic'",
           "'self'",
           "'unsafe-inline'",
@@ -111,7 +112,7 @@ app.use(
           // @ts-expect-error
           (_, res) => `'nonce-${res.locals.cspNonce}'`,
         ],
-        'script-src-attr': [
+        "script-src-attr": [
           // @ts-expect-error
           (_, res) => `'nonce-${res.locals.cspNonce}'`,
         ],

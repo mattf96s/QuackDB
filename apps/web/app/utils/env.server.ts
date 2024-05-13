@@ -9,6 +9,7 @@ const envSchema = z.object({
   REGION: z.literal("eu-west-1"),
   DOMAIN: z.string().default("localhost:3000"),
   SENTRY_DSN: z.string().default(""),
+  SESSION_SECRET: z.string().default(""),
 });
 
 declare global {
