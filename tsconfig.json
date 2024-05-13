@@ -1,12 +1,3 @@
 {
-  "extends": "@tsconfig/node20/tsconfig.json",
-  "exclude": [
-    "packages",
-    "node_modules",
-    "packages/web"
-  ],
-  "compilerOptions": {
-    "module": "esnext",
-    "moduleResolution": "node"
-  }
+  "extends": "@repo/typescript-config/base.json"
 }
