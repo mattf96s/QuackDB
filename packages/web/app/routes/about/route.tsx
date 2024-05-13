@@ -1,25 +1,40 @@
-import { type MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from "@remix-run/node";
 import NavBar from "~/components/navbar";
 import ModeToggle from "~/components/theme-toggle";
+import { metaDetails } from "~/constants";
 
 export const meta: MetaFunction = () => [
   {
     title: "QuackDB | Open-source in-browser DuckDB SQL editor",
   },
-  { name: "theme-color", content: "#0a0a0a" },
-  {
-    name: "description",
-    content:
-      "QuackDB is an open-source in-browser DuckDB SQL editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
-  },
   {
     name: "og:title",
     content: "QuackDB | Open-source in-browser DuckDB SQL editor",
   },
+  { name: "theme-color", content: metaDetails.themeColor },
+  {
+    name: "description",
+    content: metaDetails.description,
+  },
   {
     name: "og:description",
-    content:
-      "QuackDB is an open-source in-browser DuckDB SQL editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
+    content: metaDetails.description,
+  },
+  {
+    name: "og:image",
+    content: "https://quackdb.org/og-image.png",
+  },
+  {
+    name: "og:image:width",
+    content: "1200",
+  },
+  {
+    name: "og:image:height",
+    content: "630",
+  },
+  {
+    name: "msapplication-TileColor",
+    content: metaDetails.msapplicationTileColor,
   },
 ];
 
@@ -30,7 +45,7 @@ export default function Component() {
         <ModeToggle />
       </NavBar>
       <div className="relative flex grow items-start justify-center pt-20">
-        <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]"></div>
+        <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
 
         <div className="mx-auto max-w-prose space-y-2">
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">

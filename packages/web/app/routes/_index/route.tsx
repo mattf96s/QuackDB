@@ -1,8 +1,8 @@
-import { type MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from "@remix-run/node";
 import {
+  type ClientLoaderFunctionArgs,
   Link,
   useLoaderData,
-  type ClientLoaderFunctionArgs,
 } from "@remix-run/react";
 import { wrap } from "comlink";
 import { Loader2 } from "lucide-react";
@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
+import { metaDetails } from "~/constants";
 import { DbProvider } from "~/context/db/provider";
 import { EditorSettingsProvider } from "~/context/editor-settings/provider";
 import { EditorProvider } from "~/context/editor/provider";
@@ -66,21 +67,19 @@ export const meta: MetaFunction = () => {
     },
     {
       name: "description",
-      content:
-        "Use the QuackDB Playground to create, edit, and run queries on your data.",
+      content: metaDetails.description,
+    },
+    {
+      name: "og:description",
+      content: metaDetails.description,
     },
     {
       name: "og:title",
       content: "Playground | QuackDB",
     },
     {
-      name: "og:description",
-      content:
-        "Use the QuackDB Playground to create, edit, and run queries on your data.",
-    },
-    {
       name: "og:url",
-      content: "https://app.quackdb.com/playground",
+      content: "https://app.quackdb.com/",
     },
   ];
 };
