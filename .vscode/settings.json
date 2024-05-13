@@ -1,4 +1,19 @@
 {
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/out": true,
+    "**/tmp": true,
+    "**/temp": true,
+    "pnpm-store": true,
+    "pnpm-lock.yaml": true,
+    "**/.yarn": true,
+    "**/.pnp": true,
+  },
   "eslint.workingDirectories": [
     {
       "mode": "auto"

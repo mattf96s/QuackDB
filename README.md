@@ -1,8 +1,6 @@
 # QuackDB - _Online DuckDB SQL Playground (WIP)_
 
-[![Seed Status](https://api.seed.run/quackdb/QuackDB/stages/production/build_badge)](https://console.seed.run/quackdb/QuackDB)
-
-QuackDB is a privacy-preserving in-browser DuckDB SQL playground and editor. Demo available at [app.quackdb.com](https://app.quackdb.com).
+QuackDB is a privacy-preserving in-browser DuckDB SQL playground and editor. Demo available at [www.quackdb.com](https://www.quackdb.com).
 
 - **In-Browser**: The DuckDB Wasm library is used to run SQL queries in the browser.
 - **File Types**: Supports `.csv`, `.json`, `.parquet`, `.sqlite`, `.duckdb` and `.arrow` files.
@@ -62,7 +60,7 @@ This project is not in any way affiliated with DuckDB or any of the other projec
 
 ## Tips
 
-- Built in chrome OPFS viewer can be accessed from <https://app.quackdb.com/temporary>. To navigate, manually change the URL to the desired path as Chrome does not allow navigation by clicking on the links.
+- Built in chrome OPFS viewer can be accessed from <https://www.quackdb.com/temporary>. To navigate, manually change the URL to the desired path as Chrome does not allow navigation by clicking on the links.
 
 ## Known Issues
 

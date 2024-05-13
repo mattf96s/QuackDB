@@ -79,7 +79,7 @@ export const meta: MetaFunction = () => {
     },
     {
       name: "og:url",
-      content: "https://app.quackdb.com/",
+      content: "https://www.quackdb.com/",
     },
   ];
 };

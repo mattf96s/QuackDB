@@ -17,13 +17,11 @@ import {
   useTheme,
 } from "remix-themes";
 import styles from "~/styles/globals.css?url";
-import Analytics from "./components/fathom";
 import GlobalLoader from "./components/global-loader";
 import { Toaster } from "./components/ui/sonner";
 
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import clsx from "clsx";
-import { Suspense } from "react";
 import { TailwindIndicator } from "./components/tailwind-indicator";
 import { metaDetails } from "./constants";
 import { themeSessionResolver } from "./sessions.server";
@@ -138,11 +136,6 @@ export function LayoutInner(props: { children: React.ReactNode }) {
           </div>
         </div>
         <TailwindIndicator />
-        {isProduction && (
-          <Suspense>
-            <Analytics />
-          </Suspense>
-        )}
         {isProduction && <VercelAnalytics />}
         <Toaster />
         <GlobalLoader />
