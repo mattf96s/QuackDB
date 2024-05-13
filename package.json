@@ -15,7 +15,6 @@
     "dev": "dotenv -- turbo dev",
     "lint": "turbo lint",
     "format": "turbo format",
-    "prepare": "husky",
     "sso": "aws sso login --sso-session=d-93675d34f6",
     "set-node-v": "pnpm env use --global 20"
   },
@@ -25,18 +24,11 @@
     "@commitlint/config-conventional": "^19.2.2",
     "conventional-changelog-conventionalcommits": "^8.0.0",
     "dotenv-cli": "^7.4.1",
-    "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "turbo": "^1.13.3"
   },
   "engines": {
     "node": ">=18"
-  },
-  "lint-staged": {
-    "*.{js,ts,tsx}": [
-      "pnpm run lint",
-      "pnpm run format"
-    ]
   }
 }
