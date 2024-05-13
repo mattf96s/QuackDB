@@ -25,6 +25,7 @@ import { Toaster } from "./components/ui/sonner";
 import clsx from "clsx";
 import { Suspense } from "react";
 import { TailwindIndicator } from "./components/tailwind-indicator";
+import { metaDetails } from "./constants";
 import { themeSessionResolver } from "./sessions.server";
 import { getEnv } from "./utils/env.server";
 import { useNonce } from "./utils/nonce-provider";
@@ -64,11 +65,10 @@ export const meta: MetaFunction = () => [
   {
     title: "QuackDB | Open-source in-browser DuckDB SQL editor",
   },
-  { name: "theme-color", content: "#0a0a0a" },
+  { name: "theme-color", content: metaDetails.themeColor },
   {
     name: "description",
-    content:
-      "QuackDB is an open-source in-browser DuckDB SQL editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
+    content: metaDetails.description,
   },
   {
     name: "og:title",
@@ -76,16 +76,11 @@ export const meta: MetaFunction = () => [
   },
   {
     name: "og:description",
-    content:
-      "QuackDB is an open-source in-browser DuckDB SQL editor. Designed for efficient prototyping, data tasks, and data visualization, it respects your privacy with a no-tracking policy.",
+    content: metaDetails.description,
   },
   {
     name: "msapplication-TileColor",
-    content: "#00aba9",
-  },
-  {
-    name: "theme-color",
-    content: "#000000",
+    content: metaDetails.msapplicationTileColor,
   },
 ];
 
