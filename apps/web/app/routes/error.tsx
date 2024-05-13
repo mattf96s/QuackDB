@@ -1,6 +1,6 @@
 // Inspiration: https://github.com/kiliman/remix-vite-template/blob/main/app/routes/error.tsx
-import { type MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
+import { type MetaFunction } from "@vercel/remix";
 import ModeToggle from "~/components/theme-toggle";
 import { Button } from "~/components/ui/button";
 import * as Card from "~/components/ui/card";

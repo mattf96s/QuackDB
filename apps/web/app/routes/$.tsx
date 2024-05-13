@@ -1,4 +1,4 @@
-import { type MetaFunction } from "@remix-run/node";
+import { type MetaFunction } from "@vercel/remix";
 import { motion } from "framer-motion";
 import NavBar from "~/components/navbar";
 import ModeToggle from "~/components/theme-toggle";

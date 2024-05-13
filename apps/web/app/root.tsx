@@ -1,5 +1,4 @@
 /* eslint-disable react/no-unknown-property */
-import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Links,
   Meta,
@@ -11,7 +10,7 @@ import {
   useLoaderData,
   useRouteError,
 } from "@remix-run/react";
-import { captureRemixErrorBoundaryError, withSentry } from "@sentry/remix";
+import type { LinksFunction, LoaderFunctionArgs } from "@vercel/remix";
 import {
   PreventFlashOnWrongTheme,
   ThemeProvider,
@@ -22,6 +21,7 @@ import Analytics from "./components/fathom";
 import GlobalLoader from "./components/global-loader";
 import { Toaster } from "./components/ui/sonner";
 
+import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import clsx from "clsx";
 import { Suspense } from "react";
 import { TailwindIndicator } from "./components/tailwind-indicator";
@@ -143,6 +143,7 @@ export function LayoutInner(props: { children: React.ReactNode }) {
             <Analytics />
           </Suspense>
         )}
+        {isProduction && <VercelAnalytics />}
         <Toaster />
         <GlobalLoader />
         <script
@@ -163,11 +164,11 @@ function App() {
   return <Outlet />;
 }
 
-export default withSentry(App);
+export default App;
 
 export function ErrorBoundary() {
   const error = useRouteError();
-  captureRemixErrorBoundaryError(error);
+
   return (
     <Layout>
       <ErrorComp />

@@ -8,10 +8,6 @@ import { RemixBrowser } from "@remix-run/react";
 import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 
-if (ENV.STAGE === "production" && ENV.SENTRY_DSN) {
-  import("./utils/sentry/monitoring.client").then(({ init }) => init());
-}
-
 startTransition(() => {
   hydrateRoot(
     document,

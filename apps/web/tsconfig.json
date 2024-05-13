@@ -10,10 +10,14 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "build",
+    ".vercel"
   ],
   "compilerOptions": {
     "types": [
+      "@vercel/remix",
+      "node",
+      "vite/client",
       "@types/wicg-file-system-access"
     ],
     "esModuleInterop": true,
