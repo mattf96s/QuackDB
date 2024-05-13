@@ -1,15 +1,15 @@
-# QuackDB - _Online DuckDB SQL Playground (WIP)_
+# QuackDB - Online DuckDB SQL Playground
 
-QuackDB is a privacy-preserving in-browser DuckDB SQL playground and editor. Demo available at [www.quackdb.com](https://www.quackdb.com).
+QuackDB is a privacy-preserving in-browser DuckDB SQL playground and editor.
+
+Demo available at [quackdb.com](https://www.quackdb.com).
 
 - **In-Browser**: The DuckDB Wasm library is used to run SQL queries in the browser.
 - **File Types**: Supports `.csv`, `.json`, `.parquet`, `.sqlite`, `.duckdb` and `.arrow` files.
-- **Privacy**: no screen recordings or client-side error monitoring. Fathom Analytics is used for basic page view tracking and Sentry runs server-side only (without session tracking).
+- **Privacy**: no screen recordings or client-side error monitoring (only Vercel Analytics).
 - **Filesystem Access**: OPFS is used to store files in the browser's filesystem for persistence.
 
-There is no screen recordings or client-side error monitoring—so let me know about any errors 😜. The only tracking is basic page views using Fathom Analytics.
-
-Note: This project is a work in progress.
+![QuackDB Screenshot](https://www.quackdb.com/screenshot.jpg)
 
 ## Motivation
 
@@ -21,9 +21,11 @@ I wanted a quick and simple tool for iterating on DuckDB queries and visualizing
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Database      | [DuckDB Wasm](https://duckdb.org/)                                                                                                  |
 | Frontend      | [Remix](https://remix.run/) &middot; [Tailwind CSS](https://tailwindcss.com/docs/table-layout), [shadcn/ui](https://ui.shadcn.com/) |
-| Backend       | [SST (IAC)](https://docs.sst.dev/start/remix), [AWS Lambda](https://aws.amazon.com/lambda/)                                         |
+| Backend       | [Vercel](https://vercel.com/docs/frameworks/remix)                                                                                  |
 | Visualization | [Observable Plot](https://observablehq.com/plot/), [Tanstack Table](https://tanstack.com/table/latest)                              |
 | Web APIs      | [Comlink](https://github.com/GoogleChromeLabs/comlink), [OPFS](https://web.dev/file-system-access/)                                 |
+
+> An earlier version of this project used [SST](https://docs.sst.dev/start/remix) for the backend infrastructure, but I switched to Vercel for simplicity.
 
 ## TODO
 
@@ -33,7 +35,6 @@ I wanted a quick and simple tool for iterating on DuckDB queries and visualizing
 - [ ] Responsive design improvements
 - [ ] Performance improvements with Arrow
 - [ ] Snippets / examples
-- [ ] CI/CD pipeline
 
 ## Maybe
 
