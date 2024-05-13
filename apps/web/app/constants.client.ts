@@ -1,6 +1,6 @@
 // ----------- App ------------ //
 
-export const prodDomain = "app.quackdb.com";
+export const prodDomain = "www.quackdb.com";
 
 // ----------- Query ------------ //
 

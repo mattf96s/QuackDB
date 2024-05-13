@@ -11,7 +11,7 @@ const sessionStorage = createCookieSessionStorage({
     httpOnly: true,
     sameSite: "lax",
     secrets: [process.env.SESSION_SECRET],
-    ...(isProduction ? { domain: "app.quackdb.com", secure: true } : {}),
+    ...(isProduction ? { domain: "www.quackdb.com", secure: true } : {}),
   },
 });
 
