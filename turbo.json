@@ -3,10 +3,22 @@
   "globalDependencies": [
     "**/.env.*local"
   ],
+  "globalEnv": [
+    "NODE_ENV",
+    "PORT",
+    "CI"
+  ],
   "pipeline": {
     "build": {
       "dependsOn": [
         "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        "public/build/**",
+        "build/**",
+        "app/styles/tailwind.css",
+        ".cache"
       ]
     },
     "lint": {
