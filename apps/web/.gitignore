@@ -5,6 +5,7 @@ node_modules
 .env
 .vercel
 .env.*
+!.env.example
 .DS_Store
 # Editor directories and files
 .vscode/*
