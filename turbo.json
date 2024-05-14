@@ -1,7 +1,12 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "**/.env.*local"
+  ],
   "globalEnv": [
-    "NODE_ENV"
+    "NODE_ENV",
+    "PORT",
+    "CI"
   ],
   "pipeline": {
     "build": {
@@ -17,7 +22,6 @@
       ]
     },
     "lint": {
-      "cache": false,
       "dependsOn": [
         "^build"
       ]
