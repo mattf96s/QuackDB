@@ -15,6 +15,7 @@
     "apps/*",
     "packages/*"
   ],
+  "packageManager": "pnpm@9.1.0",
   "description": "QuackDB - An online DuckDB SQL playground and editor",
   "scripts": {
     "build": "turbo run build",
@@ -26,7 +27,7 @@
     "set-node-v": "pnpm env use --global 20",
     "typecheck": "turbo run typecheck",
     "knip": "knip",
-    "release": "changeset version"
+    "release": "turbo build && changeset version"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.7.3",

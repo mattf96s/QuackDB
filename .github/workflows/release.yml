@@ -9,6 +9,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   release:
+    if: ${{ github.repository_owner == 'mattf96s' }}
     name: Release
     runs-on: ubuntu-latest
     steps:
@@ -17,6 +18,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
+        with:
+          version: 9
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
@@ -26,28 +29,15 @@ jobs:
           cache: "pnpm"
 
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Create Release Pull Request
         uses: changesets/action@v1
         id: changesets
         with:
-          commit: "chore: publish new release"
-          title: "chore: publish new release"
+          commit: "chore(release): version packages"
+          title: "chore(release): version packages"
+          publish: pnpm release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Get current branch
-        id: get_branch
-        run: echo "CURRENT_BRANCH=$(git branch --show-current)" >> $GITHUB_ENV
-
-      - name: Update lock file
-        if: env.CURRENT_BRANCH == 'changeset-release/main'
-        run: pnpm install --lockfile-only
-
-      - name: Commit lock file
-        if: env.CURRENT_BRANCH == 'changeset-release/main'
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: update lock file"
-          branch: changeset-release/main
+          NODE_ENV: "production"
