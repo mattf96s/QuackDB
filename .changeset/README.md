@@ -6,3 +6,7 @@ find the full documentation for it [in our repository](https://github.com/change
 
 We have a quick list of common questions to get you started engaging with this project in
 [our documentation](https://github.com/changesets/changesets/blob/main/docs/common-questions.md)
+
+## Troubleshooting (not automatically generated)
+
+The github release workflow seems to cause caching issues. See <https://github.com/changesets/changesets/issues/421> for more information. Based on this [comment](https://github.com/changesets/changesets/issues/421#issuecomment-1946660604) we have adjusted the release workflow.
