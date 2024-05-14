@@ -3,11 +3,9 @@ import { z } from "zod";
 
 const envSchema = z.object({
   NODE_ENV: z
-    .enum(["development", "production"] as const)
+    .enum(["development", "staging", "production"] as const)
     .default("development"),
   STAGE: z.string(),
-  REGION: z.literal("eu-west-1"),
-  DOMAIN: z.string().default("localhost:3000"),
   SENTRY_DSN: z.string().default(""),
   SESSION_SECRET: z.string().default(""),
 });
@@ -45,8 +43,6 @@ export function getEnv() {
   return {
     NODE_ENV: process.env.NODE_ENV,
     STAGE: process.env.STAGE,
-    REGION: process.env.REGION,
-    DOMAIN: process.env.DOMAIN,
     SENTRY_DSN: process.env.SENTRY_DSN,
   };
 }
