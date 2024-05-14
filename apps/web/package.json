@@ -48,8 +48,6 @@
     "@remix-run/node": "^2.9.2",
     "@remix-run/react": "^2.9.2",
     "@remix-run/serve": "^2.9.2",
-    "@sentry/profiling-node": "^7.114.0",
-    "@sentry/remix": "^7.114.0",
     "@tanstack/react-table": "^8.17.3",
     "@uidotdev/usehooks": "^2.4.1",
     "@vercel/analytics": "^1.2.2",
@@ -96,7 +94,6 @@
   "devDependencies": {
     "@duckdb/duckdb-wasm": "next",
     "@remix-run/dev": "^2.9.2",
-    "@sentry/vite-plugin": "^2.16.1",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/forms": "^0.5.7",
