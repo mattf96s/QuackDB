@@ -3,12 +3,18 @@
   "version": "0.0.2",
   "private": true,
   "type": "module",
+  "license": "MIT",
   "repository": {
     "url": "https://github.com/mattf96s/quackdb"
   },
   "author": {
-    "name": "Matthew Fainman"
+    "name": "Matthew Fainman",
+    "url": "https://www.matthewfainman.com/"
   },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "description": "QuackDB - An online DuckDB SQL playground and editor",
   "scripts": {
     "build": "turbo run build",
@@ -18,17 +24,25 @@
     "format": "turbo run format",
     "sso": "aws sso login --sso-session=d-93675d34f6",
     "set-node-v": "pnpm env use --global 20",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "knip": "knip",
+    "release": "changeset version"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.7.3",
+    "@changesets/changelog-github": "^0.5.0",
+    "@changesets/cli": "^2.27.1",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
+    "@types/node": "20.12.11",
     "conventional-changelog-conventionalcommits": "^8.0.0",
     "dotenv-cli": "^7.4.2",
+    "husky": "^8.0.3",
+    "knip": "^5.15.1",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
-    "turbo": "^1.13.3"
+    "turbo": "^1.13.3",
+    "typescript": "^5.4.5"
   },
   "engines": {
     "node": ">=20"
