@@ -21,6 +21,7 @@ import GlobalLoader from "./components/global-loader";
 import { Toaster } from "./components/ui/sonner";
 
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/remix";
 import clsx from "clsx";
 import { TailwindIndicator } from "./components/tailwind-indicator";
 import { metaDetails } from "./constants";
@@ -137,6 +138,7 @@ export function LayoutInner(props: { children: React.ReactNode }) {
         </div>
         <TailwindIndicator />
         {isProduction && <VercelAnalytics />}
+        {isProduction && <SpeedInsights />}
         <Toaster />
         <GlobalLoader />
         <script

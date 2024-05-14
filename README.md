@@ -1,5 +1,8 @@
 # QuackDB - Online DuckDB SQL Playground
 
+[![Release](https://github.com/mattf96s/QuackDB/actions/workflows/release.yml/badge.svg)](https://github.com/mattf96s/QuackDB/actions/workflows/release.yml)
+![License](https://img.shields.io/github/license/mattf96s/QuackDB)
+
 QuackDB is a privacy-preserving in-browser DuckDB SQL playground and editor.
 
 Demo available at [quackdb.com](https://www.quackdb.com).
