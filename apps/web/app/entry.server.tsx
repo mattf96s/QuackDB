@@ -23,6 +23,7 @@ export default async function handleRequest(
     <RemixServer
       context={remixContext}
       url={request.url}
+      abortDelay={5_000}
     />
   );
   return vercelHandleRequest(

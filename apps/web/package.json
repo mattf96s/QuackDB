@@ -130,6 +130,6 @@
     "@duckdb/duckdb-wasm": "next"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20 <21"
   }
 }
