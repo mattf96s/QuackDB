@@ -16,7 +16,7 @@
   "compilerOptions": {
     "types": [
       "@vercel/remix",
-      "node",
+      "@remix-run/node",
       "vite/client",
       "@types/wicg-file-system-access"
     ],

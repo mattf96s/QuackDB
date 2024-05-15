@@ -4,7 +4,6 @@
  * and should modify this configuration to best suit your team's needs.
  */
 
-
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
   root: true,
@@ -18,14 +17,13 @@ module.exports = {
   env: {
     browser: true,
     es2023: true,
-    worker: true
+    worker: true,
   },
   reportUnusedDisableDirectives: true,
+  ignorePatterns: ["!**/.server", "!**/.client"],
 
   // Base config
-  extends: [
-    "eslint:recommended"
-  ],
+  extends: ["eslint:recommended"],
   overrides: [
     // React
     {
@@ -83,7 +81,6 @@ module.exports = {
             alwaysTryTypes: true,
           },
         },
-
       },
       extends: [
         "plugin:@typescript-eslint/recommended",
@@ -95,7 +92,12 @@ module.exports = {
         "no-constant-condition": "off",
         "@typescript-eslint/no-unused-vars": [
           "warn",
-          { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
+          {
+            vars: "all",
+            varsIgnorePattern: "^_",
+            args: "after-used",
+            argsIgnorePattern: "^_",
+          },
         ],
         "@typescript-eslint/consistent-type-imports": [
           "warn",
@@ -104,8 +106,8 @@ module.exports = {
             disallowTypeAnnotations: true,
             fixStyle: "inline-type-imports",
           },
-        ]
-      }
+        ],
+      },
     },
 
     // tailwind
@@ -114,9 +116,8 @@ module.exports = {
       plugins: ["tailwindcss"],
       settings: {
         config: "./tailwind.config.js",
-        "callees": ["cn", "cva"],
+        callees: ["cn", "cva"],
       },
-
     },
 
     // Node
