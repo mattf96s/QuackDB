@@ -1,31 +1,19 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "**/.env.*local"
-  ],
-  "globalEnv": [
-    "PORT"
-  ],
   "pipeline": {
     "build": {
       "dependsOn": [
         "^build"
+      ],
+      "outputs": [
+        "build/**"
       ]
     },
     "lint": {
-      "dependsOn": [
-        "^build"
-      ]
+      "cache": false
     },
-    "typecheck": {
-      "dependsOn": [
-        "^build"
-      ]
-    },
+    "typecheck": {},
     "dev": {
-      "dependsOn": [
-        "^build"
-      ],
       "cache": false,
       "persistent": true
     },
