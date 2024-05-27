@@ -1,13 +1,26 @@
 import { RemixServer } from "@remix-run/react";
 import {
-  AppLoadContext,
   handleRequest as vercelHandleRequest,
+  type ActionFunctionArgs,
+  type AppLoadContext,
   type EntryContext,
+  type LoaderFunctionArgs,
 } from "@vercel/remix";
 import { getEnv, init } from "./utils/env.server";
 
 init();
 global.ENV = getEnv();
+
+export function handleError(
+  error: unknown,
+  { request }: LoaderFunctionArgs | ActionFunctionArgs,
+) {
+  if (!request.signal.aborted) {
+    // If you want to log errors to an external service like Sentry, you can
+    // Sentry.captureRemixServerException(error, "remix.server", request);
+    console.error(error);
+  }
+}
 
 export default async function handleRequest(
   request: Request,
@@ -19,7 +32,7 @@ export default async function handleRequest(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   loadContext: AppLoadContext,
 ) {
-  let remixServer = (
+  const remixServer = (
     <RemixServer
       context={remixContext}
       url={request.url}

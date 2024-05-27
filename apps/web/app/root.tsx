@@ -27,38 +27,50 @@ import { TailwindIndicator } from "./components/tailwind-indicator";
 import { metaDetails } from "./constants";
 import { themeSessionResolver } from "./sessions.server";
 import { getEnv } from "./utils/env.server";
-import { useNonce } from "./utils/nonce-provider";
 
-export const links: LinksFunction = () => [
-  {
-    rel: "apple-touch-icon",
-    sizes: "180x180",
-    href: "/apple-touch-icon.png",
-  },
-  {
-    rel: "icon",
-    type: "image/png",
-    sizes: "32x32",
-    href: "/favicon-32x32.png",
-  },
-  {
-    rel: "icon",
-    type: "image/png",
-    sizes: "16x16",
-    href: "/favicon-16x16.png",
-  },
-  {
-    rel: "mask-icon",
-    href: "/safari-pinned-tab.svg",
-    color: "#fb7f44",
-  },
-  {
-    rel: "manifest",
-    href: "/site.webmanifest",
-    crossOrigin: "use-credentials",
-  },
-  { rel: "stylesheet", href: styles },
-];
+export const links: LinksFunction = () => {
+  const preloadedFonts = [
+    "GeistVariableVF.woff2",
+    "JetBrainsMono[wght].woff2",
+    "JetBrainsMono-Italic[wght].woff2",
+  ];
+  return [
+    {
+      rel: "apple-touch-icon",
+      sizes: "180x180",
+      href: "/apple-touch-icon.png",
+    },
+    {
+      rel: "icon",
+      type: "image/png",
+      sizes: "32x32",
+      href: "/favicon-32x32.png",
+    },
+    {
+      rel: "icon",
+      type: "image/png",
+      sizes: "16x16",
+      href: "/favicon-16x16.png",
+    },
+    {
+      rel: "mask-icon",
+      href: "/safari-pinned-tab.svg",
+      color: "#fb7f44",
+    },
+    {
+      rel: "manifest",
+      href: "/site.webmanifest",
+      crossOrigin: "use-credentials",
+    },
+    { rel: "stylesheet", href: styles },
+    ...preloadedFonts.map((font) => ({
+      rel: "preload",
+      as: "font",
+      href: `/fonts/${font}`,
+      crossOrigin: "anonymous" as const,
+    })),
+  ];
+};
 
 export const meta: MetaFunction = () => [
   {
@@ -93,14 +105,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
   };
 }
 
-export function Layout(props: { children: React.ReactNode }) {
+export default function App() {
   const data = useLoaderData<typeof loader>();
   return (
     <ThemeProvider
       specifiedTheme={data.theme}
       themeAction="/action/set-theme"
     >
-      <LayoutInner>{props.children}</LayoutInner>
+      <LayoutInner>
+        <Outlet />
+      </LayoutInner>
     </ThemeProvider>
   );
 }
@@ -108,9 +122,8 @@ export function Layout(props: { children: React.ReactNode }) {
 export function LayoutInner(props: { children: React.ReactNode }) {
   const data = useLoaderData<typeof loader>();
   const [theme] = useTheme();
-  const nonce = useNonce();
 
-  const isProduction = data.ENV.STAGE === "production";
+  const isProduction = data.ENV.VERCEL_ENV === "production";
 
   return (
     <html
@@ -137,59 +150,44 @@ export function LayoutInner(props: { children: React.ReactNode }) {
           </div>
         </div>
         <TailwindIndicator />
-        {isProduction && <VercelAnalytics />}
-        {isProduction && <SpeedInsights />}
         <Toaster />
         <GlobalLoader />
         <script
-          nonce={nonce}
           // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
           dangerouslySetInnerHTML={{
             __html: `window.ENV = ${JSON.stringify(ENV)}`,
           }}
         />
-        <ScrollRestoration nonce={nonce} />
-        <Scripts nonce={nonce} />
+        <ScrollRestoration />
+        <Scripts />
+        {isProduction && <VercelAnalytics />}
+        {isProduction && <SpeedInsights />}
       </body>
     </html>
   );
 }
 
-function App() {
-  return <Outlet />;
-}
-
-export default App;
-
 export function ErrorBoundary() {
   const error = useRouteError();
 
   return (
-    <Layout>
-      <ErrorComp />
-    </Layout>
-  );
-}
-
-function ErrorComp() {
-  const error = useRouteError();
-  let status = 500;
-  let message = "An unexpected error occurred.";
-  if (isRouteErrorResponse(error)) {
-    status = error.status;
-    switch (error.status) {
-      case 404:
-        message = "Page Not Found";
-        break;
-    }
-  } else {
-    console.error(error);
-  }
-
-  return (
-    <div className="container prose py-8">
-      <h1>{status}</h1>
-      <p>{message}</p>
-    </div>
+    <html lang="en">
+      <head>
+        <title>Oops!</title>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <h1>
+          {isRouteErrorResponse(error)
+            ? `${error.status} ${error.statusText}`
+            : error instanceof Error
+              ? error.message
+              : "Unknown Error"}
+        </h1>
+        <Outlet />
+        <Scripts />
+      </body>
+    </html>
   );
 }
