@@ -1,24 +1,37 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "NODE_ENV",
+    "CI",
+    "VERCEL_ENV",
+    "VITE_VERCEL_ENV"
+  ],
+  "globalDependencies": [
+    "**/.env.*local",
+    "pnpm-lock.yaml"
+  ],
   "pipeline": {
     "build": {
       "dependsOn": [
         "^build"
       ],
       "outputs": [
+        ".next/**",
+        "!.next/cache/**",
         "build/**"
       ]
     },
     "lint": {
+      "dependsOn": [
+        "^lint"
+      ],
       "cache": false
     },
-    "typecheck": {},
     "dev": {
       "cache": false,
       "persistent": true
     },
-    "clean": {
-      "cache": false
-    }
+    "typecheck": {},
+    "clean": {}
   }
 }

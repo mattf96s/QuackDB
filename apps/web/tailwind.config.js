@@ -10,6 +10,9 @@ export default {
   darkMode: "selector",
   content: ["./app/**/*.{js,jsx,ts,tsx}"],
   prefix: "",
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   theme: {
     container: {
       center: true,

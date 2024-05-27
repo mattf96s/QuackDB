@@ -3,7 +3,7 @@ import { DragHandleDots2Icon } from "@radix-ui/react-icons";
 import { Loader2 } from "lucide-react";
 import { type editor } from "monaco-editor";
 
-import { Suspense, useRef } from "react";
+import { useRef } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { cn } from "~/lib/utils";
 
@@ -51,21 +51,19 @@ function CurrentEditor() {
   }
 
   return (
-    <Suspense>
-      <Editor
-        height="90vh"
-        defaultLanguage="javascript"
-        defaultValue="// some comment"
-        onMount={handleEditorDidMount}
-        loading={
-          <div className="absolute right-4 top-2 z-10">
-            <Loader2
-              name="loader-circle"
-              className="size-4 animate-spin text-primary"
-            />
-          </div>
-        }
-      />
-    </Suspense>
+    <Editor
+      height="90vh"
+      defaultLanguage="sql"
+      defaultValue="// some comment"
+      onMount={handleEditorDidMount}
+      loading={
+        <div className="absolute right-4 top-2 z-10">
+          <Loader2
+            name="loader-circle"
+            className="size-4 animate-spin text-primary"
+          />
+        </div>
+      }
+    />
   );
 }

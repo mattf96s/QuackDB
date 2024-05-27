@@ -61,7 +61,7 @@
     font-weight: 300 900;
     font-display: swap;
     font-style: normal;
-    src: url("/fonts/Geist/GeistVariableVF.woff2") format("woff2");
+    src: url("/fonts/GeistVariableVF.woff2") format("woff2");
   }
   @font-face {
     font-family: "jetbrains-mono";
@@ -69,7 +69,7 @@
     font-style: normal;
     font-display: swap;
     font-stretch: normal;
-    src: url("/fonts/JetBrainsMono/JetBrainsMono[wght].woff2") format("woff2");
+    src: url("/fonts/JetBrainsMono[wght].woff2") format("woff2");
   }
 
   @font-face {
@@ -78,8 +78,7 @@
     font-style: italic;
     font-display: swap;
     font-stretch: normal;
-    src: url("/fonts/JetBrainsMono/JetBrainsMono-Italic[wght].woff2")
-      format("woff2");
+    src: url("/fonts/JetBrainsMono-Italic[wght].woff2") format("woff2");
   }
   * {
     @apply border-border;

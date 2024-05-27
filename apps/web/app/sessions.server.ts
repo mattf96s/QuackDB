@@ -2,8 +2,15 @@ import { createCookieSessionStorage } from "@vercel/remix";
 import { createThemeSessionResolver } from "remix-themes";
 
 // You can default to 'development' if process.env.NODE_ENV is not set
-const isProduction = process.env.STAGE === "production";
+const isProduction = process.env.VERCEL === "1";
 
+const domain = isProduction
+  ? process.env.VERCEL_PROJECT_PRODUCTION_URL
+  : "localhost:3000";
+
+/**
+ * Theme session storage
+ */
 const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: "theme",
@@ -11,7 +18,7 @@ const sessionStorage = createCookieSessionStorage({
     httpOnly: true,
     sameSite: "lax",
     secrets: [process.env.SESSION_SECRET],
-    ...(isProduction ? { domain: "www.quackdb.com", secure: true } : {}),
+    ...(isProduction ? { domain, secure: true } : {}),
   },
 });
 

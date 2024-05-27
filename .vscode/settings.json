@@ -19,6 +19,12 @@
       "mode": "auto"
     }
   ],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+  ],
   "files.associations": {
     "*.css": "tailwindcss",
     "*.postcss": "tailwindcss",
@@ -82,6 +88,7 @@
     "editor.formatOnSave": true
   },
   "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "typescript.preferences.importModuleSpecifier": "non-relative",
   "[ignore]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },

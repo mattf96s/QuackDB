@@ -2,12 +2,14 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "staging", "production"] as const)
-    .default("development"),
-  STAGE: z.string(),
-  SENTRY_DSN: z.string().default(""),
   SESSION_SECRET: z.string().default(""),
+
+  // vercel specific (optional because it's not available in local development)
+  VERCEL: z.string().optional(), // An indicator to show that System Environment Variables have been exposed to your project's Deployments. Example: 1.
+  VERCEL_ENV: z.string().optional(), // The Environment that the app is deployed and running on. The value can be either production, preview, or development.
+  VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(), // A production domain name of the project. We select the shortest production custom domain, or vercel.app domain if no custom domain is available. Note, that this is always set, even in preview deployments. This is useful to reliably generate links that point to production such as OG-image URLs. The value does not include the protocol scheme https://.
+
+  VERCEL_GIT_COMMIT_SHA: z.string().optional(), // The Git commit SHA of the deployment.
 });
 
 declare global {
@@ -21,12 +23,12 @@ export function init() {
   const parsed = envSchema.safeParse(process.env);
 
   if (parsed.success === false) {
-    console.error(
-      "❌ Invalid environment variables:",
-      parsed.error.flatten().fieldErrors,
-    );
+    const errors = parsed.error.flatten().fieldErrors;
+    console.error("❌ Invalid environment variables:", errors);
 
-    throw new Error("Invalid environment variables");
+    throw new Error(
+      `Invalid environment variables\n${JSON.stringify(errors, null, 2)}`,
+    );
   }
 }
 
@@ -42,8 +44,9 @@ export function init() {
 export function getEnv() {
   return {
     NODE_ENV: process.env.NODE_ENV,
-    STAGE: process.env.STAGE,
-    SENTRY_DSN: process.env.SENTRY_DSN,
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    VERCEL_PROJECT_PRODUCTION_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA,
   };
 }
 

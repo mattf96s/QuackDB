@@ -9,23 +9,31 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 installGlobals();
 
-export default defineConfig({
-  plugins: [
-    remix({
-      future: {
-        v3_throwAbortReason: true,
-        v3_fetcherPersist: true,
-        v3_relativeSplatPath: true,
-      },
-      presets: [vercelPreset()],
-    }),
-    tsconfigPaths(),
-  ],
-  server: {
-    port: 3000,
-    headers: {
-      "Cross-Origin-Opener-Policy": " same-origin",
-      "Cross-Origin-Embedder-Policy": "require-corp",
-    },
-  },
+export default defineConfig(({ mode }) => {
+  const isProduction = mode === "production";
+  return {
+    plugins: [
+      remix({
+        future: {
+          v3_throwAbortReason: true,
+          v3_fetcherPersist: true,
+          v3_relativeSplatPath: true,
+        },
+        presets: [vercelPreset()],
+      }),
+      tsconfigPaths(),
+    ],
+    ...(isProduction
+      ? {}
+      : {
+          server: {
+            port: 3000,
+            // needed for cross-origin isolation to make use of SharedArrayBuffer for using multi cores in DuckDB.
+            // headers: {
+            //   "Cross-Origin-Opener-Policy": " same-origin",
+            //   "Cross-Origin-Embedder-Policy": "require-corp",
+            // },
+          },
+        }),
+  };
 });
