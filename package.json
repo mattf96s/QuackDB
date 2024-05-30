@@ -36,7 +36,7 @@
     "conventional-changelog-conventionalcommits": "^8.0.0",
     "dotenv-cli": "^7.4.2",
     "husky": "^8.0.3",
-    "knip": "^5.17.0",
+    "knip": "^5.17.3",
     "lint-staged": "^15.2.5",
     "prettier": "^3.2.5",
     "turbo": "^1.13.3",

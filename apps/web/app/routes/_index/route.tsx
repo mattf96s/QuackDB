@@ -1,7 +1,6 @@
 import {
   type ClientLoaderFunctionArgs,
   isRouteErrorResponse,
-  Link,
   useLoaderData,
   useRouteError,
 } from "@remix-run/react";
@@ -11,7 +10,6 @@ import { Loader2 } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -140,12 +138,6 @@ function NotSupportedModal() {
           <p>
             Your browser does not support transferring file system file handles.
             <br />
-            <Link
-              to="/lite"
-              className="underline"
-            >
-              Try the Lite Version
-            </Link>
           </p>
         </div>
       )}
@@ -168,19 +160,10 @@ function NotSupportedModal() {
               </a>
               .
               <br />
-              Would you like to try the Lite Version?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Link
-                to="/lite"
-                className="btn btn-primary"
-              >
-                Lite Version
-              </Link>
-            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
