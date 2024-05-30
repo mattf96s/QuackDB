@@ -3,7 +3,6 @@ import { useState } from "react";
 import NavBar from "~/components/navbar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { StyledLink } from "~/components/ui/link";
 import {
   Popover,
   PopoverContent,
@@ -107,19 +106,6 @@ function MobileNav() {
 
               <Separator />
               <Settings isOpen={true} />
-            </div>
-            <div className="flex grow flex-col justify-end space-y-4">
-              <Separator />
-              <p>
-                <span className="font-semibold">Lite Mode</span> is a simplified
-                version of the playground.
-              </p>
-              <StyledLink
-                to="/lite"
-                className="text-sm font-medium"
-              >
-                Try Lite Mode
-              </StyledLink>
             </div>
           </div>
         </SheetContent>
