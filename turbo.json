@@ -10,7 +10,7 @@
     "**/.env.*local",
     "pnpm-lock.yaml"
   ],
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": [
         "^build"
