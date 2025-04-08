@@ -1,26 +1,38 @@
+"use client";
+
 import { Moon, Sun } from "lucide-react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 
-const MotionSun = motion(Sun);
-const MotionMoon = motion(Moon);
-const MotionButton = motion(Button);
+const MotionSun = motion.create(Sun);
+const MotionMoon = motion.create(Moon);
+const MotionButton = motion.create(Button);
 
 export default function ModeToggle() {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false); // see https://github.com/pacocoursey/next-themes#avoid-hydration-mismatch
 
   const isDark = theme === "dark";
+
+  // useEffect only runs on the client, so now we can safely show the UI
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <MotionButton
       initial={false}
       variant="outline"
       size="icon"
-      onClick={() => setTheme((s) => (s === "dark" ? "light" : "dark"))}
+      type="button"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
     >
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         {isDark ? (
           <MotionMoon
             initial={{
@@ -35,7 +47,11 @@ export default function ModeToggle() {
               },
             }}
             key="moon"
-            className="absolute h-[1.2rem] w-[1.2rem]"
+            style={{
+              position: "absolute",
+              width: "1.2rem",
+              height: "1.2rem",
+            }}
           />
         ) : (
           <MotionSun
@@ -50,8 +66,12 @@ export default function ModeToggle() {
                 type: "spring",
               },
             }}
+            style={{
+              position: "absolute",
+              width: "1.2rem",
+              height: "1.2rem",
+            }}
             key="sun"
-            className="absolute h-[1.2rem] w-[1.2rem]"
           />
         )}
       </AnimatePresence>
