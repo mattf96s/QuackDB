@@ -1,10 +1,4 @@
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from "lucide-react";
-import { Button } from "~/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -14,8 +8,14 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { usePagination } from "~/context/pagination/usePagination";
+} from "@/components/ui/select";
+import { usePagination } from "@/context/pagination/usePagination";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
 
 /**
  * Pagination toolbar.
@@ -96,10 +96,7 @@ function PageSize() {
   };
 
   return (
-    <Select
-      value={`${limit}`}
-      onValueChange={onValueChange}
-    >
+    <Select value={`${limit}`} onValueChange={onValueChange}>
       <SelectTrigger className="h-8 w-20">
         <SelectValue placeholder="Page size" />
       </SelectTrigger>

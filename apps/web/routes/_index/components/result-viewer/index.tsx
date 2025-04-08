@@ -1,27 +1,27 @@
+import ErrorNotification from "@/components/error";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PaginationProvider } from "@/context/pagination/provider";
+import { useQuery } from "@/context/query/useQuery";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { Loader2 } from "lucide-react";
 import { Suspense, lazy } from "react";
-import ErrorNotification from "~/components/error";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { PaginationProvider } from "~/context/pagination/provider";
-import { useQuery } from "~/context/query/useQuery";
 
 const LazyJSONViewer = lazy(() =>
   import("./components/json-viewer").then((module) => ({
     default: module.JSONViewer,
-  })),
+  }))
 );
 
 const LazyChartViewer = lazy(() =>
   import("./components/chart").then((module) => ({
     default: module.ChartContainer,
-  })),
+  }))
 );
 
 const LazyTableViewer = lazy(() =>
   import("./components/table").then((module) => ({
     default: module.TableViewer,
-  })),
+  }))
 );
 
 type ResultView = "table" | "chart" | "json";
@@ -32,7 +32,7 @@ type ResultView = "table" | "chart" | "json";
 export default function ResultsView() {
   const [tab, setTab] = useLocalStorage<ResultView>(
     `results-viewer-tab`,
-    `table`,
+    `table`
   );
 
   const { meta } = useQuery();

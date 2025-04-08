@@ -1,5 +1,5 @@
+import type { ResultColumn } from "@/utils/arrow/helpers";
 import type * as Plot from "@observablehq/plot";
-import type { ResultColumn } from "~/utils/arrow/helpers";
 
 export type ChartState = Pick<
   Plot.AutoOptions,

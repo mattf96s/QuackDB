@@ -1,6 +1,6 @@
+import PanelHandle from "@/components/panel-handle";
+import { useSession } from "@/context/session/useSession";
 import { PanelGroup } from "react-resizable-panels";
-import PanelHandle from "~/components/panel-handle";
-import { useSession } from "~/context/session/useSession";
 import DataSources from "./components/data-sources";
 import EditorSources from "./components/editor-files";
 import QueryHistory from "./components/query-history";

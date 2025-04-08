@@ -1,5 +1,3 @@
-import { format } from "date-fns";
-import { useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -7,11 +5,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table";
-import { usePagination } from "~/context/pagination/usePagination";
-import { type QueryResponse } from "~/types/query";
-import { getArrowTableSchema } from "~/utils/arrow/helpers";
-import { getColumnType } from "~/utils/duckdb/helpers/getColumnType";
+} from "@/components/ui/table";
+import { usePagination } from "@/context/pagination/usePagination";
+import { type QueryResponse } from "@/types/query";
+import { getArrowTableSchema } from "@/utils/arrow/helpers";
+import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
+import { format } from "date-fns";
+import { useMemo } from "react";
 
 export default function DataGrid(props: QueryResponse) {
   const { limit, offset } = usePagination();

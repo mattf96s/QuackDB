@@ -1,6 +1,6 @@
 // // https://github.com/TobikoData/sqlmesh/blob/main/web/client/src/library/components/table/help.ts
 // import { type Table } from "apache-arrow";
-// import { isNil } from "~/utils";
+// import { isNil } from "@/utils";
 
 // type TableCellValue = number | string | null;
 // export type TableRow = Record<string, TableCellValue>;

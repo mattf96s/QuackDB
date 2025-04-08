@@ -1,6 +1,6 @@
+import type { DuckDBInstance } from "@/modules/duckdb-singleton";
 import { matchSorter } from "match-sorter";
 import { languages, type Range } from "monaco-editor";
-import type { DuckDBInstance } from "~/modules/duckdb-singleton";
 
 /**
  * Starting words for the suggestions (when query is empty).

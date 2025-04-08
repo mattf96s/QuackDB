@@ -1,4 +1,7 @@
+import { useDB } from "@/context/db/useDB";
+import { useQuery } from "@/context/query/useQuery";
 import { cn } from "@/lib/utils";
+import { formatSQL } from "@/utils/sql_fmt";
 import MonacoEditor, {
   type Monaco,
   type EditorProps as MonacoEditorProps,
@@ -13,6 +16,7 @@ import {
   languages,
 } from "monaco-editor";
 import "monaco-editor/esm/vs/basic-languages/sql/sql.contribution";
+import { useTheme } from "next-themes";
 import {
   forwardRef,
   useEffect,
@@ -20,10 +24,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { useTheme } from "remix-themes";
-import { useDB } from "~/context/db/useDB";
-import { useQuery } from "~/context/query/useQuery";
-import { formatSQL } from "~/utils/sql_fmt";
 import { SuggestionMaker } from "./suggestions";
 import { sqlConf, sqlDef } from "./syntax";
 
@@ -45,7 +45,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
   const { onRunQuery } = useQuery();
   const { db } = useDB();
 
-  const [theme] = useTheme();
+  const { theme } = useTheme();
 
   const language = props.language ?? "sql";
   const isDark = theme === "dark";
@@ -732,5 +732,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     />
   );
 });
+
+Editor.displayName = "Editor";
 
 export default Editor;

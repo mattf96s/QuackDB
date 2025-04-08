@@ -1,15 +1,15 @@
 import type { HighlighterCore } from "shiki/core";
-import { getHighlighterCore } from "shiki/core";
-import getWasm from "shiki/wasm";
+import { createHighlighterCore } from "shiki/core";
+import { createOnigurumaEngine } from "shiki/engine/oniguruma";
 
 let shiki: HighlighterCore | undefined;
 
-export const getHighlighter = async () => {
+export const createHighlighter = async () => {
   if (shiki) return shiki;
 
-  shiki = await getHighlighterCore({
+  shiki = await createHighlighterCore({
     langs: [import("shiki/langs/sql.mjs"), import("shiki/langs/json.mjs")],
-    loadWasm: getWasm,
+    engine: createOnigurumaEngine(() => import("shiki/wasm")),
     themes: [
       import("shiki/themes/github-light.mjs"),
       import("shiki/themes/aurora-x.mjs"),

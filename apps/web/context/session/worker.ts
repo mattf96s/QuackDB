@@ -1,9 +1,9 @@
 /// <reference lib="webworker" />
 
+import { type CodeSource } from "@/types/files/code-source";
+import { type Dataset } from "@/types/files/dataset";
 import * as Comlink from "comlink";
 import { clear } from "idb-keyval";
-import { type CodeSource } from "~/types/files/code-source";
-import { type Dataset } from "~/types/files/dataset";
 import { newfileContents } from "./data/newfile-content";
 import type {
   AddDataSourceProps,
@@ -170,7 +170,7 @@ const onInitialize = async (sessionId: string) => {
 };
 
 function getMimeType(
-  name: string,
+  name: string
 ):
   | Pick<Dataset, "mimeType" | "kind" | "ext">
   | Pick<CodeSource, "mimeType" | "kind" | "ext">
@@ -238,7 +238,7 @@ type AddDataSourceBase = {
 
 const findUniqueName = async (
   directory: FileSystemDirectoryHandle,
-  name: string,
+  name: string
 ) => {
   let counter = 0;
   const paths = name.split(".");
@@ -312,7 +312,7 @@ const onAddDataSource = async ({ entries, sessionId }: AddDataSourceBase) => {
         if (meta.ext === "sql")
           throw new Error("SQL files are not supported as a data source.");
         const file = await new Promise<File>((resolve, reject) =>
-          entry.file(resolve, reject),
+          entry.file(resolve, reject)
         );
 
         const draftHandle = await directory.getFileHandle(filename, {

@@ -1,16 +1,15 @@
+import Editor from "@/components/monaco";
+import { useEditorSettings } from "@/context/editor-settings/useEditor";
+import { useEditor } from "@/context/editor/useEditor";
+import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
+import { formatSQL } from "@/utils/sql_fmt";
 import type { OnChange } from "@monaco-editor/react";
-import { DragHandleDots2Icon } from "@radix-ui/react-icons";
-import { Loader2 } from "lucide-react";
+import { GripHorizontal, Loader2 } from "lucide-react";
 import { Range, type editor } from "monaco-editor";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useSpinDelay } from "spin-delay";
-import Editor from "~/components/monaco";
-import { useEditorSettings } from "~/context/editor-settings/useEditor";
-import { useEditor } from "~/context/editor/useEditor";
-import { useSession } from "~/context/session/useSession";
-import { formatSQL } from "~/utils/sql_fmt";
 import ResultsView from "../result-viewer";
 import OpenFileTabs from "./components/open-files";
 
@@ -28,7 +27,7 @@ function EditorPanel() {
         )}
       >
         <div className="z-10 flex h-4 w-3 items-center justify-center rounded-sm border bg-border">
-          <DragHandleDots2Icon className="size-2.5" />
+          <GripHorizontal className="size-2.5" />
         </div>
       </PanelResizeHandle>
       <Panel minSize={10}>

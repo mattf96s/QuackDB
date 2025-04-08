@@ -1,11 +1,11 @@
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+import { useQuery } from "@/context/query/useQuery";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { AlertOctagon, ChevronDown } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useState } from "react";
-import { useTheme } from "remix-themes";
-import { useQuery } from "~/context/query/useQuery";
 import { ScrollArea } from "./ui/scroll-area";
 
 const prettify = (str: string) => {
@@ -24,7 +24,7 @@ const prettify = (str: string) => {
 export default function ErrorNotification(props: { error: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const { meta } = useQuery();
-  const [theme] = useTheme();
+  const { theme } = useTheme();
   const isDark = theme === "dark";
 
   const error = prettify(props.error);
@@ -50,6 +50,7 @@ export default function ErrorNotification(props: { error: string }) {
 
         <div className="py-3">
           <button
+            type="button"
             onClick={() => setIsOpen(!isOpen)}
             className="flex items-center gap-1 text-xs font-semibold"
           >

@@ -1,7 +1,7 @@
 // import lz from "lz-string";
 // import { Suspense, useCallback, useEffect, useState } from "react";
 // import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-// import { Textarea } from "~/components/ui/textarea";
+// import { Textarea } from "@/components/ui/textarea";
 // import { localStore } from "./utils/share";
 
 // const getStoredCode = (location: Location) => {

@@ -1,11 +1,6 @@
-import { Button } from "~/components/ui/button";
+import { Button } from "@/components/ui/button";
 
-import { ChevronDown, Play } from "lucide-react";
-import { useCallback, useState, type MouseEventHandler } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
-import { toast } from "sonner";
-import { useSpinDelay } from "spin-delay";
-import { Tag } from "~/components/tag";
+import { Tag } from "@/components/tag";
 import {
   Menubar,
   MenubarContent,
@@ -16,11 +11,16 @@ import {
   MenubarSubContent,
   MenubarSubTrigger,
   MenubarTrigger,
-} from "~/components/ui/menubar";
-import { Separator } from "~/components/ui/separator";
-import { useDB } from "~/context/db/useDB";
-import { useEditor } from "~/context/editor/useEditor";
-import { useQuery } from "~/context/query/useQuery";
+} from "@/components/ui/menubar";
+import { Separator } from "@/components/ui/separator";
+import { useDB } from "@/context/db/useDB";
+import { useEditor } from "@/context/editor/useEditor";
+import { useQuery } from "@/context/query/useQuery";
+import { ChevronDown, Play } from "lucide-react";
+import { useCallback, useState, type MouseEventHandler } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+import { toast } from "sonner";
+import { useSpinDelay } from "spin-delay";
 
 export default function Toolbar() {
   const { status, onCancelQuery, onRunQuery } = useQuery();
@@ -79,7 +79,7 @@ export default function Toolbar() {
         onRun();
       }
     },
-    [status, onCancelQuery, onRun],
+    [status, onCancelQuery, onRun]
   );
 
   const isLoading = useSpinDelay(status === "RUNNING", {
@@ -110,29 +110,17 @@ export default function Toolbar() {
             className="inline-flex h-8 items-center justify-center whitespace-nowrap px-3 text-xs font-semibold transition-colors hover:bg-[#2b9a66] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
           >
             <span className="hidden sm:block">Run Query</span>
-            <Play
-              size={16}
-              className="block sm:hidden"
-            />
+            <Play size={16} className="block sm:hidden" />
           </button>
-          <Separator
-            orientation="vertical"
-            className="h-full"
-          />
+          <Separator orientation="vertical" className="h-full" />
           <MenubarTrigger className="inline-flex size-full items-center justify-center rounded-none px-1.5 hover:bg-[#2b9a66]">
             <ChevronDown size={16} />
           </MenubarTrigger>
         </div>
         <MenubarContent className="mr-12">
-          <MenubarItem
-            disabled
-            className="inline-flex items-center"
-          >
+          <MenubarItem disabled className="inline-flex items-center">
             <span className="mr-2">Import Session</span>
-            <Tag
-              color="amber"
-              variant="small"
-            >
+            <Tag color="amber" variant="small">
               soon
             </Tag>
           </MenubarItem>
@@ -142,18 +130,9 @@ export default function Toolbar() {
             <MenubarSubContent>
               <Exporter ext="CSV" />
               <Exporter ext="PARQUET" />
-              <Exporter
-                ext="JSON"
-                disabled
-              />
-              <Exporter
-                ext="DuckDB"
-                disabled
-              />
-              <Exporter
-                ext="SQL"
-                disabled
-              />
+              <Exporter ext="JSON" disabled />
+              <Exporter ext="DuckDB" disabled />
+              <Exporter ext="SQL" disabled />
 
               <ExportToCopy />
             </MenubarSubContent>
@@ -223,7 +202,7 @@ function Exporter(props: ExporterProps) {
         }
 
         await db.query(
-          `CREATE OR REPLACE TABLE '${tableName}' AS (${selectQuery})`,
+          `CREATE OR REPLACE TABLE '${tableName}' AS (${selectQuery})`
         );
 
         let sql: string = "";
@@ -248,7 +227,7 @@ function Exporter(props: ExporterProps) {
         const _db = await db._getDB();
 
         const buffer = await _db.copyFileToBuffer(
-          `output.${format.toLowerCase()}`,
+          `output.${format.toLowerCase()}`
         );
 
         // Generate a download link (ensure to revoke the object URL after the download).
@@ -284,19 +263,13 @@ function Exporter(props: ExporterProps) {
         setIsExporting(false);
       }
     },
-    [db, lastRunSQL],
+    [db, lastRunSQL]
   );
   return (
-    <MenubarItem
-      disabled={disabled}
-      onSelect={async () => await onExport(ext)}
-    >
+    <MenubarItem disabled={disabled} onSelect={async () => await onExport(ext)}>
       <span className="mr-2">{ext}</span>
       {disabled && (
-        <Tag
-          color="amber"
-          variant="small"
-        >
+        <Tag color="amber" variant="small">
           soon
         </Tag>
       )}
@@ -323,7 +296,7 @@ function ExportToCopy() {
         });
       }
     },
-    [table],
+    [table]
   );
 
   return <MenubarItem onClick={onCopy}>Copy Rows</MenubarItem>;

@@ -1,7 +1,7 @@
+import { useSession } from "@/context/session/useSession";
+import { DuckDBInstance } from "@/modules/duckdb-singleton";
+import { type Dataset } from "@/types/files/dataset";
 import { useEffect, useMemo, useRef } from "react";
-import { useSession } from "~/context/session/useSession";
-import { DuckDBInstance } from "~/modules/duckdb-singleton";
-import { type Dataset } from "~/types/files/dataset";
 import { DBContext } from "./context";
 
 type DBProviderProps = { children: React.ReactNode };
@@ -76,7 +76,7 @@ function DbProvider(props: DBProviderProps) {
     () => ({
       db: db.current,
     }),
-    [],
+    []
   );
   return (
     <DBContext.Provider value={value}>{props.children}</DBContext.Provider>

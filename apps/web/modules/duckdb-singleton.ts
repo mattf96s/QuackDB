@@ -1,17 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { CACHE_KEYS } from "@/constants";
+import type { QueryMeta, QueryResponse } from "@/types/query";
+import { getArrowTableSchema } from "@/utils/arrow/helpers";
+import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
 import type { AsyncDuckDB } from "@duckdb/duckdb-wasm";
 import * as duckdb from "@duckdb/duckdb-wasm";
 import {
-  Table,
   type AsyncRecordBatchStreamReader,
   type RecordBatch,
   type StructRow,
+  Table,
   type TypeMap,
 } from "apache-arrow";
-import { CACHE_KEYS } from "~/constants.client";
-import { type QueryMeta, type QueryResponse } from "~/types/query";
-import { getArrowTableSchema } from "~/utils/arrow/helpers";
-import { getColumnType } from "~/utils/duckdb/helpers/getColumnType";
 
 type MakeDBProps = {
   logLevel?: duckdb.LogLevel;
@@ -32,7 +31,7 @@ const makeDB = async ({ logLevel = duckdb.LogLevel.DEBUG }: MakeDBProps) => {
   const worker_url = URL.createObjectURL(
     new Blob([`importScripts("${bundle.mainWorker}");`], {
       type: "text/javascript",
-    }),
+    })
   );
 
   // Instantiate the asynchronus version of DuckDB-wasm
@@ -127,7 +126,7 @@ export class DuckDBInstance {
   // sources
   #sources: DataSource[] = [];
 
-  #logLevel: duckdb.LogLevel = duckdb.LogLevel.ERROR;
+  #logLevel: duckdb.LogLevel = duckdb.LogLevel.NONE;
   #extensions: DuckDBExtension[] = ["icu"]; // default is to load the icu extension
 
   // Cache settings
@@ -223,7 +222,7 @@ export class DuckDBInstance {
               source.path,
               source.url,
               duckdb.DuckDBDataProtocol.HTTP,
-              false,
+              false
             );
             break;
           }
@@ -232,7 +231,7 @@ export class DuckDBInstance {
               source.path,
               await source.handle.getFile(),
               duckdb.DuckDBDataProtocol.BROWSER_FILEREADER,
-              true,
+              true
             );
             break;
           }
@@ -267,7 +266,7 @@ export class DuckDBInstance {
     const queryCache = caches
       .delete(this.#queryCache)
       .catch((e) =>
-        console.error("Failed to delete query cache in disposal: ", e),
+        console.error("Failed to delete query cache in disposal: ", e)
       );
 
     await Promise.all([queryCache]);
@@ -367,7 +366,7 @@ export class DuckDBInstance {
       fileName,
       file,
       duckdb.DuckDBDataProtocol.BROWSER_FILEREADER,
-      true,
+      true
     );
   }
 
@@ -392,7 +391,7 @@ export class DuckDBInstance {
       fileName,
       url,
       duckdb.DuckDBDataProtocol.HTTP,
-      false,
+      false
     );
   }
 
@@ -421,10 +420,9 @@ export class DuckDBInstance {
    * @source [Observable stdlib](https://github.com/observablehq/stdlib/blob/main/src/duckdb.js)
    */
 
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   public async queryStream<T extends TypeMap = any>(
     query: string,
-    params?: Array<unknown>,
+    params?: Array<unknown>
   ) {
     // #TODO: see if we can reuse connections as in the async generator we don't have access to parent this context.
     const connection = await this.#connect();
@@ -438,9 +436,13 @@ export class DuckDBInstance {
       if (params && params.length > 0) {
         const statement = await connection.prepare(query);
 
-        reader = await statement.send(...params);
+        reader = (await statement.send(
+          ...params
+        )) as unknown as AsyncRecordBatchStreamReader<T>; // TODO: try fix this
       } else {
-        reader = await connection.send(query);
+        reader = (await connection.send(
+          query
+        )) as unknown as AsyncRecordBatchStreamReader<T>; // TODO: try fix this
       }
       batch = await reader.next();
       if (batch.done) throw new Error("missing first batch");
@@ -565,6 +567,7 @@ export class DuckDBInstance {
       };
 
       const results: QueryResponse = {
+        // @ts-expect-error apache-arrow mismatched version issue TODO
         table,
         meta,
         count: table.numRows,
@@ -680,7 +683,9 @@ export class DuckDBInstance {
     const encoder = new TextEncoder();
     const data = encoder.encode(query);
     const hash = await crypto.subtle.digest("SHA-256", data);
-    const cacheKey = `query-${this.#session ?? ""}-${new Uint8Array(hash).join("-")}`;
+    const cacheKey = `query-${this.#session ?? ""}-${new Uint8Array(hash).join(
+      "-"
+    )}`;
     return cacheKey;
   }
 
@@ -762,31 +767,31 @@ export class DuckDBInstance {
       switch (format) {
         case "PARQUET": {
           await conn.query(
-            `COPY (SELECT * FROM '${tableName}') TO '${filename}.parquet' (FORMAT 'parquet');`,
+            `COPY (SELECT * FROM '${tableName}') TO '${filename}.parquet' (FORMAT 'parquet');`
           );
           break;
         }
         case "CSV": {
           await conn.query(
-            `COPY (SELECT * FROM '${tableName}') TO '${filename}.csv' (FORMAT 'csv');`,
+            `COPY (SELECT * FROM '${tableName}') TO '${filename}.csv' (FORMAT 'csv');`
           );
           break;
         }
         case "JSON": {
           await conn.query(
-            `COPY (SELECT * FROM '${tableName}') TO '${filename}.json' (FORMAT 'json');`,
+            `COPY (SELECT * FROM '${tableName}') TO '${filename}.json' (FORMAT 'json');`
           );
           break;
         }
         case "ARROW": {
           await conn.query(
-            `COPY (SELECT * FROM '${tableName}') TO '${filename}.arrow' (FORMAT 'arrow');`,
+            `COPY (SELECT * FROM '${tableName}') TO '${filename}.arrow' (FORMAT 'arrow');`
           );
           break;
         }
         case "DUCKDB": {
           await conn.query(
-            `COPY (SELECT * FROM '${tableName}') TO '${filename}.db' (FORMAT 'duckdb');`,
+            `COPY (SELECT * FROM '${tableName}') TO '${filename}.db' (FORMAT 'duckdb');`
           );
           break;
         }
@@ -797,7 +802,7 @@ export class DuckDBInstance {
       const db = await this._getDB();
 
       const buffer = await db.copyFileToBuffer(
-        `${filename}.${format.toLowerCase()}`,
+        `${filename}.${format.toLowerCase()}`
       );
 
       // Generate a download link (ensure to revoke the object URL after the download).

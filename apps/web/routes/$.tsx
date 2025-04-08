@@ -1,8 +1,8 @@
+import NavBar from "@/components/navbar";
+import ModeToggle from "@/components/theme-toggle";
+import { StyledLink } from "@/components/ui/link";
 import { type MetaFunction } from "@vercel/remix";
 import { motion } from "framer-motion";
-import NavBar from "~/components/navbar";
-import ModeToggle from "~/components/theme-toggle";
-import { StyledLink } from "~/components/ui/link";
 
 export async function loader() {
   throw new Response("Not found", { status: 404 });

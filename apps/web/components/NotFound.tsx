@@ -1,4 +1,5 @@
-import { Link } from "@remix-run/react";
+/* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 import { Suspense } from "react";
 
 export default function NotFound() {
@@ -16,7 +17,7 @@ export default function NotFound() {
         </p>
         <div className="mt-10">
           <Link
-            to="/"
+            href="/"
             className="text-sm font-semibold leading-7 text-secondary-foreground"
           >
             <span aria-hidden="true">&larr;</span> Back to home

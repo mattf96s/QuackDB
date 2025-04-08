@@ -1,4 +1,4 @@
-import { type DuckDBInstance } from "~/modules/duckdb-singleton";
+import { type DuckDBInstance } from "@/modules/duckdb-singleton";
 
 /**
  * Return a mapping from column names to data types, or the empty Map if no such table columns exist.
@@ -7,7 +7,7 @@ import { type DuckDBInstance } from "~/modules/duckdb-singleton";
  */
 export async function columnMapper(
   query: DuckDBInstance["fetchResults"],
-  name: string,
+  name: string
 ): Promise<Map<string, string>> {
   const results = await query({
     query: `select column_name, data_type from information_schema.columns where table_name = '${name}'`,

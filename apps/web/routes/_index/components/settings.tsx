@@ -1,5 +1,3 @@
-import { Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,14 +8,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
-import { Button } from "~/components/ui/button";
-import { Label } from "~/components/ui/label";
-import { Separator } from "~/components/ui/separator";
-import { Switch } from "~/components/ui/switch";
-import { useDB } from "~/context/db/useDB";
-import { useEditorSettings } from "~/context/editor-settings/useEditor";
-import { useSession } from "~/context/session/useSession";
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { useDB } from "@/context/db/useDB";
+import { useEditorSettings } from "@/context/editor-settings/useEditor";
+import { useSession } from "@/context/session/useSession";
+import { Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function Settings(props: { isOpen: boolean }) {
   const { isOpen } = props;
@@ -49,10 +49,7 @@ export default function Settings(props: { isOpen: boolean }) {
         {/* whether to use cached responses */}
 
         <div className="flex items-center justify-between space-x-2">
-          <Label
-            htmlFor="cache"
-            className="flex flex-col space-y-1"
-          >
+          <Label htmlFor="cache" className="flex flex-col space-y-1">
             <span>Cache</span>
             <span className="font-normal leading-snug text-muted-foreground">
               Enable caching of query results to speed up subsequent queries.
@@ -79,10 +76,7 @@ function FormatOption() {
   const { shouldFormat, toggleShouldFormat } = useEditorSettings();
   return (
     <>
-      <Label
-        htmlFor="format"
-        className="flex flex-col space-y-1"
-      >
+      <Label htmlFor="format" className="flex flex-col space-y-1">
         <span>Format</span>
         <span className="font-normal leading-snug text-muted-foreground">
           Format SQL queries on save.
@@ -115,10 +109,7 @@ function ClearSession() {
   return (
     <AlertDialog>
       <div className="flex items-center justify-between space-x-2">
-        <Label
-          htmlFor="cache"
-          className="flex flex-col space-y-1"
-        >
+        <Label htmlFor="cache" className="flex flex-col space-y-1">
           <span className="inline-flex items-center gap-1">Clear session</span>
           <span className="font-normal leading-snug text-muted-foreground">
             Remove files, datasets, and query results. This action is
@@ -127,10 +118,7 @@ function ClearSession() {
         </Label>
 
         <AlertDialogTrigger asChild>
-          <Button
-            variant="destructive"
-            size="sm"
-          >
+          <Button variant="destructive" size="sm">
             <Trash2 size={16} />
           </Button>
         </AlertDialogTrigger>

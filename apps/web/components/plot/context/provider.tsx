@@ -1,5 +1,5 @@
+import type { ResultColumn } from "@/utils/arrow/helpers";
 import { useMemo, useReducer } from "react";
-import type { ResultColumn } from "~/utils/arrow/helpers";
 import { ChartContext } from "./context";
 import type { ChartAction, ChartState } from "./types";
 
@@ -59,7 +59,7 @@ function getOptions(data: {
   if (!xColumn && columns.length > 0) {
     // find first number column
     xColumn = columns.find(
-      (column) => column.type === "number" || column.type === "integer",
+      (column) => column.type === "number" || column.type === "integer"
     );
 
     // if no number column, use first column
@@ -72,7 +72,7 @@ function getOptions(data: {
   const remainingColumns = columns.filter((col) => col.name !== xColumn?.name);
 
   let yColumn = remainingColumns.find(
-    (column) => column.type === "number" || column.type === "integer",
+    (column) => column.type === "number" || column.type === "integer"
   );
 
   if (!yColumn && remainingColumns.length > 0) {
@@ -106,7 +106,7 @@ function ChartProvider(props: ChartProviderProps) {
       ...state,
       _dispatch,
     }),
-    [state],
+    [state]
   );
 
   return (

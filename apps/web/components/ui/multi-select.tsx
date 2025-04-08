@@ -1,11 +1,11 @@
 "use client";
 // https://github.com/mxkaske/mxkaske.dev/blob/main/components/craft/fancy-multi-select.tsx
 // https://craft.mxkaske.dev/post/fancy-multi-select
+import { Badge } from "@/components/ui/badge";
+import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Command as CommandPrimitive } from "cmdk";
 import { X } from "lucide-react";
 import * as React from "react";
-import { Badge } from "~/components/ui/badge";
-import { Command, CommandGroup, CommandItem } from "~/components/ui/command";
 
 type Framework = Record<"value" | "label", string>;
 
@@ -47,7 +47,6 @@ const FRAMEWORKS = [
 export function FancyMultiSelect() {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
-  //   @ts-expect-error: copied code --> need to check
   const [selected, setSelected] = React.useState<Framework[]>([FRAMEWORKS[4]]);
   const [inputValue, setInputValue] = React.useState("");
 
@@ -74,11 +73,11 @@ export function FancyMultiSelect() {
         }
       }
     },
-    [],
+    []
   );
 
   const selectables = FRAMEWORKS.filter(
-    (framework) => !selected.includes(framework),
+    (framework) => !selected.includes(framework)
   );
 
   return (
@@ -90,12 +89,10 @@ export function FancyMultiSelect() {
         <div className="flex flex-wrap gap-1">
           {selected.map((framework) => {
             return (
-              <Badge
-                key={framework.value}
-                variant="secondary"
-              >
+              <Badge key={framework.value} variant="secondary">
                 {framework.label}
                 <button
+                  type="button"
                   className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {

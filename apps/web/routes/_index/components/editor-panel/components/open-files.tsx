@@ -1,8 +1,8 @@
 /* eslint-disable jsx-a11y/interactive-supports-focus */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
+import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
 import { Code2, Plus, X } from "lucide-react";
-import { useSession } from "~/context/session/useSession";
 
 export default function OpenFileTabs() {
   const { editors, dispatch, onCloseEditor } = useSession();

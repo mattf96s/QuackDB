@@ -1,11 +1,4 @@
-import { cn } from "@/lib/utils";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, CopyCheck, Database, Plus } from "lucide-react";
-import { useCallback, useState, type ReactNode } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { Tag } from "~/components/tag";
+import { Tag } from "@/components/tag";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,22 +8,22 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
-import { Button } from "~/components/ui/button";
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from "~/components/ui/context-menu";
+} from "@/components/ui/context-menu";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "~/components/ui/dialog";
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +32,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import {
   Form,
   FormControl,
@@ -48,12 +41,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "~/components/ui/form";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
-import { useDB } from "~/context/db/useDB";
-import { useSession } from "~/context/session/useSession";
-import { useCopyToClipboard } from "~/hooks/use-copy-to-clipboard";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useDB } from "@/context/db/useDB";
+import { useSession } from "@/context/session/useSession";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDown, CopyCheck, Database, Plus } from "lucide-react";
+import { type ReactNode, useCallback, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 import { useWrapper } from "./wrapper/context/useWrapper";
 
 export default function DataSources() {

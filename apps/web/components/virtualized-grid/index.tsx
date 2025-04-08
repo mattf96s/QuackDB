@@ -1,5 +1,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 // https://virtuoso.dev/tanstack-table-integration/
+import { useQuery } from "@/context/query/useQuery";
+import { getArrowTableSchema } from "@/utils/arrow/helpers";
 import {
   flexRender,
   getCoreRowModel,
@@ -12,8 +14,6 @@ import { format } from "date-fns";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import React, { useMemo } from "react";
 import { TableVirtuoso } from "react-virtuoso";
-import { useQuery } from "~/context/query/useQuery";
-import { getArrowTableSchema } from "~/utils/arrow/helpers";
 
 /**
  * Virtualized Tanstack Table. (WIP).
@@ -95,10 +95,7 @@ export default function VirtualizedGrid() {
           return (
             <tr {...props}>
               {row?.getVisibleCells().map((cell) => (
-                <td
-                  key={cell.id}
-                  style={{ padding: "6px" }}
-                >
+                <td key={cell.id} style={{ padding: "6px" }}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
@@ -108,10 +105,7 @@ export default function VirtualizedGrid() {
       }}
       fixedHeaderContent={() => {
         return table.getHeaderGroups().map((headerGroup) => (
-          <tr
-            key={headerGroup.id}
-            className="m-0 bg-secondary"
-          >
+          <tr key={headerGroup.id} className="m-0 bg-secondary">
             {headerGroup.headers.map((header) => {
               return (
                 <th
@@ -136,21 +130,11 @@ export default function VirtualizedGrid() {
                     >
                       {flexRender(
                         header.column.columnDef.header,
-                        header.getContext(),
+                        header.getContext()
                       )}
                       {{
-                        asc: (
-                          <ChevronUp
-                            size={16}
-                            className="ml-1"
-                          />
-                        ),
-                        desc: (
-                          <ChevronDown
-                            size={16}
-                            className="ml-1"
-                          />
-                        ),
+                        asc: <ChevronUp size={16} className="ml-1" />,
+                        desc: <ChevronDown size={16} className="ml-1" />,
                         //   @ts-expect-error: TS doesn't know about the getIsSorted method
                       }[header.column.getIsSorted()] ?? null}
                     </div>

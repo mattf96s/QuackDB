@@ -1,14 +1,14 @@
-import { useRef, type RefObject, useCallback } from "react";
+import { type RefObject, useCallback, useRef } from "react";
 
 /**
  *
  * @source https://github.com/vercel/ai-chatbot/blob/main/lib/hooks/use-enter-submit.tsx
  */
 export function useEnterSubmit(): {
-  formRef: RefObject<HTMLFormElement>;
+  formRef: RefObject<HTMLFormElement | null>;
   onKeyDown: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 } {
-  const formRef = useRef<HTMLFormElement>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>): void => {
@@ -21,7 +21,7 @@ export function useEnterSubmit(): {
         event.preventDefault();
       }
     },
-    [],
+    []
   );
 
   return { formRef, onKeyDown: handleKeyDown };

@@ -1,4 +1,19 @@
 import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { DbProvider } from "@/context/db/provider";
+import { EditorSettingsProvider } from "@/context/editor-settings/provider";
+import { EditorProvider } from "@/context/editor/provider";
+import { PanelProvider } from "@/context/panel/provider";
+import { QueryProvider } from "@/context/query/provider";
+import { SessionProvider } from "@/context/session/provider";
+import {
   type ClientLoaderFunctionArgs,
   isRouteErrorResponse,
   useLoaderData,
@@ -8,22 +23,7 @@ import type { MetaFunction } from "@vercel/remix";
 import { wrap } from "comlink";
 import { Loader2 } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
 import { metaDetails } from "~/constants";
-import { DbProvider } from "~/context/db/provider";
-import { EditorSettingsProvider } from "~/context/editor-settings/provider";
-import { EditorProvider } from "~/context/editor/provider";
-import { PanelProvider } from "~/context/panel/provider";
-import { QueryProvider } from "~/context/query/provider";
-import { SessionProvider } from "~/context/session/provider";
 import NavBar from "./components/navbar";
 import type { IsSupportedWorker } from "./workers/is-supported.worker";
 
@@ -41,7 +41,7 @@ export async function clientLoader(_props: ClientLoaderFunctionArgs) {
       {
         type: "module",
         name: "is-supported-worker",
-      },
+      }
     );
     const fn = wrap<IsSupportedWorker>(worker);
     canCloneHandle = await fn();
@@ -87,7 +87,7 @@ export const meta: MetaFunction = () => {
 const LazyPlayground = lazy(() =>
   import("./components/playground").then((module) => ({
     default: module.default,
-  })),
+  }))
 );
 
 export default function Component() {
@@ -121,10 +121,7 @@ export default function Component() {
 function PlaygroundSkeleton() {
   return (
     <div className="flex size-full items-center justify-center bg-background">
-      <Loader2
-        name="loader-circle"
-        className="size-6 animate-spin"
-      />
+      <Loader2 name="loader-circle" className="size-6 animate-spin" />
     </div>
   );
 }
@@ -141,10 +138,7 @@ function NotSupportedModal() {
           </p>
         </div>
       )}
-      <AlertDialog
-        open={open}
-        onOpenChange={setOpen}
-      >
+      <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Browser Not Supported</AlertDialogTitle>

@@ -1,9 +1,7 @@
-import type { AutoOptions } from "@observablehq/plot";
-import { memo, useEffect } from "react";
-import Chart from "~/components/plot";
-import { ChartProvider } from "~/components/plot/context/provider";
-import { useChart } from "~/components/plot/context/useChart";
-import { ScrollArea } from "~/components/ui/scroll-area";
+import Chart from "@/components/plot";
+import { ChartProvider } from "@/components/plot/context/provider";
+import { useChart } from "@/components/plot/context/useChart";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -12,9 +10,11 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
-import { useQuery } from "~/context/query/useQuery";
-import { getArrowTableSchema } from "~/utils/arrow/helpers";
+} from "@/components/ui/select";
+import { useQuery } from "@/context/query/useQuery";
+import { getArrowTableSchema } from "@/utils/arrow/helpers";
+import type { AutoOptions } from "@observablehq/plot";
+import { memo, useEffect } from "react";
 import EmptyResults from "./empty";
 
 export const ChartContainer = memo(function ChartContainer() {
@@ -101,10 +101,7 @@ function SelectAxis(props: SelectAxisProps) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-xs text-gray-500">{`${axis.toUpperCase()} Axis`}</p>
-      <Select
-        value={current?.toString()}
-        onValueChange={onValueChange}
-      >
+      <Select value={current?.toString()} onValueChange={onValueChange}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder={`Select ${axis}`} />
         </SelectTrigger>
@@ -112,10 +109,7 @@ function SelectAxis(props: SelectAxisProps) {
           <SelectGroup>
             <SelectLabel>{`${axis} Axis`}</SelectLabel>
             {options.map((option) => (
-              <SelectItem
-                key={option}
-                value={option}
-              >
+              <SelectItem key={option} value={option}>
                 {option}
               </SelectItem>
             ))}
@@ -169,10 +163,7 @@ function OptionPicker(props: OptionPickerProps) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-xs text-gray-500">{title}</p>
-      <Select
-        value={current}
-        onValueChange={onValueChange}
-      >
+      <Select value={current} onValueChange={onValueChange}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder={`Select ${title}`} />
         </SelectTrigger>
@@ -180,10 +171,7 @@ function OptionPicker(props: OptionPickerProps) {
           <SelectGroup>
             <SelectLabel>{`${title}`}</SelectLabel>
             {options.map((option) => (
-              <SelectItem
-                key={option}
-                value={option}
-              >
+              <SelectItem key={option} value={option}>
                 {option}
               </SelectItem>
             ))}

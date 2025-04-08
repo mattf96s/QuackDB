@@ -1,5 +1,5 @@
-import { type CodeSource } from "~/types/files/code-source";
-import { type Dataset } from "~/types/files/dataset";
+import { type CodeSource } from "@/types/files/code-source";
+import { type Dataset } from "@/types/files/dataset";
 
 /**
  * Each code file and its state including within the tabs.
@@ -51,7 +51,7 @@ export type SessionMethods = {
   onSessionChange: (session: string) => void;
   dispatch: React.Dispatch<Action> | null;
   onAddDataSources: (
-    props: AddDataSourceProps,
+    props: AddDataSourceProps
   ) => Promise<Dataset[] | undefined>;
   onAddEditor: () => Promise<void>;
   onDeleteEditor: (path: string) => Promise<void>;

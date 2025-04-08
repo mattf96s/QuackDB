@@ -3,7 +3,7 @@
 // import { type TableColumn, type TableRow } from "@components/table/help";
 // import { isFalse, isNil, isNotNil, uid } from "@utils/index";
 // import { create } from "zustand";
-// import useLocalStorage from "~/hooks/useLocalStorage";
+// import useLocalStorage from "@/hooks/useLocalStorage";
 // import { ModelFile } from "~/models";
 // import { sqlglotWorker } from "~/workers";
 

@@ -1,15 +1,15 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useQuery } from "@/context/query/useQuery";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
+import { type QueryMeta, queryMetaSchema } from "@/types/query";
 import { motion } from "framer-motion";
 import { del, get } from "idb-keyval";
 import { ChevronDown, ChevronRight, CopyCheck, History } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { IDB_KEYS } from "~/constants.client";
-import { useQuery } from "~/context/query/useQuery";
-import { useCopyToClipboard } from "~/hooks/use-copy-to-clipboard";
-import { queryMetaSchema, type QueryMeta } from "~/types/query";
 import { useWrapper } from "./wrapper/context/useWrapper";
 /**
  * Note: idb-keyval is probably the wrong tool for anything more advanced than this.

@@ -1,7 +1,4 @@
-import { Loader2, MoreVertical } from "lucide-react";
-import { useCallback, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "~/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,9 +12,12 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { useDB } from "~/context/db/useDB";
-import { useQuery } from "~/context/query/useQuery";
+} from "@/components/ui/dropdown-menu";
+import { useDB } from "@/context/db/useDB";
+import { useQuery } from "@/context/query/useQuery";
+import { Loader2, MoreVertical } from "lucide-react";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 const endsWithNewline = (text: string) => /\n$/.test(text);
 const removeTrailingNewline = (text: string) => {
@@ -73,7 +73,7 @@ export default function DatasetActions() {
         }
 
         await db.query(
-          `CREATE OR REPLACE TABLE '${tableName}' AS (${selectQuery})`,
+          `CREATE OR REPLACE TABLE '${tableName}' AS (${selectQuery})`
         );
 
         let sql: string = "";
@@ -92,7 +92,7 @@ export default function DatasetActions() {
         const _db = await db._getDB();
 
         const buffer = await _db.copyFileToBuffer(
-          `output.${format.toLowerCase()}`,
+          `output.${format.toLowerCase()}`
         );
 
         // Generate a download link (ensure to revoke the object URL after the download).
@@ -123,16 +123,13 @@ export default function DatasetActions() {
         setIsExporting(false);
       }
     },
-    [db, lastRunSQL],
+    [db, lastRunSQL]
   );
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          size="icon"
-          variant="outline"
-        >
+        <Button size="icon" variant="outline">
           <MoreVertical size={16} />
         </Button>
       </DropdownMenuTrigger>

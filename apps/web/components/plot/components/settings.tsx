@@ -1,21 +1,21 @@
 "use client";
 
-import type * as Plot from "@observablehq/plot";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "~/components/ui/card";
-import { Label } from "~/components/ui/label";
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select";
+} from "@/components/ui/select";
+import type * as Plot from "@observablehq/plot";
 import { useChart } from "../context/useChart";
 
 // Don't seem to have any effect on Plot.auto mark.
@@ -96,10 +96,7 @@ export default function PlotSettings() {
                 </SelectTrigger>
                 <SelectContent>
                   {schemaOptions.map((option) => (
-                    <SelectItem
-                      key={option.value}
-                      value={option.value}
-                    >
+                    <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
                   ))}

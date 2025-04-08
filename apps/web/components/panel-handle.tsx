@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { DragHandleDots2Icon } from "@radix-ui/react-icons";
+import { GripHorizontal } from "lucide-react";
 import { PanelResizeHandle } from "react-resizable-panels";
 
 /**
@@ -26,7 +26,7 @@ export default function PanelHandle() {
       )}
     >
       <div className="z-10 flex h-4 w-3 items-center justify-center rounded-sm border bg-border">
-        <DragHandleDots2Icon className="size-2.5" />
+        <GripHorizontal className="size-2.5" />
       </div>
     </PanelResizeHandle>
   );

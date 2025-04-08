@@ -1,15 +1,12 @@
-import { cn } from "@/lib/utils";
-import { Loader2, MoreVertical, Settings2 } from "lucide-react";
-import { useState } from "react";
-import NavBar from "~/components/navbar";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+import NavBar from "@/components/navbar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "~/components/ui/popover";
-import { Separator } from "~/components/ui/separator";
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -17,9 +14,12 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "~/components/ui/sheet";
-import { useQuery } from "~/context/query/useQuery";
-import useBreakpoint from "~/hooks/use-breakpoints";
+} from "@/components/ui/sheet";
+import { useQuery } from "@/context/query/useQuery";
+import useBreakpoint from "@/hooks/use-breakpoints";
+import { cn } from "@/lib/utils";
+import { Loader2, MoreVertical, Settings2 } from "lucide-react";
+import { useState } from "react";
 import Toolbar from "./query-toolbar";
 import Settings from "./settings";
 

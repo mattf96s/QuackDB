@@ -1,7 +1,7 @@
 import { Moon, Sun } from "lucide-react";
-import { Theme, useTheme } from "remix-themes";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { useTheme } from "next-themes";
 import { Button } from "./ui/button";
 
 const MotionSun = motion(Sun);
@@ -9,18 +9,16 @@ const MotionMoon = motion(Moon);
 const MotionButton = motion(Button);
 
 export default function ModeToggle() {
-  const [theme, setTheme] = useTheme();
+  const { theme, setTheme } = useTheme();
 
-  const isDark = theme === Theme.DARK;
+  const isDark = theme === "dark";
 
   return (
     <MotionButton
       initial={false}
       variant="outline"
       size="icon"
-      onClick={() =>
-        setTheme((s) => (s === Theme.DARK ? Theme.LIGHT : Theme.DARK))
-      }
+      onClick={() => setTheme((s) => (s === "dark" ? "light" : "dark"))}
     >
       <AnimatePresence mode="wait">
         {isDark ? (

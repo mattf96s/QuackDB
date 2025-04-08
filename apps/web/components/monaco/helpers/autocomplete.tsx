@@ -1,6 +1,6 @@
+import { snippets } from "@/utils/duckdb/snippets";
 import { matchSorter } from "match-sorter";
 import { languages } from "monaco-editor";
-import { snippets } from "~/utils/duckdb/snippets";
 import { language } from "./pgsql";
 
 type PartialMonacoCompletionItem = Pick<
@@ -39,7 +39,7 @@ const getDefaultSuggestions = (): PartialMonacoCompletionItem[] => {
       kind: languages.CompletionItemKind.Snippet,
       insertText: snippet.code,
       detail: snippet.description,
-    }),
+    })
   );
 
   return [...duckdbSnippets, ...keywords, ...fns, ...operators];

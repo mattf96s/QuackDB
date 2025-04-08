@@ -1,5 +1,4 @@
-import { ExternalLink, InfoIcon } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,17 +8,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog";
-import { ScrollArea } from "~/components/ui/scroll-area";
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ExternalLink, InfoIcon } from "lucide-react";
 
 export default function AboutModal() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          size="icon"
-          variant="outline"
-        >
+        <Button size="icon" variant="outline">
           <InfoIcon size={16} />
         </Button>
       </DialogTrigger>

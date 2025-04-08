@@ -1,4 +1,4 @@
-import { type QueryResponse } from "~/types/query";
+import { type QueryResponse } from "@/types/query";
 
 /**
  * The state of the query context.

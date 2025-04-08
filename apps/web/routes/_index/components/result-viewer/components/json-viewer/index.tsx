@@ -1,14 +1,14 @@
+import CopyToClipboard from "@/components/copy-to-clipboard";
+import PaginationToolbar from "@/components/paginator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { usePagination } from "@/context/pagination/usePagination";
+import { useQuery } from "@/context/query/useQuery";
 import { Suspense, lazy, memo, useCallback, useEffect, useMemo } from "react";
-import CopyToClipboard from "~/components/copy-to-clipboard";
-import PaginationToolbar from "~/components/paginator";
-import { ScrollArea } from "~/components/ui/scroll-area";
-import { usePagination } from "~/context/pagination/usePagination";
-import { useQuery } from "~/context/query/useQuery";
 
 const LazyShiki = lazy(() =>
-  import("~/components/lazy-shiki").then((module) => ({
+  import("@/components/lazy-shiki").then((module) => ({
     default: module.default,
-  })),
+  }))
 );
 
 export const JSONViewer = memo(function JSONViewer() {
@@ -40,10 +40,7 @@ export const JSONViewer = memo(function JSONViewer() {
     <div className="flex h-full max-h-full flex-1 flex-col justify-between gap-4 overflow-y-auto px-2 py-4 pb-20">
       <ScrollArea className="relative h-full border">
         <Suspense>
-          <LazyShiki
-            text={json}
-            lang="json"
-          />
+          <LazyShiki text={json} lang="json" />
           <div className="absolute right-2 top-2">
             <CopyToClipboard value={lazyCopy} />
           </div>

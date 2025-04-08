@@ -1,16 +1,16 @@
+import { IDB_KEYS } from "@/constants";
+import { useDB } from "@/context/db/useDB";
+import useAbortController from "@/hooks/use-abortable";
+import {
+  type QueryMeta,
+  type QueryResponse,
+  queryMetaSchema,
+} from "@/types/query";
 import { Table } from "apache-arrow";
 import { get, set } from "idb-keyval";
 import { useCallback, useMemo, useReducer } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { IDB_KEYS } from "~/constants.client";
-import { useDB } from "~/context/db/useDB";
-import useAbortController from "~/hooks/use-abortable";
-import {
-  queryMetaSchema,
-  type QueryMeta,
-  type QueryResponse,
-} from "~/types/query";
 import { QueryContext } from "./context";
 import type { QueryContextValue, QueryState } from "./types";
 
@@ -84,7 +84,7 @@ async function onStoreRun(payload: QueryResponse) {
     const exists = runs.find(
       (r) =>
         r.hash === newRunValidation.data.hash &&
-        r.created === newRunValidation.data.created,
+        r.created === newRunValidation.data.created
     );
     if (exists) return;
 
@@ -153,7 +153,7 @@ function QueryProvider(props: QueryProviderProps) {
         }
       }
     },
-    [db, getSignal],
+    [db, getSignal]
   );
 
   const onCancelQuery = useCallback(
@@ -176,7 +176,7 @@ function QueryProvider(props: QueryProviderProps) {
         },
       });
     },
-    [abortSignal],
+    [abortSignal]
   );
 
   const value: QueryContextValue = useMemo(
@@ -185,7 +185,7 @@ function QueryProvider(props: QueryProviderProps) {
       onRunQuery,
       onCancelQuery,
     }),
-    [onCancelQuery, onRunQuery, state],
+    [onCancelQuery, onRunQuery, state]
   );
   return (
     <QueryContext.Provider value={value}>

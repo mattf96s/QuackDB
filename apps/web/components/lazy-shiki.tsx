@@ -1,9 +1,8 @@
-import { Await } from "@remix-run/react";
+import { createHighlighter } from "@/components/code-highlighter";
 import DOMPurify from "dompurify";
-import { Suspense } from "react";
-import { useTheme } from "remix-themes";
-import { type CodeToHastOptionsCommon, type HighlighterCore } from "shiki/core";
-import { getHighlighter } from "~/components/code-highlighter";
+import { useTheme } from "next-themes";
+import { type JSX, Suspense } from "react";
+import type { CodeToHastOptionsCommon, HighlighterCore } from "shiki/core";
 
 let shiki: HighlighterCore | undefined;
 
@@ -12,11 +11,11 @@ type CreateHighlighterProps = {
   lang: CodeToHastOptionsCommon["lang"];
 };
 
-const createHighlighter = async (
-  props: CreateHighlighterProps & { isDark: boolean },
+const createHighlighterFn = async (
+  props: CreateHighlighterProps & { isDark: boolean }
 ) => {
   try {
-    if (!shiki) shiki = await getHighlighter();
+    if (!shiki) shiki = await createHighlighter();
 
     const html = shiki.codeToHtml(props.text, {
       lang: props.lang,
@@ -31,35 +30,25 @@ const createHighlighter = async (
 };
 
 export default function Highlighter(props: CreateHighlighterProps) {
-  const [theme] = useTheme();
+  const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  return (
-    <Suspense>
-      <HighlightContent
-        {...props}
-        isDark={isDark}
-      />
-    </Suspense>
-  );
+  return <HighlightContent {...props} isDark={isDark} />;
 }
 
 function HighlightContent(
-  props: CreateHighlighterProps & { isDark: boolean },
+  props: CreateHighlighterProps & { isDark: boolean }
 ): JSX.Element {
-  const html = createHighlighter(props);
+  const htmlPromise = createHighlighterFn(props);
 
   return (
     <Suspense>
-      <Await resolve={html}>
-        {(p) => (
-          <div
-            // wrapping is applied in global styles (otherwise it doesn't work)
-            className="overflow-x-auto font-mono text-sm"
-            dangerouslySetInnerHTML={{ __html: p }}
-          />
-        )}
-      </Await>
+      <div
+        // wrapping is applied in global styles (otherwise it doesn't work)
+        className="overflow-x-auto font-mono text-sm"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: docs
+        dangerouslySetInnerHTML={{ __html: htmlPromise }}
+      />
     </Suspense>
   );
 }

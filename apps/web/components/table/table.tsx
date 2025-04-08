@@ -19,7 +19,7 @@
 // import { useVirtualizer } from "@tanstack/react-virtual";
 // import { isArrayNotEmpty, isNotNil } from "@utils/index";
 // import clsx from "clsx";
-// import { EnumSize } from "~/types/enum";
+// import { EnumSize } from "@/types/enum";
 // import { type TableColumn, type TableRow } from "./help";
 
 // declare module "@tanstack/table-core" {

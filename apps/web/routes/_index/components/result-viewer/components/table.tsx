@@ -1,12 +1,12 @@
+import DataGrid from "@/components/data-grid";
+import PaginationToolbar from "@/components/paginator";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import VirtualizedGrid from "@/components/virtualized-grid";
+import { usePagination } from "@/context/pagination/usePagination";
+import { useQuery } from "@/context/query/useQuery";
 import { memo, useEffect, useState } from "react";
-import DataGrid from "~/components/data-grid";
-import PaginationToolbar from "~/components/paginator";
-import { Label } from "~/components/ui/label";
-import { ScrollArea } from "~/components/ui/scroll-area";
-import { Switch } from "~/components/ui/switch";
-import VirtualizedGrid from "~/components/virtualized-grid";
-import { usePagination } from "~/context/pagination/usePagination";
-import { useQuery } from "~/context/query/useQuery";
 import EmptyResults from "./empty";
 
 export const TableViewer = memo(function TableViewer() {
@@ -27,11 +27,7 @@ export const TableViewer = memo(function TableViewer() {
       {noQuery && <EmptyResults />}
       <ScrollArea className="h-full border">
         {view === "table" && (
-          <DataGrid
-            count={count}
-            table={table}
-            meta={meta}
-          />
+          <DataGrid count={count} table={table} meta={meta} />
         )}
         {view === "list" && <VirtualizedGrid />}
       </ScrollArea>
