@@ -4,6 +4,10 @@ import { getArrowTableSchema } from "@/utils/arrow/helpers";
 import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";
 import type { AsyncDuckDB } from "@duckdb/duckdb-wasm";
 import * as duckdb from "@duckdb/duckdb-wasm";
+// @ts-expect-error testing
+import duckdb_wasm_next from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm";
+// @ts-expect-error testing
+import duckdb_wasm from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm";
 import {
   type AsyncRecordBatchStreamReader,
   type RecordBatch,
@@ -11,6 +15,23 @@ import {
   Table,
   type TypeMap,
 } from "apache-arrow";
+
+const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
+  mvp: {
+    mainModule: duckdb_wasm,
+    mainWorker: new URL(
+      "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js",
+      import.meta.url
+    ).toString(),
+  },
+  eh: {
+    mainModule: duckdb_wasm_next,
+    mainWorker: new URL(
+      "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js",
+      import.meta.url
+    ).toString(),
+  },
+};
 
 type MakeDBProps = {
   logLevel?: duckdb.LogLevel;
@@ -23,22 +44,12 @@ type MakeDBProps = {
  */
 const makeDB = async ({ logLevel = duckdb.LogLevel.DEBUG }: MakeDBProps) => {
   // Select a bundle based on browser checks
-  const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
-
-  // Select a bundle based on browser checks
-  const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
-
-  const worker_url = URL.createObjectURL(
-    new Blob([`importScripts("${bundle.mainWorker}");`], {
-      type: "text/javascript",
-    })
-  );
-
-  // Instantiate the asynchronus version of DuckDB-wasm
-  const worker = new Worker(worker_url);
+  const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
+  if (!bundle.mainWorker) throw new Error("Failed to load DuckDB worker");
+  // Instantiate the asynchronus version of DuckDB-Wasm
+  const worker = new Worker(bundle.mainWorker);
   const logger = new duckdb.ConsoleLogger(logLevel);
   const db = new duckdb.AsyncDuckDB(logger, worker);
-  URL.revokeObjectURL(worker_url);
   await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
 
   await db.open({
