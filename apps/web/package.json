@@ -6,10 +6,13 @@
   "type": "module",
   "scripts": {
     "build": "next build",
-    "dev": "next dev --turbopack",
+    "dev": "pnpm run rebuild:workers && next dev --turbopack",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "clean:workers": "rm -rf public/worker-dist",
+    "build:workers": "tsc --project tsconfig.worker.json",
+    "rebuild:workers": "pnpm run clean:workers && pnpm run build:workers",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf .build"
   },
   "dependencies": {
@@ -63,7 +66,7 @@
     "lz-string": "^1.5.0",
     "match-sorter": "^8",
     "monaco-editor": "^0.52.2",
-    "next": "15.2.4",
+    "next": "15.2.5",
     "next-themes": "^0.4.6",
     "postgres-semicolons": "^0.1.2",
     "react": "^19.0.0",

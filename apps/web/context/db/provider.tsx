@@ -1,6 +1,7 @@
+"use client";
 import { useSession } from "@/context/session/useSession";
 import { DuckDBInstance } from "@/modules/duckdb-singleton";
-import { type Dataset } from "@/types/files/dataset";
+import type { Dataset } from "@/types/files/dataset";
 import { useEffect, useMemo, useRef } from "react";
 import { DBContext } from "./context";
 

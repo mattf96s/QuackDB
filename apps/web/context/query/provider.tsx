@@ -1,3 +1,5 @@
+"use client";
+
 import { IDB_KEYS } from "@/constants";
 import { useDB } from "@/context/db/useDB";
 import useAbortController from "@/hooks/use-abortable";

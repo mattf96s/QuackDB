@@ -1,3 +1,4 @@
+"use client";
 import { createContext } from "react";
 import type { EditorSettingsContextValue } from "./types";
 

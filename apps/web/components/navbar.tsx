@@ -1,9 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import { Terminal } from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
 
-export default function NavBar(props: { children: React.ReactNode }) {
+export default function NavBar(props: { children?: React.ReactNode }) {
   return (
     <div className="flex h-16 max-h-16 min-h-16 w-full shrink-0 items-center border-b bg-background px-4">
       <div className="flex h-full items-center justify-evenly gap-3">
@@ -13,7 +12,7 @@ export default function NavBar(props: { children: React.ReactNode }) {
       </div>
       <div className="ml-auto flex w-full items-center justify-end space-x-2 pr-2">
         <div className="ml-auto flex w-full items-center justify-end space-x-2">
-          <Suspense>{props.children}</Suspense>
+          {props.children}
         </div>
       </div>
     </div>

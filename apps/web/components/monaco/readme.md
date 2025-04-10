@@ -15,3 +15,6 @@ Open handler registry: <https://github.com/CodinGame/monaco-editor-wrapper/blob/
 <https://github.com/Specy/asm-editor/tree/main>
 
 <https://github.com/evidence-dev/evidence/blob/next/packages/core-components/src/lib/molecules/sql-console/sqlConsole.action.js>
+
+<https://github.com/live-codes/livecodes/blob/develop/src/livecodes/editor/monaco/monaco.ts>
+<https://github.com/live-codes/livecodes/blob/develop/src/livecodes/formatter/format.worker.ts>

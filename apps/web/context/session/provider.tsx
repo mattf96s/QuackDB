@@ -1,4 +1,6 @@
-import { releaseProxy, wrap, type Remote } from "comlink";
+"use client";
+
+import { type Remote, releaseProxy, wrap } from "comlink";
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { toast } from "sonner";
 import { SessionContext } from "./context";
@@ -35,7 +37,7 @@ function reducer(state: SessionState, action: Action): SessionState {
       return {
         ...state,
         editors: state.editors.filter(
-          (editor) => editor.path !== action.payload.path,
+          (editor) => editor.path !== action.payload.path
         ),
       };
     }
@@ -120,7 +122,7 @@ function reducer(state: SessionState, action: Action): SessionState {
     case "OPEN_EDITOR": {
       const { path } = action.payload;
       const index = state.editors.findIndex(
-        (editor) => editor.handle.name === path,
+        (editor) => editor.handle.name === path
       );
       // not found
       if (index === -1) return { ...state };
@@ -456,7 +458,7 @@ function SessionProvider({ children }: SessionProviderProps) {
         return [];
       }
     },
-    [session.sessionId],
+    [session.sessionId]
   );
 
   const onDeleteDataSource: SessionMethods["onDeleteDataSource"] = useCallback(
@@ -485,7 +487,7 @@ function SessionProvider({ children }: SessionProviderProps) {
         return;
       }
     },
-    [session.sessionId],
+    [session.sessionId]
   );
 
   const onAddEditor = useCallback(async () => {
@@ -567,7 +569,7 @@ function SessionProvider({ children }: SessionProviderProps) {
         return;
       }
     },
-    [session.sessionId],
+    [session.sessionId]
   );
 
   /**
@@ -604,7 +606,7 @@ function SessionProvider({ children }: SessionProviderProps) {
         });
       }
     },
-    [session.sessionId],
+    [session.sessionId]
   );
 
   /**
@@ -658,7 +660,7 @@ function SessionProvider({ children }: SessionProviderProps) {
         },
       });
     },
-    [session.editors, session.sessionId],
+    [session.editors, session.sessionId]
   );
 
   /**
@@ -723,7 +725,7 @@ function SessionProvider({ children }: SessionProviderProps) {
         return;
       }
     },
-    [session],
+    [session]
   );
 
   const value = useMemo(
@@ -751,7 +753,7 @@ function SessionProvider({ children }: SessionProviderProps) {
       onBurstCache,
       onRenameEditor,
       onDeleteDataSource,
-    ],
+    ]
   );
 
   return (

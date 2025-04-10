@@ -1,9 +1,8 @@
 "use client";
-
 import { createContext } from "react";
-import type { QueryContextValue } from "./types";
+import type { WrapperState } from "./types";
 
 // Breakup everything into smaller files because of React Fast Refresh limitations.
-export const QueryContext = createContext<QueryContextValue | undefined>(
+export const WrapperContext = createContext<WrapperState | undefined>(
   undefined
 );

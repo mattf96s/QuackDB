@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useMemo, useReducer } from "react";
 import { PanelContext } from "./context";
 import type { PanelFile, PanelState } from "./types";
@@ -27,7 +29,7 @@ type PanelReducerState = Pick<
 
 function panelReducer(
   state: PanelReducerState,
-  action: FilesAction,
+  action: FilesAction
 ): PanelReducerState {
   switch (action.type) {
     case "close": {
@@ -64,15 +66,14 @@ function panelReducer(
           ...state,
           currentFileIndex: fileIndex,
         };
-      } else {
-        const newOpenFiles = [...openFiles, file];
-
-        return {
-          ...state,
-          currentFileIndex: openFiles.length,
-          openFiles: newOpenFiles,
-        };
       }
+      const newOpenFiles = [...openFiles, file];
+
+      return {
+        ...state,
+        currentFileIndex: openFiles.length,
+        openFiles: newOpenFiles,
+      };
     }
 
     default: {
@@ -115,7 +116,7 @@ function PanelProvider({ children }: PanelProviderProps) {
       currentFile,
       currentFileIndex,
       openFile,
-    ],
+    ]
   );
 
   return (

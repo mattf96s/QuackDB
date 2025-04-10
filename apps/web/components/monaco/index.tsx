@@ -235,7 +235,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     );
 
     return () => {
-      // biome-ignore lint/complexity/noForEach: <explanation>
       disposables.forEach((disposable) => disposable.dispose());
     };
   }, [isReady, language, onRunQuery]);
@@ -295,7 +294,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     );
 
     return () => {
-      // biome-ignore lint/complexity/noForEach: <explanation>
       disposables.forEach((disposable) => disposable.dispose());
     };
   }, [db, isReady, language]);
@@ -568,7 +566,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     );
 
     return () => {
-      // biome-ignore lint/complexity/noForEach: <explanation>
       disposables.forEach((disposable) => disposable.dispose());
     };
   }, [db, isReady]);
@@ -629,7 +626,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     );
 
     return () => {
-      // biome-ignore lint/complexity/noForEach: <explanation>
       disposables.forEach((disposable) => disposable.dispose());
     };
   }, [isReady, onRunQuery]);
@@ -653,7 +649,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
     );
 
     return () => {
-      // biome-ignore lint/complexity/noForEach: <explanation>
       disposables.forEach((disposable) => disposable.dispose());
     };
   }, [props, isReady]);

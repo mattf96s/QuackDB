@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CSV Lead Ingestor",
-  description: "A simple CSV lead ingestor",
+  title: "QuackDB",
+  description: "QuackDB Playground",
 };
 
 const META_THEME_COLORS = {

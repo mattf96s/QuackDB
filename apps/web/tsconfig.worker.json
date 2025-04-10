@@ -1,0 +1,23 @@
+// tsconfig.worker.json
+{
+  "compilerOptions": {
+    "isolatedModules": true,
+    "target": "ES2020",
+    "module": "ESNext",
+    "outDir": "./public/worker-dist",
+    "rootDir": "./workers",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "allowJs": false,
+    "noEmitOnError": false,
+    "skipLibCheck": true,
+    "lib": [
+      "WebWorker",
+      "ES2020"
+    ]
+  },
+  "include": [
+    "workers/**/*.ts"
+  ]
+}
