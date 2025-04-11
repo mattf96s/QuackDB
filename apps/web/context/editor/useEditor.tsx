@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { use } from "react";
 import { EditorContext } from "./context";
 
 // Breakup everything into smaller files because of React Fast Refresh limitations.
@@ -7,7 +7,7 @@ import { EditorContext } from "./context";
  * Hook to access the query context.
  */
 export function useEditor() {
-  const context = useContext(EditorContext);
+  const context = use(EditorContext);
   if (context === undefined) {
     throw new Error("useEditor must be used within an EditorProvider");
   }

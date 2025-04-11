@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { use } from "react";
 import { SessionContext } from "./context";
 
 // Breakup everything into smaller files because of React Fast Refresh limitations.
@@ -9,7 +9,7 @@ import { SessionContext } from "./context";
  * Includes session information and accompanying file handles.
  */
 export function useSession() {
-  const context = useContext(SessionContext);
+  const context = use(SessionContext);
   if (context === undefined) {
     throw new Error("useSession must be used within a SessionContext");
   }

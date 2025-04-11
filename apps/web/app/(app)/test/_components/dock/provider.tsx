@@ -177,7 +177,7 @@ function DockProvider({ children }: DockProviderProps) {
 }
 
 function useDock() {
-	const context = React.useContext(DockStateContext);
+	const context = React.use(DockStateContext);
 	if (context === undefined) {
 		throw new Error("useDock must be used within a DockProvider");
 	}

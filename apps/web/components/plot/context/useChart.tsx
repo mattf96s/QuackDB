@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { use } from "react";
 import { ChartContext } from "./context";
 
 // Breakup everything into smaller files because of React Fast Refresh limitations.
@@ -7,7 +7,7 @@ import { ChartContext } from "./context";
  * Hook to manage the state of the chart.
  */
 export function useChart() {
-  const context = useContext(ChartContext);
+  const context = use(ChartContext);
   if (context === undefined) {
     throw new Error("useChart must be used within a ChartProvider");
   }

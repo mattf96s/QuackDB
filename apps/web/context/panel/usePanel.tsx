@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { use } from "react";
 import { PanelContext } from "./context";
 
 // Breakup everything into smaller files because of React Fast Refresh limitations.
@@ -7,7 +7,7 @@ import { PanelContext } from "./context";
  * Hook to get the session context.
  */
 export function usePanel() {
-  const context = useContext(PanelContext);
+  const context = use(PanelContext);
   if (context === undefined) {
     throw new Error("usePanel must be used within a PanelProvider");
   }

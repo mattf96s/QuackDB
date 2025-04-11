@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { use } from "react";
 import { EditorSettingsContext } from "./context";
 
 // Breakup everything into smaller files because of React Fast Refresh limitations.
@@ -7,7 +7,7 @@ import { EditorSettingsContext } from "./context";
  * Hook to access editor settings.
  */
 export function useEditorSettings() {
-  const context = useContext(EditorSettingsContext);
+  const context = use(EditorSettingsContext);
   if (context === undefined) {
     throw new Error(
       "useEditorSettings must be used within an EditorSettingsProvider",

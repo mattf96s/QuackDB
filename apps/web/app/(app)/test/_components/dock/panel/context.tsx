@@ -221,7 +221,7 @@ function PanelProvider({ children, panelId }: PanelProviderProps) {
 }
 
 function usePanel() {
-	const context = React.useContext(PanelStateContext);
+	const context = React.use(PanelStateContext);
 	if (context === undefined) {
 		throw new Error("usePanel must be used within a PanelProvider");
 	}
