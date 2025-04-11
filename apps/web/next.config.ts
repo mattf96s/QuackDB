@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-	experimental: {
-		optimizePackageImports: ["@duckdb/duckdb-wasm"],
-	},
+  serverExternalPackages: ["@wasm-fmt/sql_fmt"],
+  experimental: {
+    optimizePackageImports: ["@duckdb/duckdb-wasm"],
+  },
 };
 
 export default nextConfig;

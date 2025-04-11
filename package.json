@@ -33,15 +33,15 @@
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "conventional-changelog-conventionalcommits": "^8.0.0",
-    "dotenv-cli": "^7.4.2",
+    "dotenv-cli": "^8.0.0",
     "husky": "^8.0.3",
     "knip": "^5.17.3",
     "lint-staged": "^15.2.5",
     "turbo": "^2.5.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.5.4"
   },
   "volta": {
     "node": "20.18.0"
   },
-  "packageManager": "pnpm@8.9.0"
+  "packageManager": "pnpm@10.8.0"
 }

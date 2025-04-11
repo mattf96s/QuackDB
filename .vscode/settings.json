@@ -14,17 +14,6 @@
     "**/.yarn": true,
     "**/.pnp": true,
   },
-  "eslint.workingDirectories": [
-    {
-      "mode": "auto"
-    }
-  ],
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-  ],
   "files.associations": {
     "*.css": "tailwindcss",
     "*.postcss": "tailwindcss",
@@ -48,11 +37,6 @@
       "[\"'`]([^\"'`]*).*?[\"'`]"
     ]
   ],
-  "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit",
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "explicit"
-  },
   "eslint.codeAction.showDocumentation": {
     "enable": true,
   },
@@ -76,15 +60,20 @@
   "editor.bracketPairColorization.enabled": true,
   "editor.formatOnSaveMode": "file",
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "explicit",
+    "source.organizeImports.biome": "explicit",
+    "source.removeUnusedImports": "explicit"
+  },
   "editor.wordWrapColumn": 100,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "biomejs.biome",
   "[typescript]": {
     "editor.tabSize": 2,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true
   },
   "typescript.preferences.includePackageJsonAutoImports": "auto",
@@ -106,6 +95,9 @@
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
   "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[tailwindcss]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
 }

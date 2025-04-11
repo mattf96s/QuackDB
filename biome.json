@@ -6,8 +6,16 @@
     "useIgnoreFile": false
   },
   "files": {
-    "ignoreUnknown": false,
-    "ignore": []
+    "ignoreUnknown": true,
+    "ignore": [
+      "node_modules",
+      "**/node_modules/**",
+      "**/dist/**",
+      ".turbo",
+      ".build",
+      ".next",
+      "public/worker-dist/**"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -24,7 +32,8 @@
         "noExplicitAny": "off"
       },
       "complexity": {
-        "noForEach": "off"
+        "noForEach": "off",
+        "useArrowFunction": "off"
       }
     }
   },

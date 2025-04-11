@@ -1,37 +1,51 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
   "globalEnv": [
     "NODE_ENV",
     "CI",
-    "VERCEL_ENV",
-    "VITE_VERCEL_ENV"
-  ],
-  "globalDependencies": [
-    "**/.env.*local",
-    "pnpm-lock.yaml"
+    "VERCEL_ENV"
   ],
   "tasks": {
     "build": {
       "dependsOn": [
         "^build"
       ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
       "outputs": [
         ".next/**",
-        "!.next/cache/**",
-        "build/**"
+        "!.next/cache/**"
       ]
     },
     "lint": {
       "dependsOn": [
         "^lint"
-      ],
-      "cache": false
+      ]
+    },
+    "typecheck": {
+      "dependsOn": [
+        "^typecheck"
+      ]
     },
     "dev": {
+      "dependsOn": [
+        "^rebuild:workers"
+      ],
       "cache": false,
       "persistent": true
     },
-    "typecheck": {},
-    "clean": {}
+    "clean": {},
+    "rebuild:workers": {
+      "dependsOn": [
+        "clean:workers",
+        "build:workers"
+      ],
+      "outputs": [
+        "public/worker-dist/**"
+      ]
+    }
   }
 }

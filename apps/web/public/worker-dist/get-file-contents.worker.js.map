@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../workers/get-file-contents.worker.ts"],
+  "sourcesContent": ["/// <reference lib=\"webworker\" />\n\n// https://github.com/vercel/turborepo/issues/3643#issuecomment-2689349937\nself.onmessage = async (event: MessageEvent) => {\n\tself.postMessage({\n\t\ttype: \"SET_LOADING\",\n\t\tloading: true,\n\t});\n\n\tconst { id } = event.data;\n\n\ttry {\n\t\tconst directory = await navigator.storage.getDirectory();\n\t\tconst handle = await directory.getFileHandle(id, { create: true });\n\n\t\tconst file = await handle.getFile();\n\n\t\tconst contents = (await file.text()) ?? \"\";\n\n\t\tself.postMessage({\n\t\t\ttype: \"SET_CONTENTS\",\n\t\t\tcontents,\n\t\t});\n\t} catch (error) {\n\t\tconsole.error(\"Error in worker: \", error);\n\t\tself.postMessage({\n\t\t\ttype: \"SET_ERROR\",\n\t\t\terror: error instanceof Error ? error.message : String(error),\n\t\t});\n\t\treturn;\n\t}\n};\n"],
+  "mappings": ";AAGA,KAAK,YAAY,OAAO,UAAwB;AAC/C,OAAK,YAAY;AAAA,IAChB,MAAM;AAAA,IACN,SAAS;AAAA,EACV,CAAC;AAED,QAAM,EAAE,GAAG,IAAI,MAAM;AAErB,MAAI;AACH,UAAM,YAAY,MAAM,UAAU,QAAQ,aAAa;AACvD,UAAM,SAAS,MAAM,UAAU,cAAc,IAAI,EAAE,QAAQ,KAAK,CAAC;AAEjE,UAAM,OAAO,MAAM,OAAO,QAAQ;AAElC,UAAM,WAAY,MAAM,KAAK,KAAK,KAAM;AAExC,SAAK,YAAY;AAAA,MAChB,MAAM;AAAA,MACN;AAAA,IACD,CAAC;AAAA,EACF,SAAS,OAAO;AACf,YAAQ,MAAM,qBAAqB,KAAK;AACxC,SAAK,YAAY;AAAA,MAChB,MAAM;AAAA,MACN,OAAO,iBAAiB,QAAQ,MAAM,UAAU,OAAO,KAAK;AAAA,IAC7D,CAAC;AACD;AAAA,EACD;AACD;",
+  "names": []
+}

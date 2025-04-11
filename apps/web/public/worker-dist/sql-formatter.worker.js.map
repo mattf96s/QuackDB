@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../workers/sql-formatter.worker.ts"],
+  "sourcesContent": ["/// <reference lib=\"webworker\" />\n\n// https://github.com/vercel/turborepo/issues/3643#issuecomment-2689349937\nself.onmessage = async (event: MessageEvent) => {\n  const { code, options = {} } = event.data;\n\n  const formatter = await import(\n    // @ts-expect-error this works but installing libraries does not (probably cause of the way the worker is bundled to get around Turbopack limitation)\n    \"https://cdn.jsdelivr.net/npm/@wasm-fmt/sql_fmt@0.1.0/+esm\"\n  );\n\n  await formatter.default().init();\n\n  const formattedCode = await formatter.default().format(code, \"query.sql\", {\n    lines_between_queries: 2,\n    indent_style: \"tab\",\n    ...options,\n  });\n  self.postMessage({\n    type: \"FORMATTED\",\n    formattedCode,\n    code,\n  });\n};\n"],
+  "mappings": ";AAGA,KAAK,YAAY,OAAO,UAAwB;AAC9C,QAAM,EAAE,MAAM,UAAU,CAAC,EAAE,IAAI,MAAM;AAErC,QAAM,YAAY,MAAM;AAAA;AAAA,IAEtB;AAAA,EACF;AAEA,QAAM,UAAU,QAAQ,EAAE,KAAK;AAE/B,QAAM,gBAAgB,MAAM,UAAU,QAAQ,EAAE,OAAO,MAAM,aAAa;AAAA,IACxE,uBAAuB;AAAA,IACvB,cAAc;AAAA,IACd,GAAG;AAAA,EACL,CAAC;AACD,OAAK,YAAY;AAAA,IACf,MAAM;AAAA,IACN;AAAA,IACA;AAAA,EACF,CAAC;AACH;",
+  "names": []
+}

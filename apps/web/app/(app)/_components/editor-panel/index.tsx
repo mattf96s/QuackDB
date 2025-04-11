@@ -7,12 +7,64 @@ import { useSqlFormatter } from "@/hooks/use-sql-formatter";
 import { cn } from "@/lib/utils";
 import type { OnChange } from "@monaco-editor/react";
 import { GripHorizontal, Loader2 } from "lucide-react";
-import { Range, type editor } from "monaco-editor";
+import * as monaco from "monaco-editor";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useSpinDelay } from "spin-delay";
 import ResultsView from "../result-viewer";
 import OpenFileTabs from "./components/open-files";
+
+self.MonacoEnvironment = {
+  getWorker: function (workerId, label) {
+    // @ts-expect-error copied verbatim
+    const getWorkerModule = (moduleUrl, label) => {
+      // @ts-expect-error copied verbatim
+      return new Worker(self.MonacoEnvironment.getWorkerUrl(moduleUrl), {
+        name: label,
+        type: "module",
+      });
+    };
+
+    switch (label) {
+      case "json":
+        return getWorkerModule(
+          "/monaco-editor/esm/vs/language/json/json.worker?worker",
+          label
+        );
+      case "css":
+      case "scss":
+      case "less":
+        return getWorkerModule(
+          "/monaco-editor/esm/vs/language/css/css.worker?worker",
+          label
+        );
+      case "html":
+      case "handlebars":
+      case "razor":
+        return getWorkerModule(
+          "/monaco-editor/esm/vs/language/html/html.worker?worker",
+          label
+        );
+      case "typescript":
+      case "javascript":
+        return getWorkerModule(
+          "/monaco-editor/esm/vs/language/typescript/ts.worker?worker",
+          label
+        );
+      default:
+        return getWorkerModule(
+          "/monaco-editor/esm/vs/editor/editor.worker?worker",
+          label
+        );
+    }
+  },
+};
+
+// @ts-expect-error copied verbatim
+monaco.editor.create(document.getElementById("container"), {
+  value: "function hello() {\n\talert('Hello world!');\n}",
+  language: "javascript",
+});
 
 function EditorPanel() {
   return (
@@ -67,7 +119,7 @@ function CurrentEditor() {
       try {
         model.applyEdits([
           {
-            range: new Range(
+            range: new monaco.Range(
               0,
               0,
               model.getLineCount(),
@@ -131,7 +183,7 @@ function CurrentEditor() {
   }, [currentEditor]);
 
   const onSave = useCallback(
-    async (editor: editor.ICodeEditor) => {
+    async (editor: monaco.editor.ICodeEditor) => {
       if (!currentEditor?.path) return;
 
       // check if the content has changed
