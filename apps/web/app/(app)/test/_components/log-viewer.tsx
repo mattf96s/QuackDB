@@ -322,7 +322,7 @@ export default function LogViewer() {
 													<button
 														type="button"
 														onClick={() => toggleLogExpansion(log.id)}
-														className="mr-1 focus:outline-none"
+														className="mr-1 focus:outline-hidden"
 													>
 														{expandedLogs[log.id] ? (
 															<ChevronDown className="h-3 w-3 text-muted-foreground" />
@@ -333,7 +333,7 @@ export default function LogViewer() {
 													{log.message}
 												</div>
 												{expandedLogs[log.id] && (log.data || log.error) && (
-													<div className="mt-1 ml-4 p-1 bg-muted rounded text-xs font-mono whitespace-pre-wrap">
+													<div className="mt-1 ml-4 p-1 bg-muted rounded-sm text-xs font-mono whitespace-pre-wrap">
 														{log.data && (
 															<div>
 																Data: {JSON.stringify(log.data, null, 2)}

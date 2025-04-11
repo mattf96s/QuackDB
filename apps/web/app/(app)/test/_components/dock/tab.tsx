@@ -32,7 +32,7 @@ export function MyCustomTab(props: IDockviewPanelHeaderProps) {
 						className="bg-red-500"
 					>
 						<input
-							className="p-0 h-full w-min min-w-[50px] text-sm outline-none bg-transparent px-0 mx-0 focus:border-0 focus:ring-0 rounded-none focus:shadow-none"
+							className="p-0 h-full w-min min-w-[50px] text-sm outline-hidden bg-transparent px-0 mx-0 focus:border-0 focus:ring-0 rounded-none focus:shadow-none"
 							value={name}
 							onChange={(e) => {
 								startTransition(() => {

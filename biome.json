@@ -34,6 +34,9 @@
       "complexity": {
         "noForEach": "off",
         "useArrowFunction": "off"
+      },
+      "style": {
+        "noUnusedTemplateLiteral": "off"
       }
     }
   },
