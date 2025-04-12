@@ -40,6 +40,21 @@
   "eslint.codeAction.showDocumentation": {
     "enable": true,
   },
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "json",
+    "jsonc",
+    "html",
+    "markdown"
+  ],
   "editor.inlineSuggest.enabled": true,
   "editor.quickSuggestions": {
     "strings": true
@@ -67,6 +82,8 @@
   },
   "editor.wordWrapColumn": 100,
   "editor.defaultFormatter": "biomejs.biome",
+  "typescript.suggest.autoImports": true,
+  "javascript.suggest.autoImports": true,
   "[typescript]": {
     "editor.tabSize": 2,
     "editor.defaultFormatter": "biomejs.biome",

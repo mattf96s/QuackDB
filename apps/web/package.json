@@ -2,10 +2,9 @@
   "name": "web",
   "description": "QuackDB - An online DuckDB SQL playground and editor",
   "private": true,
-  "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "pnpm run rebuild:workers && pnpm run build --turbopack",
+    "build": "next build",
     "dev": "pnpm run rebuild:workers && next dev --turbopack",
     "start": "next start",
     "lint": "next lint",

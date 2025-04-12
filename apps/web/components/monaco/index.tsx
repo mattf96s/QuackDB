@@ -1,11 +1,13 @@
 "use client";
+
 import { useDB } from "@/context/db/useDB";
 import { useQuery } from "@/context/query/useQuery";
 import { cn } from "@/lib/utils";
 import { formatSQL } from "@/utils/sql_fmt";
-import MonacoEditor, {
-	type EditorProps as MonacoEditorProps,
-	type OnMount,
+
+import type {
+	EditorProps as MonacoEditorProps,
+	OnMount,
 } from "@monaco-editor/react";
 // import {
 // 	type IDisposable,
@@ -34,7 +36,12 @@ import {
 	Range,
 	languages,
 } from "monaco-editor";
+import dynamic from "next/dynamic";
 import type { Editor as IStandaloneCodeEditor, Monaco } from "./types";
+
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+	ssr: false,
+});
 
 type EditorProps = Exclude<MonacoEditorProps, "value"> & {
 	value: string;

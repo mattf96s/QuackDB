@@ -5,11 +5,16 @@ import {
 	usePanel,
 } from "@/app/(app)/test/_components/dock/panel/context";
 import type { Editor, Monaco } from "@/components/monaco/types";
-import { Editor as EditorComp, type OnMount } from "@monaco-editor/react";
+import type { OnMount } from "@monaco-editor/react";
 import type { IDockviewPanelProps } from "dockview";
 import type { IDisposable } from "monaco-editor";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef } from "react";
 import { useSpinDelay } from "spin-delay";
+
+const EditorComp = dynamic(() => import("@monaco-editor/react"), {
+	ssr: false,
+});
 
 export function Panel(props: IDockviewPanelProps) {
 	const { id } = props.api;

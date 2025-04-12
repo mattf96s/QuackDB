@@ -2,10 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { useSqlFormatter } from "@/hooks/use-sql-formatter";
-import { useCallback, useState } from "react";
-import { useEffect, useRef } from "react";
-import EditorComp from "@monaco-editor/react";
 import type { OnMount } from "@monaco-editor/react";
+import dynamic from "next/dynamic";
+import { useCallback, useState } from "react";
+import { useRef } from "react";
+
+const EditorComp = dynamic(() => import("@monaco-editor/react"), {
+	ssr: false,
+});
 
 type Editor = Parameters<OnMount>["0"];
 type Monaco = Parameters<OnMount>["1"];

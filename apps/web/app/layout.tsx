@@ -8,12 +8,12 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
 
 const geistSans = Geist({
-	variable: "--font-geist-sans",
+	variable: "--font-sans",
 	subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
+	variable: "--font-mono",
 	subsets: ["latin"],
 });
 
@@ -75,7 +75,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 			</head>
 			<body
 				className={cn(
-					"min-h-svh bg-background font-sans antialiased",
+					"min-h-svh bg-background font-sans antialiased overscroll-none",
 					geistSans.variable,
 					geistMono.variable,
 					jetBrainsMono.variable,
