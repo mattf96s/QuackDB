@@ -1,27 +1,73 @@
 {
-    "$schema": "https://biomejs.dev/schemas/1.5.3/schema.json",
-    "organizeImports": {
-        "enabled": true
+  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
+  },
+  "files": {
+    "ignoreUnknown": false
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "tab"
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "complexity": {
+        "recommended": true,
+        "noForEach": "off"
+      },
+      "a11y": {
+        "recommended": true
+      },
+      "correctness": {
+        "recommended": true
+      },
+      "nursery": {
+        "useSortedClasses": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {}
+        }
+      },
+      "performance": {
+        "recommended": true
+      },
+      "security": {
+        "recommended": true
+      },
+      "style": {
+        "recommended": true
+      },
+      "suspicious": {
+        "recommended": true
+      }
     },
-    "formatter": {
-        "enabled": true,
-        "ignore": [
-            "node_modules/**/*",
-            "dist/**/*",
-            ".sst/**/*",
-            "pnpm-lock.yaml"
-        ]
-    },
-    "linter": {
-        "enabled": true,
-        "rules": {
-            "recommended": true
-        },
-        "ignore": [
-            "node_modules/**/*",
-            "dist/**/*",
-            ".sst/**/*",
-            "pnpm-lock.yaml"
-        ]
+    "domains": {
+      "react": "recommended",
+      "test": "recommended"
     }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": true
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
 }

@@ -38,3 +38,4 @@ pnpm-debug.log*
 *.pem
 
 .sst
+.tanstack

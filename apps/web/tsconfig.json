@@ -1,52 +1,38 @@
 {
   "include": [
     "**/*.ts",
-    "**/*.tsx",
-    "**/.server/**/*.ts",
-    "**/.server/**/*.tsx",
-    "**/.client/**/*.ts",
-    "**/.client/**/*.tsx",
-    "env.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "build",
-    ".vercel"
+    "**/*.tsx"
   ],
   "compilerOptions": {
+    "target": "ES2022",
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "types": [
-      "@vercel/remix",
-      "node",
       "vite/client",
       "@types/wicg-file-system-access"
     ],
-    "esModuleInterop": true,
-    "jsx": "react-jsx",
-    "resolveJsonModule": true,
-    "target": "ES2022",
-    "allowJs": true,
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    /* Linting */
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": [
-        "./app/*"
-      ]
-    },
-    /* strictness */
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "noFallthroughCasesInSwitch": true,
-    /* transpiling */
-    "moduleResolution": "Bundler",
-    "module": "ESNext",
-    "noEmit": true,
-    "isolatedModules": true,
-    /* where our code runs */
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2022"
-    ]
+      "@/*": [
+        "./src/*"
+      ],
+    }
   }
 }
