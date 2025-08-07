@@ -25,6 +25,11 @@
         "^lint"
       ]
     },
+    "format": {
+      "dependsOn": [
+        "^format"
+      ]
+    },
     "dev": {
       "cache": false,
       "persistent": true

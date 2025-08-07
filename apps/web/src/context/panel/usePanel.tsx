@@ -7,9 +7,9 @@ import { PanelContext } from "./context";
  * Hook to get the session context.
  */
 export function usePanel() {
-  const context = useContext(PanelContext);
-  if (context === undefined) {
-    throw new Error("usePanel must be used within a PanelProvider");
-  }
-  return context;
+	const context = useContext(PanelContext);
+	if (context === undefined) {
+		throw new Error("usePanel must be used within a PanelProvider");
+	}
+	return context;
 }

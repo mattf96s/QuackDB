@@ -23,10 +23,8 @@
     "lint": "turbo run lint",
     "format": "turbo run format",
     "sso": "aws sso login --sso-session=d-93675d34f6",
-    "set-node-v": "pnpm env use --global 20",
     "typecheck": "turbo run typecheck",
-    "knip": "knip",
-    "release": "turbo build && changeset version"
+    "knip": "knip"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.4",

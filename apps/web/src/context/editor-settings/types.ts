@@ -1,7 +1,7 @@
 export type EditorSettingsState = {
-  shouldFormat: boolean;
+	shouldFormat: boolean;
 };
 
 export type EditorSettingsContextValue = EditorSettingsState & {
-  toggleShouldFormat: (shouldFormat: boolean) => void;
+	toggleShouldFormat: (shouldFormat: boolean) => void;
 };

@@ -7,9 +7,9 @@ import { DBContext } from "./context";
  * Hook to access the DuckDB instance
  */
 export function useDB() {
-  const context = useContext(DBContext);
-  if (context === undefined) {
-    throw new Error("useDB must be used within a DBContext");
-  }
-  return context;
+	const context = useContext(DBContext);
+	if (context === undefined) {
+		throw new Error("useDB must be used within a DBContext");
+	}
+	return context;
 }

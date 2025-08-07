@@ -7,9 +7,9 @@ import { WrapperContext } from "./context";
  * Hook to manage opening and closing panels.
  */
 export function useWrapper() {
-  const context = useContext(WrapperContext);
-  if (context === undefined) {
-    throw new Error("useWrapper must be used within a WrapperContext");
-  }
-  return context;
+	const context = useContext(WrapperContext);
+	if (context === undefined) {
+		throw new Error("useWrapper must be used within a WrapperContext");
+	}
+	return context;
 }

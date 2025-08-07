@@ -26,7 +26,7 @@
 		"*.postcss": "tailwindcss",
 		"*.pcss": "tailwindcss"
 	},
-	"diffEditor.ignoreTrimWhitespace": true, // https://github.com/cpojer/dotfiles/blob/main/vscode/User/settings.json
+	"diffEditor.ignoreTrimWhitespace": false, // https://github.com/cpojer/dotfiles/blob/main/vscode/User/settings.json
 	"editor.minimap.enabled": false,
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"typescript.enablePromptUseWorkspaceTsdk": true,

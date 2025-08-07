@@ -7,11 +7,11 @@ import { EditorSettingsContext } from "./context";
  * Hook to access editor settings.
  */
 export function useEditorSettings() {
-  const context = useContext(EditorSettingsContext);
-  if (context === undefined) {
-    throw new Error(
-      "useEditorSettings must be used within an EditorSettingsProvider",
-    );
-  }
-  return context;
+	const context = useContext(EditorSettingsContext);
+	if (context === undefined) {
+		throw new Error(
+			"useEditorSettings must be used within an EditorSettingsProvider",
+		);
+	}
+	return context;
 }

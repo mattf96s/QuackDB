@@ -6,7 +6,7 @@ import * as semicolons from "postgres-semicolons";
  * see https://github.com/neondatabase/semicolons
  */
 export const splitSQL = (sql: string) => {
-  const standardConformingStrings = true;
-  const splits = semicolons.parseSplits(sql, standardConformingStrings);
-  return semicolons.nonEmptyStatements(sql, splits.positions);
+	const standardConformingStrings = true;
+	const splits = semicolons.parseSplits(sql, standardConformingStrings);
+	return semicolons.nonEmptyStatements(sql, splits.positions);
 };

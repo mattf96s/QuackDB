@@ -9,9 +9,9 @@ import { SessionContext } from "./context";
  * Includes session information and accompanying file handles.
  */
 export function useSession() {
-  const context = useContext(SessionContext);
-  if (context === undefined) {
-    throw new Error("useSession must be used within a SessionContext");
-  }
-  return context;
+	const context = useContext(SessionContext);
+	if (context === undefined) {
+		throw new Error("useSession must be used within a SessionContext");
+	}
+	return context;
 }

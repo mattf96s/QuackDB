@@ -1,11 +1,11 @@
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+	AlertDialog,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { DbProvider } from "@/context/db/provider";
 import { EditorSettingsProvider } from "@/context/editor-settings/provider";
@@ -75,84 +75,84 @@ import NavBar from "./components/navbar";
 // };
 
 const LazyPlayground = lazy(() =>
-  import("./components/playground").then((module) => ({
-    default: module.default,
-  })),
+	import("./components/playground").then((module) => ({
+		default: module.default,
+	})),
 );
 
 export default function Component() {
-  //const data = useLoaderData<typeof clientLoader>();
-  const { canCloneHandle } = {
-    canCloneHandle: true,
-  };
-  return (
-    <div className="flex size-full flex-col">
-      {!canCloneHandle && <NotSupportedModal />}
-      <Suspense fallback={<PlaygroundSkeleton />}>
-        <SessionProvider>
-          <DbProvider>
-            <PanelProvider>
-              <QueryProvider>
-                <EditorSettingsProvider>
-                  <EditorProvider>
-                    <NavBar />
-                    <Suspense fallback={<PlaygroundSkeleton />}>
-                      <LazyPlayground />
-                    </Suspense>
-                  </EditorProvider>
-                </EditorSettingsProvider>
-              </QueryProvider>
-            </PanelProvider>
-          </DbProvider>
-        </SessionProvider>
-      </Suspense>
-    </div>
-  );
+	//const data = useLoaderData<typeof clientLoader>();
+	const { canCloneHandle } = {
+		canCloneHandle: true,
+	};
+	return (
+		<div className="flex size-full flex-col">
+			{!canCloneHandle && <NotSupportedModal />}
+			<Suspense fallback={<PlaygroundSkeleton />}>
+				<SessionProvider>
+					<DbProvider>
+						<PanelProvider>
+							<QueryProvider>
+								<EditorSettingsProvider>
+									<EditorProvider>
+										<NavBar />
+										<Suspense fallback={<PlaygroundSkeleton />}>
+											<LazyPlayground />
+										</Suspense>
+									</EditorProvider>
+								</EditorSettingsProvider>
+							</QueryProvider>
+						</PanelProvider>
+					</DbProvider>
+				</SessionProvider>
+			</Suspense>
+		</div>
+	);
 }
 
 function PlaygroundSkeleton() {
-  return (
-    <div className="flex size-full items-center justify-center bg-background">
-      <Loader2 name="loader-circle" className="size-6 animate-spin" />
-    </div>
-  );
+	return (
+		<div className="flex size-full items-center justify-center bg-background">
+			<Loader2 name="loader-circle" className="size-6 animate-spin" />
+		</div>
+	);
 }
 
 function NotSupportedModal() {
-  const [open, setOpen] = useState(true);
-  return (
-    <>
-      {!open && (
-        <div className="bg-destructive p-2 text-center text-white">
-          <p>
-            Your browser does not support transferring file system file handles.
-            <br />
-          </p>
-        </div>
-      )}
-      <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Browser Not Supported</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your browser does not support{" "}
-              <a
-                target="_blank"
-                href="https://bugs.webkit.org/show_bug.cgi?id=256712#c0"
-                rel="noreferrer"
-                className="underline"
-              >
-                transferring file system file handles
-              </a>
-              .
-              <br />
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
+	const [open, setOpen] = useState(true);
+	return (
+		<>
+			{!open && (
+				<div className="bg-destructive p-2 text-center text-white">
+					<p>
+						Your browser does not support transferring file system file handles.
+						<br />
+					</p>
+				</div>
+			)}
+			<AlertDialog open={open} onOpenChange={setOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Browser Not Supported</AlertDialogTitle>
+						<AlertDialogDescription>
+							Your browser does not support{" "}
+							<a
+								target="_blank"
+								href="https://bugs.webkit.org/show_bug.cgi?id=256712#c0"
+								rel="noreferrer"
+								className="underline"
+							>
+								transferring file system file handles
+							</a>
+							.
+							<br />
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</>
+	);
 }

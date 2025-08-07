@@ -8,17 +8,17 @@ import type { editor } from "monaco-editor";
  * @source https://github.com/rhashimoto/preview/blob/master/demo/demo.js
  */
 export const onSaveToLocalStorage =
-  (SQL_KEY: string) => (editor: editor.IStandaloneCodeEditor) => {
-    // Persist editor content across page loads.
-    let change: NodeJS.Timeout;
-    const disposable = editor.onDidChangeModelContent(function () {
-      clearTimeout(change);
-      change = setTimeout(function () {
-        localStorage.setItem(SQL_KEY, editor.getValue());
-      }, 1000);
-    });
+	(SQL_KEY: string) => (editor: editor.IStandaloneCodeEditor) => {
+		// Persist editor content across page loads.
+		let change: NodeJS.Timeout;
+		const disposable = editor.onDidChangeModelContent(function () {
+			clearTimeout(change);
+			change = setTimeout(function () {
+				localStorage.setItem(SQL_KEY, editor.getValue());
+			}, 1000);
+		});
 
-    editor.setValue(localStorage.getItem(SQL_KEY) ?? "MONACO_EDITOR_CONTENT");
+		editor.setValue(localStorage.getItem(SQL_KEY) ?? "MONACO_EDITOR_CONTENT");
 
-    return disposable;
-  };
+		return disposable;
+	};

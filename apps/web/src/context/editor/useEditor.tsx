@@ -7,9 +7,9 @@ import { EditorContext } from "./context";
  * Hook to access the query context.
  */
 export function useEditor() {
-  const context = useContext(EditorContext);
-  if (context === undefined) {
-    throw new Error("useEditor must be used within an EditorProvider");
-  }
-  return context;
+	const context = useContext(EditorContext);
+	if (context === undefined) {
+		throw new Error("useEditor must be used within an EditorProvider");
+	}
+	return context;
 }
