@@ -12,6 +12,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster } from "sonner";
 import { GlobalPendingIndicator } from "@/components/global-loader";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
+import { ThemeProvider } from "@/components/theme-provider";
 import appCss from "../styles/globals.css?url";
 
 export const Route = createRootRoute({
@@ -41,7 +42,9 @@ export const Route = createRootRoute({
 function RootComponent() {
 	return (
 		<RootDocument>
-			<Outlet />
+			<ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+				<Outlet />
+			</ThemeProvider>
 		</RootDocument>
 	);
 }

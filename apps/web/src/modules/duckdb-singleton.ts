@@ -422,7 +422,7 @@ export class DuckDBInstance {
 	 * @source [Observable stdlib](https://github.com/observablehq/stdlib/blob/main/src/duckdb.js)
 	 */
 
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	// biome-ignore lint/suspicious/noExplicitAny: Arrow types require any for generic compatibility
 	public async queryStream<T extends TypeMap = any>(
 		query: string,
 		params?: Array<unknown>,
@@ -434,14 +434,18 @@ export class DuckDBInstance {
 
 		let reader: AsyncRecordBatchStreamReader<T>;
 
-		let batch: IteratorResult<RecordBatch<T>, any>;
+		let batch: IteratorResult<RecordBatch<T>, void>;
 		try {
 			if (params && params.length > 0) {
 				const statement = await connection.prepare(query);
 
-				reader = await statement.send(...params);
+				reader = (await statement.send(
+					...params,
+				)) as unknown as AsyncRecordBatchStreamReader<T>;
 			} else {
-				reader = await connection.send(query);
+				reader = (await connection.send(
+					query,
+				)) as unknown as AsyncRecordBatchStreamReader<T>;
 			}
 			batch = await reader.next();
 			if (batch.done) throw new Error("missing first batch");
@@ -566,6 +570,7 @@ export class DuckDBInstance {
 			};
 
 			const results: QueryResponse = {
+				// @ts-expect-error: #TODO: not sure which arrow type to use.
 				table,
 				meta,
 				count: table.numRows,
@@ -616,6 +621,7 @@ export class DuckDBInstance {
 		}
 	}
 
+	// biome-ignore lint/suspicious/noExplicitAny: Arrow TypeMap requires any for generic compatibility
 	async query<T extends TypeMap = any>(query: string, params?: T[]) {
 		const conn = await this.#connect();
 		try {
@@ -803,7 +809,7 @@ export class DuckDBInstance {
 
 			// Generate a download link (ensure to revoke the object URL after the download).
 			// We could use window.showSaveFilePicker() but it is only supported in Chrome.
-			const link = URL.createObjectURL(new Blob([buffer]));
+			const link = URL.createObjectURL(new Blob([new Uint8Array(buffer)]));
 
 			return link;
 		} catch (e) {

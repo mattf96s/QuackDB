@@ -12,4 +12,4 @@ export const tokenMap: typeof TokenType = {
 };
 
 // https://github.com/duckdb/duckdb-wasm/blob/e0271a99f3c4fe326b2fb623b91d0ccbb58c7709/packages/duckdb-wasm-shell/crate/src/prompt_buffer.rs#L374
-export const parseTokens = (tokens: ScriptTokens[]) => {};
+export const parseTokens = (_tokens: ScriptTokens[]) => {};

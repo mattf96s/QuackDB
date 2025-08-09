@@ -17,7 +17,8 @@
         ".env*"
       ],
       "outputs": [
-        "build/**"
+        ".nitro",
+        ".output"
       ]
     },
     "lint": {

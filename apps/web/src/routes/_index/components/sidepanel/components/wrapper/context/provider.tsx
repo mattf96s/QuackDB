@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useReducer, useRef } from "react";
-import { type ImperativePanelHandle } from "react-resizable-panels";
+import type { ImperativePanelHandle } from "react-resizable-panels";
 import { WrapperContext } from "./context";
 import type { WrapperState } from "./types";
 

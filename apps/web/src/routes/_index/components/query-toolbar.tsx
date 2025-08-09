@@ -158,7 +158,7 @@ type ExporterProps = {
 };
 
 function Exporter(props: ExporterProps) {
-	const [isExporting, setIsExporting] = useState(false);
+	const [_isExporting, setIsExporting] = useState(false);
 
 	const { db } = useDB();
 	const { meta } = useQuery();
@@ -227,7 +227,7 @@ function Exporter(props: ExporterProps) {
 
 				// Generate a download link (ensure to revoke the object URL after the download).
 				// We could use window.showSaveFilePicker() but it is only supported in Chrome.
-				downloadUrl = URL.createObjectURL(new Blob([buffer]));
+				downloadUrl = URL.createObjectURL(new Blob([new Uint8Array(buffer)]));
 
 				const a = document.createElement("a");
 				a.href = downloadUrl;

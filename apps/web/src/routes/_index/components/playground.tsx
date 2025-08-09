@@ -1,5 +1,4 @@
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
-import { FolderClosed, FolderOpen } from "lucide-react";
+import { FolderClosed, FolderOpen, Github } from "lucide-react";
 import { useRef, useState } from "react";
 import {
 	type ImperativePanelHandle,
@@ -7,7 +6,7 @@ import {
 	PanelGroup,
 } from "react-resizable-panels";
 import PanelHandle from "@/components/panel-handle";
-import ModeToggle from "@/components/theme-toggle";
+import { ModeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { useFileDrop } from "@/context/session/hooks/useAddFile.tsx";
 import { cn } from "@/lib/utils";
@@ -34,6 +33,9 @@ export default function Playground() {
 			onDragEnter={onDragEnter}
 			onDragLeave={onDragLeave}
 			ref={ref}
+			role="application"
+			aria-label="File drop zone"
+			aria-describedby="drop-zone-description"
 			className={cn(
 				"flex size-full bg-inherit",
 				isDragActive &&
@@ -102,7 +104,7 @@ function SidebarLinks() {
 					href="https://github.com/mattf96s/QuackDB"
 					rel="noreferrer"
 				>
-					<GitHubLogoIcon name="github" className="size-5" />
+					<Github name="github" className="size-5" />
 				</a>
 			</Button>
 			<AboutModal />

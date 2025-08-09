@@ -1,4 +1,3 @@
-import { PopoverAnchor, PopoverTrigger } from "@radix-ui/react-popover";
 import { ChevronDown, Code, Dot, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -23,7 +22,11 @@ import {
 } from "@/components/ui/context-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent } from "@/components/ui/popover";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import type { CodeEditor } from "@/context/session/types";
 import { useSession } from "@/context/session/useSession";
 import { cn } from "@/lib/utils";
@@ -246,7 +249,7 @@ function RenamePopover(props: RenamePopoverProps) {
 				description: `File ${filename} renamed to ${newName}`,
 			});
 			onOpenChange(false);
-		} catch (e) {
+		} catch (_e) {
 			toast.error("Failed to rename file");
 		} finally {
 			setIsLoading(false);
@@ -254,9 +257,8 @@ function RenamePopover(props: RenamePopoverProps) {
 	};
 	return (
 		<Popover open={isOpen} onOpenChange={onOpenChange} modal>
-			<PopoverAnchor asChild>
-				<PopoverTrigger>{children}</PopoverTrigger>
-			</PopoverAnchor>
+			<PopoverTrigger>{children}</PopoverTrigger>
+
 			<PopoverContent className="w-80">
 				<form method="post" onSubmit={onSubmitHandler} id="rename-form">
 					<div className="grid gap-4">

@@ -1,4 +1,4 @@
-import { Slot } from "@radix-ui/react-slot";
+import { Slot as SlotPrimitive } from "radix-ui";
 import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,7 @@ export interface PillProps
  */
 const Pill = React.forwardRef<HTMLSpanElement, PillProps>(
 	({ className, variant, size, asChild = false, ...props }, ref) => {
-		const Comp = asChild ? Slot : "span";
+		const Comp = asChild ? SlotPrimitive.Slot : "span";
 		return (
 			<Comp
 				className={cn(pillVariants({ variant, size, className }))}

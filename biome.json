@@ -25,7 +25,14 @@
         "recommended": true
       },
       "correctness": {
-        "recommended": true
+        "recommended": true,
+        "noUnusedVariables": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {
+            "ignoreRestSiblings": true
+          }
+        }
       },
       "nursery": {
         "useSortedClasses": {

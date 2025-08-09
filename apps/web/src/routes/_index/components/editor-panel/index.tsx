@@ -1,6 +1,5 @@
 import type { OnChange } from "@monaco-editor/react";
-import { DragHandleDots2Icon } from "@radix-ui/react-icons";
-import { Loader2 } from "lucide-react";
+import { Grip, Loader2 } from "lucide-react";
 import { type editor, Range } from "monaco-editor";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
@@ -28,7 +27,7 @@ function EditorPanel() {
 				)}
 			>
 				<div className="z-10 flex h-4 w-3 items-center justify-center rounded-sm border bg-border">
-					<DragHandleDots2Icon className="size-2.5" />
+					<Grip className="size-2.5" />
 				</div>
 			</PanelResizeHandle>
 			<Panel minSize={10}>

@@ -1,5 +1,17 @@
+"use client";
+
 import * as React from "react";
-// https://github.com/shadcn-ui/ui/blob/main/apps/www/hooks/use-media-query.tsx
+
+/**
+ * Media query hook which also listens for changes.
+ *
+ * @example
+ *
+ * ```tsx
+ * const isDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+ * ```
+ * Taken from [Shadcn](https://github.com/shadcn-ui/ui/blob/main/apps/v4/hooks/use-media-query.tsx)
+ */
 export function useMediaQuery(query: string) {
 	const [value, setValue] = React.useState(false);
 
