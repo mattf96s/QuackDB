@@ -1,0 +1,64 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": [
+        "turbo.json",
+        "biome.json",
+        "lefthook.yml"
+      ],
+      "project": [
+        "turbo.json",
+        "biome.json",
+        "lefthook.yml",
+        "pnpm-workspace.yaml",
+        "knip.json"
+      ]
+    },
+    "apps/web": {
+      "entry": [
+        "src/routes/**/*.{ts,tsx}",
+        "vite.config.ts"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx}",
+        "public/**/*",
+        "vite.config.ts",
+        "tsconfig.json",
+        "components.json"
+      ],
+      "ignore": [
+        "src/routeTree.gen.ts",
+        "public/**/*",
+        "dist/**/*",
+        ".tanstack/**/*",
+        ".nitro/**/*",
+        ".output/**/*"
+      ]
+    }
+  },
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.turbo/**",
+    "**/.tanstack/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/.nitro/**",
+    "**/.output/**"
+  ],
+  "ignoreDependencies": [
+    "@biomejs/biome",
+    "@commitlint/cli",
+    "@commitlint/config-conventional",
+    "conventional-changelog-conventionalcommits",
+    "dotenv-cli",
+    "husky",
+    "lint-staged",
+    "turbo",
+    "typescript",
+    "knip"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "includeEntryExports": true
+}

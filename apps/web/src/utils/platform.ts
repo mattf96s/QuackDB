@@ -5,6 +5,7 @@ export type Browser =
 	| "ie"
 	| "unknown"
 	| "node";
+
 /**
  * Find the browser name.
  */

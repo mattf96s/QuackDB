@@ -5,8 +5,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { IDB_KEYS } from "@/constants.client";
-import { useQuery } from "@/context/query/useQuery";
+import { IDB_KEYS } from "@/constants";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { cn } from "@/lib/utils";
 import { type QueryMeta, queryMetaSchema } from "@/types/query";
@@ -41,7 +40,6 @@ export default function QueryHistory() {
 	const [runs, setRuns] = useState<QueryMeta[]>([]);
 
 	const { isCollapsed, ref } = useWrapper();
-	const { meta } = useQuery();
 
 	const onToggle = () => {
 		if (!ref.current) {
@@ -55,7 +53,6 @@ export default function QueryHistory() {
 			ref.current.expand();
 		}
 	};
-	const uniqueId = `${meta?.hash}_${meta?.created}`;
 
 	useEffect(() => {
 		let ignore = false;
@@ -71,7 +68,7 @@ export default function QueryHistory() {
 		return () => {
 			ignore = true;
 		};
-	}, [uniqueId]);
+	}, []);
 
 	const onClearHistory = async () => {
 		await del(IDB_KEYS.QUERY_HISTORY);
@@ -116,7 +113,6 @@ export default function QueryHistory() {
 					"flex w-full flex-col gap-1 divide-y divide-white/5 overflow-y-auto px-4 py-1 transition-all dark:divide-white/5",
 					isCollapsed && "hidden",
 				)}
-				role="list"
 			>
 				{runs.map((run) => {
 					const key = `${run.hash}_${run.created}`;

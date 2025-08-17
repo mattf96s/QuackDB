@@ -12,8 +12,7 @@
     "url": "https://www.matthewfainman.com/"
   },
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/*"
   ],
   "description": "QuackDB - An online DuckDB SQL playground and editor",
   "scripts": {

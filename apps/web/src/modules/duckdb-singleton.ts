@@ -9,7 +9,7 @@ import {
 	Table,
 	type TypeMap,
 } from "apache-arrow";
-import { CACHE_KEYS } from "@/constants.client";
+import { CACHE_KEYS } from "@/constants";
 import type { QueryMeta, QueryResponse } from "@/types/query";
 import { getArrowTableSchema } from "@/utils/arrow/helpers";
 import { getColumnType } from "@/utils/duckdb/helpers/getColumnType";

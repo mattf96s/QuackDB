@@ -3,7 +3,7 @@ import { get, set } from "idb-keyval";
 import { useCallback, useMemo, useReducer } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { IDB_KEYS } from "@/constants.client";
+import { IDB_KEYS } from "@/constants";
 import { useDB } from "@/context/db/useDB";
 import useAbortController from "@/hooks/use-abortable";
 import {

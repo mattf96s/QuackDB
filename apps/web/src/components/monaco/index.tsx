@@ -12,6 +12,7 @@ import {
 	Range,
 } from "monaco-editor";
 import "monaco-editor/esm/vs/basic-languages/sql/sql.contribution";
+import { useTheme } from "next-themes";
 import {
 	forwardRef,
 	useEffect,
@@ -19,7 +20,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useTheme } from "remix-themes";
 import { useDB } from "@/context/db/useDB";
 import { useQuery } from "@/context/query/useQuery";
 import { cn } from "@/lib/utils";
@@ -45,7 +45,7 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 	const { onRunQuery } = useQuery();
 	const { db } = useDB();
 
-	const [theme] = useTheme();
+	const { theme } = useTheme();
 
 	const language = props.language ?? "sql";
 	const isDark = theme === "dark";
@@ -175,7 +175,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 		);
 
 		return () => {
-			// biome-ignore lint/complexity/noForEach: <explanation>
 			disposables.forEach((disposable) => disposable.dispose());
 		};
 	}, [isReady]);
@@ -235,7 +234,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 		);
 
 		return () => {
-			// biome-ignore lint/complexity/noForEach: <explanation>
 			disposables.forEach((disposable) => disposable.dispose());
 		};
 	}, [isReady, language, onRunQuery]);
@@ -295,7 +293,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 		);
 
 		return () => {
-			// biome-ignore lint/complexity/noForEach: <explanation>
 			disposables.forEach((disposable) => disposable.dispose());
 		};
 	}, [db, isReady, language]);
@@ -568,7 +565,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 		);
 
 		return () => {
-			// biome-ignore lint/complexity/noForEach: <explanation>
 			disposables.forEach((disposable) => disposable.dispose());
 		};
 	}, [db, isReady]);
@@ -629,7 +625,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 		);
 
 		return () => {
-			// biome-ignore lint/complexity/noForEach: <explanation>
 			disposables.forEach((disposable) => disposable.dispose());
 		};
 	}, [isReady, onRunQuery]);
@@ -653,7 +648,6 @@ const Editor = forwardRef<EditorForwardedRef, EditorProps>((props, ref) => {
 		);
 
 		return () => {
-			// biome-ignore lint/complexity/noForEach: <explanation>
 			disposables.forEach((disposable) => disposable.dispose());
 		};
 	}, [props, isReady]);
