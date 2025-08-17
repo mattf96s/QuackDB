@@ -20,4 +20,8 @@ export default defineConfig({
 		tailwindcss(),
 		viteReact(),
 	],
+	optimizeDeps: {
+		exclude: ["monaco-editor"],
+	},
+	ssr: { noExternal: ["monaco-editor"] },
 });

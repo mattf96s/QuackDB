@@ -9,7 +9,10 @@
   "files": {
     "ignoreUnknown": false,
     "experimentalScannerIgnores": [
-      "src/routeTree.gen.ts"
+      "**/pnpm-lock.yaml",
+      "apps/web/src/routeTree.gen.ts",
+      ".vercel",
+      "public"
     ]
   },
   "formatter": {

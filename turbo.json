@@ -21,7 +21,6 @@
         ".output"
       ]
     },
-    "start": {},
     "lint": {
       "dependsOn": [
         "^lint"
