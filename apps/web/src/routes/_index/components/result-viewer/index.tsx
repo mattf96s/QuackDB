@@ -1,3 +1,5 @@
+"use client";
+
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { Loader2 } from "lucide-react";
 import { lazy, Suspense } from "react";

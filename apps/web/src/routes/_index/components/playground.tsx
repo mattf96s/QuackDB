@@ -1,3 +1,5 @@
+"use client";
+
 import { FolderClosed, FolderOpen, Github } from "lucide-react";
 import { useRef, useState } from "react";
 import {

@@ -1,10 +1,11 @@
+"use client";
+
 import type { OnChange } from "@monaco-editor/react";
-import { Grip, Loader2 } from "lucide-react";
+import { Grip } from "lucide-react";
 import { type editor, Range } from "monaco-editor";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { useSpinDelay } from "spin-delay";
-import Editor from "@/components/monaco";
+import { Editor } from "@/components/monaco/editor";
 import { useEditor } from "@/context/editor/useEditor";
 import { useEditorSettings } from "@/context/editor-settings/useEditor";
 import { useSession } from "@/context/session/useSession";
@@ -44,7 +45,7 @@ function CurrentEditor() {
 	const { editorRef } = useEditor();
 	const [sql, setSql] = useState("");
 	const [isReady, setIsReady] = useState(false);
-	const [isSaving, setIsSaving] = useState(false);
+	const [_isSaving, setIsSaving] = useState(false);
 
 	const { shouldFormat } = useEditorSettings();
 
@@ -137,11 +138,6 @@ function CurrentEditor() {
 		[currentEditor, onSaveEditor, shouldFormat],
 	);
 
-	const showLoader = useSpinDelay(isSaving, {
-		delay: 0,
-		minDuration: 120,
-	});
-
 	if (!currentEditor) {
 		return (
 			<div className="flex h-full items-center justify-center text-gray-400">
@@ -159,28 +155,18 @@ function CurrentEditor() {
 	}
 
 	return (
-		<>
-			<Editor
-				onSave={onSave}
-				value={sql}
-				ref={editorRef}
-				onChange={onChangeHandler}
-				className="h-full border-t-0"
-				options={{
-					padding: {
-						top: 10,
-						bottom: 16,
-					},
-				}}
-			/>
-			{showLoader && (
-				<div className="absolute top-2 right-4 z-10">
-					<Loader2
-						name="loader-circle"
-						className="size-4 animate-spin text-primary"
-					/>
-				</div>
-			)}
-		</>
+		<Editor
+			onSave={onSave}
+			value={sql}
+			ref={editorRef}
+			onChange={onChangeHandler}
+			className="h-full border-t-0"
+			options={{
+				padding: {
+					top: 10,
+					bottom: 16,
+				},
+			}}
+		/>
 	);
 }

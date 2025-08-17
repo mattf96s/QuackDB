@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -8,14 +9,13 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { DbProvider } from "@/context/db/provider";
-import { EditorSettingsProvider } from "@/context/editor-settings/provider";
 import { EditorProvider } from "@/context/editor/provider";
+import { EditorSettingsProvider } from "@/context/editor-settings/provider";
 import { PanelProvider } from "@/context/panel/provider";
 import { QueryProvider } from "@/context/query/provider";
 import { SessionProvider } from "@/context/session/provider";
-import { Loader2 } from "lucide-react";
-import { Suspense, lazy, useState } from "react";
 import NavBar from "./components/navbar";
+import Playground from "./components/playground";
 
 /**
  * WebKit has a bug with transferring file system file handles to workers.
@@ -46,41 +46,7 @@ import NavBar from "./components/navbar";
 //   };
 // }
 
-// export function HydrateFallback() {
-//   return <PlaygroundSkeleton />;
-// }
-
-// export const meta: MetaDescriptor = () => {
-//   return [
-//     {
-//       title: "Playground | QuackDB",
-//     },
-//     {
-//       name: "description",
-//       content: metaDetails.description,
-//     },
-//     {
-//       name: "og:description",
-//       content: metaDetails.description,
-//     },
-//     {
-//       name: "og:title",
-//       content: "Playground | QuackDB",
-//     },
-//     {
-//       name: "og:url",
-//       content: "https://www.quackdb.com/",
-//     },
-//   ];
-// };
-
-const LazyPlayground = lazy(() =>
-	import("./components/playground").then((module) => ({
-		default: module.default,
-	})),
-);
-
-export default function Component() {
+export default function Page() {
 	//const data = useLoaderData<typeof clientLoader>();
 	const { canCloneHandle } = {
 		canCloneHandle: true,
@@ -88,32 +54,22 @@ export default function Component() {
 	return (
 		<div className="flex size-full flex-col">
 			{!canCloneHandle && <NotSupportedModal />}
-			<Suspense fallback={<PlaygroundSkeleton />}>
-				<SessionProvider>
-					<DbProvider>
-						<PanelProvider>
-							<QueryProvider>
-								<EditorSettingsProvider>
-									<EditorProvider>
-										<NavBar />
-										<Suspense fallback={<PlaygroundSkeleton />}>
-											<LazyPlayground />
-										</Suspense>
-									</EditorProvider>
-								</EditorSettingsProvider>
-							</QueryProvider>
-						</PanelProvider>
-					</DbProvider>
-				</SessionProvider>
-			</Suspense>
-		</div>
-	);
-}
 
-function PlaygroundSkeleton() {
-	return (
-		<div className="flex size-full items-center justify-center bg-background">
-			<Loader2 name="loader-circle" className="size-6 animate-spin" />
+			<SessionProvider>
+				<DbProvider>
+					<PanelProvider>
+						<QueryProvider>
+							<EditorSettingsProvider>
+								<EditorProvider>
+									<NavBar />
+
+									<Playground />
+								</EditorProvider>
+							</EditorSettingsProvider>
+						</QueryProvider>
+					</PanelProvider>
+				</DbProvider>
+			</SessionProvider>
 		</div>
 	);
 }

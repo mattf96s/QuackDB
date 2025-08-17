@@ -1,4 +1,6 @@
-import { releaseProxy, wrap, type Remote } from "comlink";
+"use client";
+
+import { type Remote, releaseProxy, wrap } from "comlink";
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { toast } from "sonner";
 import { SessionContext } from "./context";
@@ -679,7 +681,7 @@ function SessionProvider({ children }: SessionProviderProps) {
 				type: "RESET_SESSION",
 			});
 
-			window.location.reload();
+			//window.location.reload();
 		} catch (e) {
 			console.error("Failed to clear session: ", e);
 			toast.error("Failed to clear the session", {

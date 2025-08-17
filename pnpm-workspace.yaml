@@ -3,5 +3,8 @@ packages:
   - packages/*
 
 onlyBuiltDependencies:
+  - '@parcel/watcher'
   - '@tailwindcss/oxide'
+  - '@vercel/speed-insights'
+  - esbuild
   - oxc-resolver

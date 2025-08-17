@@ -1,3 +1,5 @@
+"use client";
+
 import { Loader2, MoreVertical, Settings2 } from "lucide-react";
 import { useState } from "react";
 import NavBar from "@/components/navbar";

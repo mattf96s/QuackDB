@@ -1,3 +1,5 @@
+"use client";
+
 import { ChevronDown, Play } from "lucide-react";
 import { type MouseEventHandler, useCallback, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";

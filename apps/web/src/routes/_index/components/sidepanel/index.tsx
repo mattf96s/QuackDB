@@ -1,3 +1,5 @@
+"use client";
+
 import { PanelGroup } from "react-resizable-panels";
 import PanelHandle from "@/components/panel-handle";
 import { useSession } from "@/context/session/useSession";

@@ -34,7 +34,8 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "interactive": false
     },
     "typecheck": {
       "dependsOn": [

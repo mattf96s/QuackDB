@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useReducer, useRef } from "react";
 import { toast } from "sonner";
 import type { AddDataSourceProps } from "../../types";
@@ -129,27 +131,14 @@ export const useFileDrop = () => {
 					});
 				}
 
-				await onAddDataSources(sources);
+				try {
+					await onAddDataSources(sources);
+					toast.success(`Added ${sources.length} file(s)`);
+				} catch (e) {
+					const message = e instanceof Error ? e.message : "Unknown error";
+					toast.error(`Failed to add files: ${message}`);
+				}
 			});
-			//   e.preventDefault();
-			//   const items = e.dataTransfer.items;
-
-			//   const sources: FileSystemFileEntry[] = [];
-
-			//   for (let i = 0; i < items.length; i++) {
-			//     const item = items[i];
-			//     if (!item) continue;
-
-			//     if (item.kind === "file") {
-			//       // Only chrome supports getAsFileSystemHandle() so rather use webkitGetAsEntry() for now.
-			//       const entry = item.webkitGetAsEntry();
-			//       if (!entry) continue;
-
-			//       if (fileIsFileEntry(entry)) {
-			//         sources.push(entry);
-			//       }
-			//     }
-			//   }
 		},
 		[onDrop, onAddDataSources],
 	);
