@@ -20,15 +20,15 @@ I wanted a quick and simple tool for iterating on DuckDB queries and visualizing
 
 ## Tech Stack
 
-| Category      | Tool                                                                                                                                |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Database      | [DuckDB Wasm](https://duckdb.org/)                                                                                                  |
-| Frontend      | [Remix](https://remix.run/) &middot; [Tailwind CSS](https://tailwindcss.com/docs/table-layout), [shadcn/ui](https://ui.shadcn.com/) |
-| Backend       | [Vercel](https://vercel.com/docs/frameworks/remix)                                                                                  |
-| Visualization | [Observable Plot](https://observablehq.com/plot/), [Tanstack Table](https://tanstack.com/table/latest)                              |
-| Web APIs      | [Comlink](https://github.com/GoogleChromeLabs/comlink), [OPFS](https://web.dev/file-system-access/)                                 |
+| Category      | Tool                                                                                                                                                 |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Database      | [DuckDB Wasm](https://duckdb.org/)                                                                                                                   |
+| Frontend      | [TanStack Start](https://tanstack.com/start) &middot; [Tailwind CSS](https://tailwindcss.com/docs/table-layout), [shadcn/ui](https://ui.shadcn.com/) |
+| Backend       | [Vercel](https://vercel.com/docs/frameworks/tanstack-start)                                                                                          |
+| Visualization | [Observable Plot](https://observablehq.com/plot/), [Tanstack Table](https://tanstack.com/table/latest)                                               |
+| Web APIs      | [Comlink](https://github.com/GoogleChromeLabs/comlink), [OPFS](https://web.dev/file-system-access/)                                                  |
 
-> An earlier version of this project used [SST](https://docs.sst.dev/start/remix) for the backend infrastructure, but I switched to Vercel for simplicity.
+> This project was migrated from Remix to TanStack Start for improved performance and developer experience, and is hosted on Vercel for seamless deployment.
 
 ## TODO
 

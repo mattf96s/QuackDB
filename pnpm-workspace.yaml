@@ -1,5 +1,7 @@
-onlyBuiltDependencies:
-  - "@tailwindcss/oxide"
 packages:
-  - "apps/*"
-  - "packages/*"
+  - apps/*
+  - packages/*
+
+onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
+  - oxc-resolver

@@ -17,6 +17,7 @@
   "description": "QuackDB - An online DuckDB SQL playground and editor",
   "scripts": {
     "build": "turbo run build",
+    "start": "turbo run start",
     "clean": "turbo run clean",
     "dev": "dotenv -- turbo run dev",
     "lint": "turbo run lint",
@@ -26,7 +27,7 @@
     "knip": "knip"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.1.4",
+    "@biomejs/biome": "^2.2.0",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "conventional-changelog-conventionalcommits": "^8.0.0",
@@ -34,11 +35,11 @@
     "husky": "^8.0.3",
     "knip": "^5.62.0",
     "lint-staged": "^15.5.2",
-    "turbo": "^2.5.5",
+    "turbo": "^2.5.6",
     "typescript": "^5.9.2"
   },
   "engines": {
-    "node": ">=20 <21"
+    "node": ">=22 <23"
   },
   "packageManager": "pnpm@10.13.1"
 }
