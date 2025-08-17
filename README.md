@@ -11,6 +11,7 @@ Demo available at [quackdb.com](https://www.quackdb.com).
 - **File Types**: Supports `.csv`, `.json`, `.parquet`, `.sqlite`, `.duckdb` and `.arrow` files.
 - **Privacy**: no screen recordings or client-side error monitoring (only Vercel Analytics).
 - **Filesystem Access**: OPFS is used to store files in the browser's filesystem for persistence.
+- **Monaco Editor**: Provides a rich SQL editor experience with syntax highlighting and autocompletion.
 
 ![QuackDB Screenshot](https://www.quackdb.com/screenshot.jpg)
 
@@ -30,19 +31,7 @@ I wanted a quick and simple tool for iterating on DuckDB queries and visualizing
 
 > This project was migrated from Remix to TanStack Start for improved performance and developer experience, and is hosted on Vercel for seamless deployment.
 
-## TODO
 
-- [ ] Safari support 😁
-- [ ] Improved UI / charts / tables / etc.
-- [ ] Data import/export
-- [ ] Responsive design improvements
-- [ ] Performance improvements with Arrow
-- [ ] Snippets / examples
-
-## Maybe
-
-- [ ] [NSQL](https://motherduck.com/blog/duckdb-text2sql-llm/) integration for natural language queries.
-- [ ] Co-pilot (or similar) integration for code suggestions.
 
 ## Inspiration
 
@@ -58,9 +47,7 @@ I wanted a quick and simple tool for iterating on DuckDB queries and visualizing
 
 MIT
 
-## Disclaimer
 
-This project is not in any way affiliated with DuckDB or any of the other projects mentioned above.
 
 ## Tips
 
@@ -69,3 +56,21 @@ This project is not in any way affiliated with DuckDB or any of the other projec
 ## Known Issues
 
 - Safari will not be fully supported until this [bug](https://bugs.webkit.org/show_bug.cgi?id=256712#c0) is fixed (serializing file handles is not supported in Safari).
+
+## Architecture Choices
+
+### Why TanStack Start?
+
+I want an SPA and I am using Tanstack Start / Router in my next job—I also don't like how often the React-Router api changes.
+
+### Why a turborepo monorepo?
+
+No reason. I think I originally wanted to learn turborepo tbh.
+
+### Why no AI integration?
+
+I have thought about it but I think I prefer a simple, privacy-preserving tool for quick prototyping and learning.
+
+## Disclaimer
+
+This project is not in any way affiliated with DuckDB or any of the other projects mentioned above.
