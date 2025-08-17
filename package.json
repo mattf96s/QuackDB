@@ -14,7 +14,6 @@
   "description": "QuackDB - An online DuckDB SQL playground and editor",
   "scripts": {
     "build": "turbo run build",
-    "start": "turbo run start",
     "clean": "turbo run clean",
     "dev": "dotenv -- turbo run dev",
     "lint": "turbo run lint",
