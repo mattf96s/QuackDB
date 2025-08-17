@@ -27,6 +27,11 @@
         "^lint"
       ]
     },
+    "lint:fix": {
+      "dependsOn": [
+        "^lint:fix"
+      ]
+    },
     "format": {
       "dependsOn": [
         "^format"

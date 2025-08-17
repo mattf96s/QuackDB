@@ -28,6 +28,9 @@ export default function OpenFileTabs() {
 						const isCurrent = editor.isFocused;
 
 						return (
+							// biome-ignore lint/a11y/useFocusableInteractive: TODO
+							// biome-ignore lint/a11y/useKeyWithClickEvents: TODO
+							// biome-ignore lint/a11y/useSemanticElements: TODO
 							<div
 								role="button"
 								className={cn(

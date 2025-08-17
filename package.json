@@ -11,9 +11,6 @@
     "name": "Matthew Fainman",
     "url": "https://www.matthewfainman.com/"
   },
-  "workspaces": [
-    "apps/*"
-  ],
   "description": "QuackDB - An online DuckDB SQL playground and editor",
   "scripts": {
     "build": "turbo run build",
@@ -21,6 +18,7 @@
     "clean": "turbo run clean",
     "dev": "dotenv -- turbo run dev",
     "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
     "format": "turbo run format",
     "sso": "aws sso login --sso-session=d-93675d34f6",
     "typecheck": "turbo run typecheck",

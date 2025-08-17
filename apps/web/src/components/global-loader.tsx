@@ -10,10 +10,10 @@ export function GlobalPendingIndicator() {
 
 	return (
 		<div
-			className={cn("fixed left-0 right-0 top-0", { hidden: !isTransitioning })}
+			className={cn("fixed top-0 right-0 left-0", { hidden: !isTransitioning })}
 		>
 			<div className="h-0.5 w-full overflow-hidden bg-muted">
-				<div className="animate-progress origin-left-right h-full w-full bg-muted-foreground" />
+				<div className="h-full w-full origin-left-right animate-progress bg-muted-foreground" />
 			</div>
 		</div>
 	);

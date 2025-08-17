@@ -11,9 +11,9 @@ export const onSaveToLocalStorage =
 	(SQL_KEY: string) => (editor: editor.IStandaloneCodeEditor) => {
 		// Persist editor content across page loads.
 		let change: NodeJS.Timeout;
-		const disposable = editor.onDidChangeModelContent(function () {
+		const disposable = editor.onDidChangeModelContent(() => {
 			clearTimeout(change);
-			change = setTimeout(function () {
+			change = setTimeout(() => {
 				localStorage.setItem(SQL_KEY, editor.getValue());
 			}, 1000);
 		});

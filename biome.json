@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,7 +7,10 @@
     "defaultBranch": "main"
   },
   "files": {
-    "ignoreUnknown": false
+    "ignoreUnknown": false,
+    "experimentalScannerIgnores": [
+      "src/routeTree.gen.ts"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -25,14 +28,7 @@
         "recommended": true
       },
       "correctness": {
-        "recommended": true,
-        "noUnusedVariables": {
-          "fix": "safe",
-          "level": "warn",
-          "options": {
-            "ignoreRestSiblings": true
-          }
-        }
+        "recommended": true
       },
       "nursery": {
         "useSortedClasses": {
@@ -72,9 +68,21 @@
   "assist": {
     "enabled": true,
     "actions": {
+      "recommended": true,
       "source": {
         "organizeImports": "on"
       }
+    }
+  },
+  "css": {
+    "formatter": {
+      "enabled": true
+    },
+    "assist": {
+      "enabled": true
+    },
+    "linter": {
+      "enabled": false
     }
   }
 }

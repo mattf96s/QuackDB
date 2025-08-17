@@ -1,4 +1,4 @@
-import { type Table } from "apache-arrow";
+import type { Table } from "apache-arrow";
 import { z } from "zod";
 
 /**

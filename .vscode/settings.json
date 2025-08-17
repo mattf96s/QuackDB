@@ -26,8 +26,6 @@
 		"*.postcss": "tailwindcss",
 		"*.pcss": "tailwindcss"
 	},
-	"diffEditor.ignoreTrimWhitespace": false, // https://github.com/cpojer/dotfiles/blob/main/vscode/User/settings.json
-	"editor.minimap.enabled": false,
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"typescript.enablePromptUseWorkspaceTsdk": true,
 	"editor.codeActionsOnSave": {
@@ -37,6 +35,5 @@
 		"source.action.useSortedKeys.biome": "explicit",
 		"source.action.useSortedAttributes.biome": "explicit",
 		"source.action.useSortedClasses.biome": "explicit"
-	},
-	"prettier.enable": false
+	}
 }
